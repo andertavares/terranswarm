@@ -2,6 +2,7 @@
 #include <BWAPI.h>
 #include <list>
 #include "Task.h"
+#include "CommanderAgent.h"
 
 // Remember not to use "Broodwar" in any global class constructor!
 
@@ -9,6 +10,7 @@ class ExampleAIModule : public BWAPI::AIModule
 {
 
 	std::list<Task> tasks;
+	CommanderAgent* _commanderAgent;
 
 public:
   // Virtual functions for callbacks, leave these as they are.
@@ -30,5 +32,4 @@ public:
   virtual void onSaveGame(std::string gameName);
   virtual void onUnitComplete(BWAPI::Unit unit);
   // Everything below this line is safe to modify.
-
 };

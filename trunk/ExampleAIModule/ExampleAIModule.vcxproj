@@ -88,11 +88,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\CommanderAgent.cpp" />
     <ClCompile Include="Source\Dll.cpp" />
     <ClCompile Include="Source\ExampleAIModule.cpp" />
     <ClCompile Include="Source\Task.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\CommanderAgent.h" />
     <ClInclude Include="Source\ExampleAIModule.h" />
     <ClInclude Include="Source\Task.h" />
   </ItemGroup>
