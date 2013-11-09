@@ -1,10 +1,15 @@
-#pragma once
+//#pragma once
 #include <BWAPI.h>
+#include <list>
+#include "Task.h"
 
 // Remember not to use "Broodwar" in any global class constructor!
 
 class ExampleAIModule : public BWAPI::AIModule
 {
+
+	std::list<Task> tasks;
+
 public:
   // Virtual functions for callbacks, leave these as they are.
   virtual void onStart();
