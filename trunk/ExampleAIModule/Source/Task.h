@@ -1,3 +1,5 @@
+#pragma once
+
 enum TaskType{
 	TrainMarine,
 	TrainWorker,
@@ -19,5 +21,6 @@ class Task {
 public:
 	Task(TaskType taskType, float incentive);
 	float getIncentive();
+	void setIncentive(float incentive);
 	TaskType getTaskType();
 };
