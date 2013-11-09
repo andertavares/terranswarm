@@ -21,9 +21,15 @@
     <ClCompile Include="Source\ExampleAIModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Task.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\ExampleAIModule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Task.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
