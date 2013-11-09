@@ -7,12 +7,12 @@ using namespace Filter;
 void ExampleAIModule::onStart()
 {
   // Hello World!
-  Broodwar->sendText("Hello world!");
+  Broodwar->sendText("Hello world anderson & hectors!");
 
   // Print the map name.
   // BWAPI returns std::string when retrieving a string, don't forget to add .c_str() when printing!
   Broodwar << "The map is " << Broodwar->mapName() << "!" << std::endl;
-
+  
   // Enable the UserInput flag, which allows us to control the bot and type messages.
   Broodwar->enableFlag(Flag::UserInput);
 
@@ -296,4 +296,9 @@ void ExampleAIModule::onSaveGame(std::string gameName)
 
 void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
 {
+	BWAPI::UnitType unitType = unit->getType();
+	if(unitType == UnitTypes::Terran_Marine){
+		Broodwar->sendText("Marine created ");
+	}
+	Broodwar->sendText("New unit [%s] created ", unitType.getName());
 }
