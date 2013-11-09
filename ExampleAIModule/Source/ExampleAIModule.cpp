@@ -1,9 +1,20 @@
 #include "ExampleAIModule.h"
 #include <iostream>
-//#include "Task.h"
+#include "Task.h"
 
 using namespace BWAPI;
 using namespace Filter;
+
+
+ExampleAIModule::ExampleAIModule(){
+	//does nothing, init is done in onStart()
+}
+
+ExampleAIModule::~ExampleAIModule(){
+	delete trainMarine;
+	delete gatherMinerals;
+	delete buildSupplyDepot;
+}
 
 void ExampleAIModule::onStart() {
 	// Hello World!
@@ -44,7 +55,19 @@ void ExampleAIModule::onStart() {
 		if ( Broodwar->enemy() ) // First make sure there is an enemy
 			Broodwar << "The matchup is " << Broodwar->self()->getRace() << " vs " << Broodwar->enemy()->getRace() << std::endl;
 	
-		//adds the forever-demanding tasks:
+		//creates the tasksTypes
+		//trainMarine and gatherMinerals are always present, so they're created separately
+		trainMarine = new Task(TrainMarine, .8f);
+		gatherMinerals = new Task(GatherMinerals, .8f);
+		buildSupplyDepot = new Task(BuildSupplyDepot, 0);
+
+		//other tasks are grouped by taskType; multiple occurrences may appear, so they're stored on lists
+		for(int tt = TrainMarine; tt != GuardBase; ++tt){
+			if (tt == TrainMarine || tt == GatherMinerals || tt == BuildSupplyDepot) {
+				continue;
+			}
+			otherTasks.insert(make_pair(static_cast<TaskType>(tt), new list<Task>));
+		}
 	}
 
 	// Create the main agents
@@ -66,6 +89,16 @@ void ExampleAIModule::onFrame() {
 	// Display the game frame rate as text in the upper left area of the screen
 	Broodwar->drawTextScreen(200, 0,  "FPS: %d", Broodwar->getFPS() );
 	Broodwar->drawTextScreen(200, 20, "Average FPS: %f", Broodwar->getAverageFPS() );
+
+	//draws a circle around the minerals
+	Unitset minerals = Broodwar->getMinerals();
+	//Broodwar->sendText("#minerals: %d", minerals.size());
+	for (Unitset::iterator m = minerals.begin(); m != minerals.end(); ++m){
+		if (m->getType().isMineralField()) {
+			//Broodwar->sendText( "Drawing circle...");
+			Broodwar->drawCircleMap(m->getPosition(), m->getType().dimensionLeft(),Color(Colors::Blue));
+		}
+	}
 
 	// Return if the game is a replay or is paused
 	if ( Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self() )
@@ -125,17 +158,7 @@ void ExampleAIModule::onFrame() {
 		}
 		
 	} // closure: unit iterator
-	Unitset minerals = Broodwar->getMinerals();
-
-	//Broodwar->sendText("#minerals: %d", minerals.size());
-
-	//draws a circle around the mineral, TODO: adds 'get minerals' to task list
-	for (Unitset::iterator m = minerals.begin(); m != minerals.end(); ++m){
-		if (m->getType().isMineralField()) {
-			//Broodwar->sendText( "Drawing circle...");
-			Broodwar->drawCircleMap(m->getPosition(), m->getType().dimensionLeft(),Color(Colors::Blue));
-		}
-	}
+	
 
 }
 
