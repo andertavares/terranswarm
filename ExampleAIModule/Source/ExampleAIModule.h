@@ -1,6 +1,6 @@
 //#pragma once
 #include <BWAPI.h>
-#include <list>
+#include <vector>
 #include <unordered_map>
 #include "Task.h"
 #include "CommanderAgent.h"
@@ -17,10 +17,15 @@ class ExampleAIModule : public BWAPI::AIModule
 	Task* trainMarine;
 	Task* buildSupplyDepot;
 	Task* explore;
+	Task* buildCommandCenter;
 	CommanderAgent* _commanderAgent;
 
+	//set of command centers
+	BWAPI::Unitset commandCenters;
+
 	//map: taskType to list<task> for tasks that may have multiple instances with variable incentives
-	unordered_map<TaskType, list<Task>*> otherTasks;
+	unordered_map<TaskType, vector<Task>*> allTasks;
+	
 
 public:
 	// Virtual functions for callbacks, leave these as they are.

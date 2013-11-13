@@ -38,7 +38,7 @@ void CommanderAgent::onFrame(void)
 			int barracksNumber = calculateBarracksFromCommandCenter(Broodwar->getUnit(u->getID()));
 			Broodwar->drawTextScreen(437,27,"Barracks near command center [%d]", barracksNumber);
 			if(barracksNumber < 4){
-				Broodwar->sendText("Creating new barrack");
+				//Broodwar->sendText("Creating new barrack");
 				createBarrackNearCommandCenter(Broodwar->getUnit(u->getID()));
 			}
 
