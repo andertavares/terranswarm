@@ -25,6 +25,7 @@ void ExampleAIModule::onStart() {
 	// Print the map name.
 	// BWAPI returns std::string when retrieving a string, don't forget to add .c_str() when printing!
 	Broodwar << "The map is " << Broodwar->mapName() << "!" << std::endl;
+	
   
 	// Enable the UserInput flag, which allows us to control the bot and type messages.
 	Broodwar->enableFlag(Flag::UserInput);
@@ -98,9 +99,15 @@ void ExampleAIModule::onFrame() {
 		Text::White, 
 		buildSupplyDepot->getIncentive()
 	); 
-	Broodwar->drawTextScreen(20,20, "%cExplore incentive = %.3f", 
+	Broodwar->drawTextScreen(20,15, "%cExplore incentive = %.3f", 
 		Text::White, 
 		explore->getIncentive()
+	);
+
+	Broodwar->drawTextScreen(20,30, "%cMap Size: %d x %d", 
+		Text::White, 
+		Broodwar->mapWidth(),
+		Broodwar->mapHeight()
 	);
 
 	//draws a circle around the minerals
@@ -251,9 +258,9 @@ void ExampleAIModule::onUnitCreate(BWAPI::Unit unit)
   }
 }
 
-void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit)
-{
+void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit){
 	BWAPI::UnitType unitType = unit->getType();
+	
 	if(unitType == UnitTypes::Terran_Marine){
 		Broodwar->sendText("Marine down.");
 	}
@@ -330,8 +337,8 @@ void ExampleAIModule::updateBuildSupplyDepot(){
 
 void ExampleAIModule::updateExplore(){
 	int exploredTiles = 0;
-	int width = Broodwar->mapWidth()*4;
-	int height = Broodwar->mapHeight()*4;
+	int width = Broodwar->mapWidth();
+	int height = Broodwar->mapHeight();
 
 	for (int hTile = 0; hTile < width; hTile++){ //*4 to get size in Walk Tiles
 		for (int vTile = 0; vTile < height ; vTile++){
@@ -342,5 +349,5 @@ void ExampleAIModule::updateExplore(){
 	}
 
 	//explored incentive is % of map unrevealed
-	explore->setIncentive(float(exploredTiles) / (width * height));
+	explore->setIncentive(1.0f - float(exploredTiles) / (width * height));
 }
