@@ -1,5 +1,7 @@
-#include "ExampleAIModule.h"
 #include <iostream>
+#include <cmath>
+#define EULER 2.71828182845904523536
+#include "ExampleAIModule.h"
 #include "Task.h"
 
 using namespace BWAPI;
@@ -60,10 +62,11 @@ void ExampleAIModule::onStart() {
 		trainMarine = new Task(TrainMarine, .8f);
 		gatherMinerals = new Task(GatherMinerals, .8f);
 		buildSupplyDepot = new Task(BuildSupplyDepot, 0);
+		explore = new Task(Explore, 0);
 
 		//other tasks are grouped by taskType; multiple occurrences may appear, so they're stored on lists
 		for(int tt = TrainMarine; tt != GuardBase; ++tt){
-			if (tt == TrainMarine || tt == GatherMinerals || tt == BuildSupplyDepot) {
+			if (tt == TrainMarine || tt == GatherMinerals || tt == BuildSupplyDepot || tt==Explore) {
 				continue;
 			}
 			otherTasks.insert(make_pair(static_cast<TaskType>(tt), new list<Task>));
@@ -90,6 +93,16 @@ void ExampleAIModule::onFrame() {
 	Broodwar->drawTextScreen(200, 0,  "FPS: %d", Broodwar->getFPS() );
 	Broodwar->drawTextScreen(200, 20, "Average FPS: %f", Broodwar->getAverageFPS() );
 
+	// display some debug info...
+	Broodwar->drawTextScreen(20,0, "%cSupply Depot incentive = %.3f", 
+		Text::White, 
+		buildSupplyDepot->getIncentive()
+	); 
+	Broodwar->drawTextScreen(20,20, "%cExplore incentive = %.3f", 
+		Text::White, 
+		explore->getIncentive()
+	);
+
 	//draws a circle around the minerals
 	Unitset minerals = Broodwar->getMinerals();
 	//Broodwar->sendText("#minerals: %d", minerals.size());
@@ -110,6 +123,8 @@ void ExampleAIModule::onFrame() {
 		return;
 
 	_commanderAgent->onFrame();
+
+	updateTasks();
 
 	// Iterate through all the units that we own
 	Unitset myUnits = Broodwar->self()->getUnits();
@@ -242,6 +257,18 @@ void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit)
 	if(unitType == UnitTypes::Terran_Marine){
 		Broodwar->sendText("Marine down.");
 	}
+	if(unitType == UnitTypes::Terran_SCV){
+		Broodwar->sendText("SCV down.");
+	}
+	if(unitType == UnitTypes::Terran_Barracks){
+		Broodwar->sendText("Barracks destroyed!");
+	}
+	if(unitType == UnitTypes::Terran_Supply_Depot){
+		Broodwar->sendText("Supply Depot destroyed!");
+	}
+	if(unitType == UnitTypes::Terran_Command_Center){
+		Broodwar->sendText("Command Center destroyed!");
+	}
 }
 
 void ExampleAIModule::onUnitMorph(BWAPI::Unit unit)
@@ -271,8 +298,49 @@ void ExampleAIModule::onSaveGame(std::string gameName)
 void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
 {
 	BWAPI::UnitType unitType = unit->getType();
-	if(unitType == UnitTypes::Terran_Marine){
-		Broodwar->sendText("Marine created ");
+	Broodwar->sendText("New unit [%s] created ", unitType.getName().c_str());
+}
+
+
+void ExampleAIModule::updateTasks(){
+	updateBuildSupplyDepot();
+	updateExplore();
+
+}
+
+void ExampleAIModule::updateBuildSupplyDepot(){
+	//updates the buildSupplyDepots incentive
+	int dif = (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed())/2; //bwapi returns 2*the actual difference...
+	if (dif < 0) dif = 0;
+	//incentive is maximum when difference is minimum
+	//buildSupplyDepot->setIncentive(pow(EULER,-dif));
+
+	//buildSupplyDepot->setIncentive(pow(EULER,-dif));
+	buildSupplyDepot->setIncentive(1.0 -(dif/10.0)); //linear 'decay'
+
+	//finds a command center to draw a debug text
+	Unitset myUnits = Broodwar->self()->getUnits();
+	Unitset::iterator u = NULL;
+	for ( u = myUnits.begin(); u != myUnits.end(); ++u ) {
+		if ( u->getType().isResourceDepot() ) {
+			break;
+		}
 	}
-	Broodwar->sendText("New unit [%s] created ", unitType.getName());
+}
+
+void ExampleAIModule::updateExplore(){
+	int exploredTiles = 0;
+	int width = Broodwar->mapWidth()*4;
+	int height = Broodwar->mapHeight()*4;
+
+	for (int hTile = 0; hTile < width; hTile++){ //*4 to get size in Walk Tiles
+		for (int vTile = 0; vTile < height ; vTile++){
+			if (Broodwar->isExplored(hTile,vTile)){
+				exploredTiles++;
+			}
+		}
+	}
+
+	//explored incentive is % of map unrevealed
+	explore->setIncentive(float(exploredTiles) / (width * height));
 }
