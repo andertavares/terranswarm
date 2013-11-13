@@ -53,6 +53,9 @@ void ExampleAIModule::onStart() {
 	}
 	else {// if this is not a replay
   
+		Broodwar->sendText("show me the money");
+		Broodwar->sendText("operation cwal");
+
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
 		// If you wish to deal with multiple enemies then you must use enemies().
 		if ( Broodwar->enemy() ) // First make sure there is an enemy
@@ -89,6 +92,9 @@ void ExampleAIModule::onEnd(bool isWinner)
 
 void ExampleAIModule::onFrame() {
 	// Called once every game frame
+	// Return if the game is a replay or is paused
+	if ( Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self() )
+		return;
 
 	// Display the game frame rate as text in the upper left area of the screen
 	Broodwar->drawTextScreen(200, 0,  "FPS: %d", Broodwar->getFPS() );
@@ -119,10 +125,6 @@ void ExampleAIModule::onFrame() {
 			Broodwar->drawCircleMap(m->getPosition(), m->getType().dimensionLeft(),Color(Colors::Blue));
 		}
 	}
-
-	// Return if the game is a replay or is paused
-	if ( Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self() )
-		return;
 
 	// Prevent spamming by only running our onFrame once every number of latency frames.
 	// Latency frames are the number of frames before commands are processed.
@@ -344,6 +346,10 @@ void ExampleAIModule::updateExplore(){
 		for (int vTile = 0; vTile < height ; vTile++){
 			if (Broodwar->isExplored(hTile,vTile)){
 				exploredTiles++;
+				Broodwar->drawDotMap(hTile*TILE_SIZE+16,vTile*TILE_SIZE+16,Colors::Green);
+			}
+			else{
+				Broodwar->drawDotMap(hTile*TILE_SIZE+16,vTile*TILE_SIZE+16,Colors::Red);
 			}
 		}
 	}
