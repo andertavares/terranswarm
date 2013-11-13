@@ -110,7 +110,8 @@ int CommanderAgent::calculateBarracksFromCommandCenter(Unit u){
 	//}
 
 	Position commandCenterPos = u->getPosition();
-	Unitset units = Broodwar->getUnitsInRadius(commandCenterPos, 150*TILE_SIZE);
+	Unitset units = Broodwar->getUnitsInRadius(commandCenterPos, 20*TILE_SIZE);
+	Broodwar->drawCircleMap(commandCenterPos, 20*TILE_SIZE, Color(Colors::Blue));
 	//Unitset units = u->getUnitsInRadius(200);
 	int counter = 0;
 	for ( Unitset::iterator u = units.begin(); u != units.end(); ++u ) {
