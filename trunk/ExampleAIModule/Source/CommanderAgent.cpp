@@ -28,7 +28,7 @@ void CommanderAgent::onFrame(void)
 			if ( u->isIdle() && !u->train(u->getType().getRace().getWorker()) ) {
 				Error lastErr = Broodwar->getLastError();
 				if(lastErr == Errors::Insufficient_Supply){
-					Broodwar->sendText("SVC cant be created %s", lastErr.toString());	
+					Broodwar->sendText("SVC can't be created - %s", lastErr.toString().c_str());	
 					CommanderAgent::createSupply(Broodwar->getUnit(u->getID()));
 				}
 			} // closure: failed to train idle unit
@@ -47,7 +47,7 @@ void CommanderAgent::onFrame(void)
 			if ( u->isIdle() && !u->train(UnitTypes::Terran_Marine)) {
 				Error lastErr = Broodwar->getLastError();
 				if(lastErr == Errors::Insufficient_Supply){
-					Broodwar->sendText("Marine cant be created %s", lastErr.toString());	
+					Broodwar->sendText("Marine can't be created - %s", lastErr.toString().c_str());	
 					CommanderAgent::createSupply(Broodwar->getUnit(u->getID()));
 				}			
 			}

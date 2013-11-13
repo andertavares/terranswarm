@@ -16,6 +16,7 @@ class ExampleAIModule : public BWAPI::AIModule
 	Task* gatherMinerals;
 	Task* trainMarine;
 	Task* buildSupplyDepot;
+	Task* explore;
 	CommanderAgent* _commanderAgent;
 
 	//map: taskType to list<task> for tasks that may have multiple instances with variable incentives
@@ -45,4 +46,8 @@ public:
 	// Everything below this line is safe to modify.
 	ExampleAIModule();
 	~ExampleAIModule();
+
+	void updateTasks();
+	void updateBuildSupplyDepot();
+	void updateExplore();
 };
