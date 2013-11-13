@@ -33,6 +33,15 @@ void CommanderAgent::onFrame(void)
 				}
 			} // closure: failed to train idle unit
 
+
+			// Calculate the barracks around the command center
+			int barracksNumber = calculateBarracksFromCommandCenter(Broodwar->getUnit(u->getID()));
+			Broodwar->drawTextScreen(437,27,"Barracks near command center [%d]", barracksNumber);
+			if(barracksNumber < 4){
+				Broodwar->sendText("Creating new barrack");
+				createBarrackNearCommandCenter(Broodwar->getUnit(u->getID()));
+			}
+
 		} //closure: isResourceDepot
 		else if ( u->getType() == UnitTypes::Terran_Barracks ) {
 			if ( u->isIdle() && !u->train(UnitTypes::Terran_Marine)) {
@@ -91,6 +100,64 @@ void CommanderAgent::createSupply(Unit u){
 					// Train the supply provider (Overlord) if the provider is not a structure
 					supplyBuilder->train( supplyProviderType );
 				}
+			} // closure: supplyBuilder is valid
+	} // closure: insufficient supply
+}
+
+int CommanderAgent::calculateBarracksFromCommandCenter(Unit u){
+	//if(!u->getType().isResourceDepot()){
+	//	return 0;
+	//}
+
+	Position commandCenterPos = u->getPosition();
+	Unitset units = Broodwar->getUnitsInRadius(commandCenterPos, 150*TILE_SIZE);
+	//Unitset units = u->getUnitsInRadius(200);
+	int counter = 0;
+	for ( Unitset::iterator u = units.begin(); u != units.end(); ++u ) {
+		if ( u->getType() == UnitTypes::Terran_Barracks ) {
+			counter++;
+		} //clousure:
+	}
+
+	return counter;
+}
+
+void CommanderAgent::createBarrackNearCommandCenter(Unit u){
+	Position pos = u->getPosition();
+	
+	UnitType barrackType = UnitTypes::Terran_Barracks;
+	static int lastChecked = 0;
+
+	// If we are supply blocked and haven't tried constructing more recently
+	if ( lastChecked + 300 < Broodwar->getFrameCount() && Broodwar->self()->incompleteUnitCount(barrackType) == 0 ) {
+
+			lastChecked = Broodwar->getFrameCount();
+
+			// Retrieve a unit that is capable of constructing the supply needed
+			Unit supplyBuilder = u->getClosestUnit(  GetType == barrackType.whatBuilds().first && (IsIdle || IsGatheringMinerals) && IsOwned);
+			// If a unit was found
+			if ( supplyBuilder ){
+
+				if ( barrackType.isBuilding() ){
+
+					TilePosition targetBuildLocation = Broodwar->getBuildLocation(barrackType, supplyBuilder->getTilePosition());
+					if ( targetBuildLocation ){
+
+						// Register an event that draws the target build location
+						Broodwar->registerEvent([targetBuildLocation,barrackType](Game*)
+						{
+							Broodwar->drawBoxMap( Position(targetBuildLocation),
+								Position(targetBuildLocation + barrackType.tileSize()),
+								Colors::Blue);
+						},
+							nullptr,  // condition
+							barrackType.buildTime() + 100 );  // frames to run
+
+						// Order the builder to construct the supply structure
+						supplyBuilder->build( barrackType, targetBuildLocation );
+					}
+				}
+				
 			} // closure: supplyBuilder is valid
 	} // closure: insufficient supply
 }
