@@ -1,8 +1,10 @@
 #include <iostream>
 #include <cmath>
-#define EULER 2.71828182845904523536
 #include "ExampleAIModule.h"
 #include "Task.h"
+
+#define EULER 2.71828182845904523536
+#define BASE_RADIUS 20 * TILE_SIZE
 
 using namespace BWAPI;
 using namespace Filter;
@@ -60,34 +62,47 @@ void ExampleAIModule::onStart() {
 		// If you wish to deal with multiple enemies then you must use enemies().
 		if ( Broodwar->enemy() ) // First make sure there is an enemy
 			Broodwar << "The matchup is " << Broodwar->self()->getRace() << " vs " << Broodwar->enemy()->getRace() << std::endl;
-	
+		
+		//cleans the list of command centers
+		commandCenters.clear();
+
 		//creates the tasksTypes
 		//trainMarine and gatherMinerals are always present, so they're created separately
 		trainMarine = new Task(TrainMarine, .8f);
 		gatherMinerals = new Task(GatherMinerals, .8f);
+		buildCommandCenter = new Task(BuildCommandCenter, 0);
 		buildSupplyDepot = new Task(BuildSupplyDepot, 0);
 		explore = new Task(Explore, 0);
 
-		//other tasks are grouped by taskType; multiple occurrences may appear, so they're stored on lists
+		//tasks are grouped by taskType
+		//insert all TaskTypes into map; all Types will point to empty list
 		for(int tt = TrainMarine; tt != GuardBase; ++tt){
-			if (tt == TrainMarine || tt == GatherMinerals || tt == BuildSupplyDepot || tt==Explore) {
+			/*if (tt == TrainMarine || tt == GatherMinerals || tt == BuildSupplyDepot || tt==Explore) {
 				continue;
 			}
-			otherTasks.insert(make_pair(static_cast<TaskType>(tt), new list<Task>));
+			*/
+			allTasks.insert(make_pair(static_cast<TaskType>(tt), new vector<Task>));
 		}
+
+		//TaskTypes with single task instance will point to list with the instance
+		//TaskTypes with multiple instances will remain pointing to empty list (will be fulfilled on demand)
+		allTasks[TrainMarine]->push_back(*trainMarine); //push_front(*trainMarine);
+		allTasks[GatherMinerals]->push_back(*gatherMinerals);
+		allTasks[BuildSupplyDepot]->push_back(*buildSupplyDepot);
+		allTasks[Explore]->push_back(*explore);
+		allTasks[BuildCommandCenter]->push_back(*buildCommandCenter);
+
 	}
 
 	// Create the main agents
 	_commanderAgent = new CommanderAgent();
 }
 
-void ExampleAIModule::onEnd(bool isWinner)
-{
+void ExampleAIModule::onEnd(bool isWinner) {
   // Called when the game ends
-  if ( isWinner )
-  {
-    // Log your win here!
-  }
+	if ( isWinner )  {
+		Broodwar->sendText("POWER OVERWHELMING!");
+	}
 }
 
 void ExampleAIModule::onFrame() {
@@ -110,11 +125,36 @@ void ExampleAIModule::onFrame() {
 		explore->getIncentive()
 	);
 
-	Broodwar->drawTextScreen(20,30, "%cMap Size: %d x %d", 
+	Broodwar->drawTextScreen(20,30, "%cTrain marine incentive = %.3f", 
+		Text::White, 
+		trainMarine->getIncentive()
+	);
+
+	Broodwar->drawTextScreen(20,45, "%cGather minerals incentive = %.3f", 
+		Text::White, 
+		gatherMinerals->getIncentive()
+	);
+
+	Broodwar->drawTextScreen(20,75, "%cBuild command center incentive: %.3f", 
+		Text::White, 
+		allTasks[BuildCommandCenter]->[0].getIncentive()
+	);
+
+	Broodwar->drawTextScreen(20,60, "%cOther tasks...", 
+		Text::White
+	);
+
+	//allTasks[Explore]->
+
+	
+	
+	
+
+	/*Broodwar->drawTextScreen(20,30, "%cMap Size: %d x %d", 
 		Text::White, 
 		Broodwar->mapWidth(),
 		Broodwar->mapHeight()
-	);
+	);*/
 
 	//draws a circle around the minerals
 	Unitset minerals = Broodwar->getMinerals();
@@ -178,7 +218,6 @@ void ExampleAIModule::onFrame() {
 
 				} // closure: has no powerup
 			} // closure: if idle
-
 		}
 		
 	} // closure: unit iterator
@@ -229,20 +268,48 @@ void ExampleAIModule::onNukeDetect(BWAPI::Position target)
   // You can also retrieve all the nuclear missile targets using Broodwar->getNukeDots()!
 }
 
-void ExampleAIModule::onUnitDiscover(BWAPI::Unit unit)
-{
+void ExampleAIModule::onUnitDiscover(BWAPI::Unit unit){
+	Broodwar->sendText("Unit [%s] discovered", unit->getType().getName().c_str());
+
+	if (unit->getType() == UnitTypes::Terran_Command_Center) {
+		commandCenters.insert(unit);
+	}
+
+	//new mineral discovered, is it at the range of a command center?
+	if(unit->getType() == UnitTypes::Resource_Mineral_Field){
+		//go through all bases to check if mineral is in range
+		bool mineralInRange = false;
+		for(Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
+			
+			if (cmd->getDistance(unit) < BASE_RADIUS){
+				Broodwar->sendText("Mineral distance %d in base radius.",cmd->getDistance(unit));
+				mineralInRange = true;
+				break;
+			}
+			
+		}
+
+		if (! mineralInRange){
+			Broodwar->sendText("Mineral NOT in base radius. Adjusting 'Build CMD' incentive");
+			//should construct a base near the newly discovered mineral, adjusts task incentive
+			buildCommandCenter->setIncentive(.8f);
+			//vector<Task>* thelist = allTasks[BuildCommandCenter];//.insert(new Task(BuildCommandCenter, .8f));
+			//thelist->push_back(*(new Task(BuildCommandCenter, .8f))); 
+			//allTasks.insert(make_pair(BuildCommandCenter,new Task(BuildCommandCenter, .8f)));
+		}
+	}
 }
 
-void ExampleAIModule::onUnitEvade(BWAPI::Unit unit)
-{
+void ExampleAIModule::onUnitEvade(BWAPI::Unit unit){
+	Broodwar->sendText("Unit [%s] evaded (became unaccessible)", unit->getType().getName().c_str());
 }
 
-void ExampleAIModule::onUnitShow(BWAPI::Unit unit)
-{
+void ExampleAIModule::onUnitShow(BWAPI::Unit unit){
+	Broodwar->sendText("Unit [%s] became visible", unit->getType().getName().c_str());
 }
 
-void ExampleAIModule::onUnitHide(BWAPI::Unit unit)
-{
+void ExampleAIModule::onUnitHide(BWAPI::Unit unit){
+	Broodwar->sendText("Unit [%s] not visible anymore", unit->getType().getName().c_str());
 }
 
 void ExampleAIModule::onUnitCreate(BWAPI::Unit unit)
@@ -261,27 +328,15 @@ void ExampleAIModule::onUnitCreate(BWAPI::Unit unit)
 }
 
 void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit){
-	BWAPI::UnitType unitType = unit->getType();
-	
-	if(unitType == UnitTypes::Terran_Marine){
-		Broodwar->sendText("Marine down.");
+	if (unit->getPlayer() == Broodwar->self()){
+		Broodwar->sendText("%s lost.", unit->getType().getName().c_str());
 	}
-	if(unitType == UnitTypes::Terran_SCV){
-		Broodwar->sendText("SCV down.");
-	}
-	if(unitType == UnitTypes::Terran_Barracks){
-		Broodwar->sendText("Barracks destroyed!");
-	}
-	if(unitType == UnitTypes::Terran_Supply_Depot){
-		Broodwar->sendText("Supply Depot destroyed!");
-	}
-	if(unitType == UnitTypes::Terran_Command_Center){
-		Broodwar->sendText("Command Center destroyed!");
+	else {
+		Broodwar->sendText("%s shot down.", unit->getType().getName().c_str());
 	}
 }
 
-void ExampleAIModule::onUnitMorph(BWAPI::Unit unit)
-{
+void ExampleAIModule::onUnitMorph(BWAPI::Unit unit) {
   if ( Broodwar->isReplay() )
   {
     // if we are in a replay, then we will print out the build order of the structures
@@ -295,17 +350,14 @@ void ExampleAIModule::onUnitMorph(BWAPI::Unit unit)
   }
 }
 
-void ExampleAIModule::onUnitRenegade(BWAPI::Unit unit)
-{
+void ExampleAIModule::onUnitRenegade(BWAPI::Unit unit){
 }
 
-void ExampleAIModule::onSaveGame(std::string gameName)
-{
+void ExampleAIModule::onSaveGame(std::string gameName){
   Broodwar << "The game was saved to \"" << gameName << "\"" << std::endl;
 }
 
-void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
-{
+void ExampleAIModule::onUnitComplete(BWAPI::Unit unit) {
 	BWAPI::UnitType unitType = unit->getType();
 	Broodwar->sendText("New unit [%s] created ", unitType.getName().c_str());
 }
@@ -314,6 +366,8 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
 void ExampleAIModule::updateTasks(){
 	updateBuildSupplyDepot();
 	updateExplore();
+
+	//updateBuildCommandCenter is done when minerals is discovered...
 
 }
 
@@ -342,7 +396,8 @@ void ExampleAIModule::updateExplore(){
 	int width = Broodwar->mapWidth();
 	int height = Broodwar->mapHeight();
 
-	for (int hTile = 0; hTile < width; hTile++){ //*4 to get size in Walk Tiles
+	//check which tiles were explorated
+	for (int hTile = 0; hTile < width; hTile++){ 
 		for (int vTile = 0; vTile < height ; vTile++){
 			if (Broodwar->isExplored(hTile,vTile)){
 				exploredTiles++;
