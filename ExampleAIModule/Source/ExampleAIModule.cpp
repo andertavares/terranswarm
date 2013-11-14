@@ -137,7 +137,8 @@ void ExampleAIModule::onFrame() {
 
 	Broodwar->drawTextScreen(20,75, "%cBuild command center incentive: %.3f", 
 		Text::White, 
-		allTasks[BuildCommandCenter]->[0].getIncentive()
+		buildCommandCenter->getIncentive()
+		//allTasks[BuildCommandCenter]. [0] getIncentive()
 	);
 
 	Broodwar->drawTextScreen(20,60, "%cOther tasks...", 
@@ -155,6 +156,13 @@ void ExampleAIModule::onFrame() {
 		Broodwar->mapWidth(),
 		Broodwar->mapHeight()
 	);*/
+
+	//draws the command center 'radius'
+	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); ++c){
+		Position commandCenterPos = c->getPosition();
+		//Unitset units = Broodwar->getUnitsInRadius(commandCenterPos, BASE_RADIUS*TILE_SIZE);
+		Broodwar->drawCircleMap(commandCenterPos, BASE_RADIUS*TILE_SIZE, Color(Colors::Blue));
+	}
 
 	//draws a circle around the minerals
 	Unitset minerals = Broodwar->getMinerals();
@@ -312,13 +320,10 @@ void ExampleAIModule::onUnitHide(BWAPI::Unit unit){
 	Broodwar->sendText("Unit [%s] not visible anymore", unit->getType().getName().c_str());
 }
 
-void ExampleAIModule::onUnitCreate(BWAPI::Unit unit)
-{
-  if ( Broodwar->isReplay() )
-  {
+void ExampleAIModule::onUnitCreate(BWAPI::Unit unit) {
+  if ( Broodwar->isReplay() ) {
     // if we are in a replay, then we will print out the build order of the structures
-    if ( unit->getType().isBuilding() && !unit->getPlayer()->isNeutral() )
-    {
+    if ( unit->getType().isBuilding() && !unit->getPlayer()->isNeutral() ) {
       int seconds = Broodwar->getFrameCount()/24;
       int minutes = seconds/60;
       seconds %= 60;
@@ -337,11 +342,9 @@ void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit){
 }
 
 void ExampleAIModule::onUnitMorph(BWAPI::Unit unit) {
-  if ( Broodwar->isReplay() )
-  {
+  if ( Broodwar->isReplay() ) {
     // if we are in a replay, then we will print out the build order of the structures
-    if ( unit->getType().isBuilding() && !unit->getPlayer()->isNeutral() )
-    {
+    if ( unit->getType().isBuilding() && !unit->getPlayer()->isNeutral() ) {
       int seconds = Broodwar->getFrameCount()/24;
       int minutes = seconds/60;
       seconds %= 60;
@@ -366,9 +369,22 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit) {
 void ExampleAIModule::updateTasks(){
 	updateBuildSupplyDepot();
 	updateExplore();
+	updateBuildBarracks();
+	
 
+}
+
+void ExampleAIModule::updateBuildBarracks(){
+	// Calculate the barracks around the command center
+	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); c++){
+		int barracksNumber = calculateBarracksFromCommandCenter(Broodwar->getUnit(c->getID()));
+		Broodwar->drawTextScreen(437,27,"Barracks near command center [%d]", barracksNumber);
+		if(barracksNumber < 4){
+			//Broodwar->sendText("Creating new barrack");
+			createBarrackNearCommandCenter(Broodwar->getUnit(c->getID()));
+		}
+	}
 	//updateBuildCommandCenter is done when minerals is discovered...
-
 }
 
 void ExampleAIModule::updateBuildSupplyDepot(){
@@ -408,7 +424,68 @@ void ExampleAIModule::updateExplore(){
 			}
 		}
 	}
+	//explored incentive is % of map unrevealed; if game is more than 5 minutes (doesn't scout too early)
+	if (Broodwar->getFrameCount()/24 > 300) {
+		explore->setIncentive(1.0f - float(exploredTiles) / (width * height));
+	}
+    //int minutes = seconds/60;
+}
 
-	//explored incentive is % of map unrevealed
-	explore->setIncentive(1.0f - float(exploredTiles) / (width * height));
+int ExampleAIModule::calculateBarracksFromCommandCenter(Unit cmdCenter) {
+	//if(!u->getType().isResourceDepot()){
+	//	return 0;
+	//}
+
+	Position commandCenterPos = cmdCenter->getPosition();
+	Unitset units = Broodwar->getUnitsInRadius(commandCenterPos, 20*TILE_SIZE);
+	//Broodwar->drawCircleMap(commandCenterPos, 20*TILE_SIZE, Color(Colors::Blue));
+	//Unitset units = u->getUnitsInRadius(200);
+	int counter = 0;
+	for ( Unitset::iterator u = units.begin(); u != units.end(); ++u ) {
+		if ( u->getType() == UnitTypes::Terran_Barracks ) {
+			counter++;
+		} 
+	}
+
+	return counter;
+}
+
+void ExampleAIModule::createBarrackNearCommandCenter(Unit u) {
+	Position pos = u->getPosition();
+	
+	UnitType barrackType = UnitTypes::Terran_Barracks;
+	static int lastChecked = 0;
+
+	// If we are supply blocked and haven't tried constructing more recently
+	if ( lastChecked + 300 < Broodwar->getFrameCount() && Broodwar->self()->incompleteUnitCount(barrackType) == 0 ) {
+
+			lastChecked = Broodwar->getFrameCount();
+
+			// Retrieve a unit that is capable of constructing the supply needed
+			Unit supplyBuilder = u->getClosestUnit(  GetType == barrackType.whatBuilds().first && (IsIdle || IsGatheringMinerals) && IsOwned);
+			// If a unit was found
+			if ( supplyBuilder ){
+
+				if ( barrackType.isBuilding() ){
+
+					TilePosition targetBuildLocation = Broodwar->getBuildLocation(barrackType, supplyBuilder->getTilePosition());
+					if ( targetBuildLocation ){
+
+						// Register an event that draws the target build location
+						Broodwar->registerEvent([targetBuildLocation,barrackType](Game*)
+						{
+							Broodwar->drawBoxMap( Position(targetBuildLocation),
+								Position(targetBuildLocation + barrackType.tileSize()),
+								Colors::Blue);
+						},
+							nullptr,  // condition
+							barrackType.buildTime() + 100 );  // frames to run
+
+						// Order the builder to construct the supply structure
+						supplyBuilder->build( barrackType, targetBuildLocation );
+					}
+				}
+				
+			} // closure: supplyBuilder is valid
+	} // closure: insufficient supply
 }

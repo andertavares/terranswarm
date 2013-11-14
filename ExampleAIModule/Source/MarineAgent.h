@@ -6,14 +6,13 @@
 
 using namespace std;
 
-class MarineAgent
-{
+class MarineAgent {
 public:
 	MarineAgent(BWAPI::Unit* u);
 	~MarineAgent(void);
 	void onTask(unordered_map<TaskType, list<Task>*> taskMap);
-	bool avaliateIncentive();
-	BWAPI::Position MarineAgent::getPositionToScout(BWAPI::Region* myRegion);
+	bool evaluateIncentive();
+	BWAPI::Position getPositionToScout(BWAPI::Region* myRegion);
 
 private:
 	BWAPI::Unit* _marine;
