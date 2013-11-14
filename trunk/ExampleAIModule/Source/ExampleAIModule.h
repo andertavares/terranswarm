@@ -6,7 +6,7 @@
 #include "CommanderAgent.h"
 
 using namespace std;
-
+using namespace BWAPI;
 // Remember not to use "Broodwar" in any global class constructor!
 
 class ExampleAIModule : public BWAPI::AIModule
@@ -21,10 +21,16 @@ class ExampleAIModule : public BWAPI::AIModule
 	CommanderAgent* _commanderAgent;
 
 	//set of command centers
-	BWAPI::Unitset commandCenters;
+	Unitset commandCenters;
 
 	//map: taskType to list<task> for tasks that may have multiple instances with variable incentives
 	unordered_map<TaskType, vector<Task>*> allTasks;
+
+	//keeps track of the barracks that were scheduled to be built around a command center
+	unordered_map<Unit, int> scheduledBarracks;
+
+	//is a supply depot scheduled to be built?
+	bool scheduledSupplyDepots;
 	
 
 public:
@@ -53,6 +59,9 @@ public:
 	~ExampleAIModule();
 
 	void updateTasks();
+	void updateBuildBarracks();
 	void updateBuildSupplyDepot();
 	void updateExplore();
+	int calculateBarracksFromCommandCenter(BWAPI::Unit cmdCenter);
+	void createBarrackNearCommandCenter(BWAPI::Unit cmdCenter);
 };
