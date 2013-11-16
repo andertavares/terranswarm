@@ -10,7 +10,7 @@ using namespace BWAPI;
 using namespace Filter;
 
 
-ExampleAIModule::ExampleAIModule(){
+ExampleAIModule::ExampleAIModule() {
 	//does nothing, init is done in onStart()
 }
 
@@ -55,7 +55,7 @@ void ExampleAIModule::onStart() {
 	}
 	else {// if this is not a replay
   
-		//Broodwar->sendText("show me the money");
+		Broodwar->sendText("show me the money");
 		//Broodwar->sendText("operation cwal");
 
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
@@ -65,6 +65,9 @@ void ExampleAIModule::onStart() {
 		
 		//cleans the list of command centers
 		commandCenters.clear();
+
+		//clears the list of discovered minerals
+		discoveredMinerals.clear();
 
 		//creates the tasksTypes
 		//trainMarine and gatherMinerals are always present, so they're created separately
@@ -77,10 +80,6 @@ void ExampleAIModule::onStart() {
 		//tasks are grouped by taskType
 		//insert all TaskTypes into map; all Types will point to empty list
 		for(int tt = TrainMarine; tt != GuardBase; ++tt){
-			/*if (tt == TrainMarine || tt == GatherMinerals || tt == BuildSupplyDepot || tt==Explore) {
-				continue;
-			}
-			*/
 			allTasks.insert(make_pair(static_cast<TaskType>(tt), new vector<Task>));
 		}
 
@@ -135,27 +134,12 @@ void ExampleAIModule::onFrame() {
 		gatherMinerals->getIncentive()
 	);
 
-	Broodwar->drawTextScreen(20,75, "%cBuild command center incentive: %.3f", 
+	Broodwar->drawTextScreen(20,60, "%cBuild CMD center incentive: %.3f", 
 		Text::White, 
 		buildCommandCenter->getIncentive()
+		//mineralsOutOfBaseRange
 		//allTasks[BuildCommandCenter]. [0] getIncentive()
 	);
-
-	Broodwar->drawTextScreen(20,60, "%cOther tasks...", 
-		Text::White
-	);
-
-	//allTasks[Explore]->
-
-	
-	
-	
-
-	/*Broodwar->drawTextScreen(20,30, "%cMap Size: %d x %d", 
-		Text::White, 
-		Broodwar->mapWidth(),
-		Broodwar->mapHeight()
-	);*/
 
 	//draws the command center 'radius'
 	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); ++c){
@@ -282,6 +266,7 @@ void ExampleAIModule::onNukeDetect(BWAPI::Position target)
   // You can also retrieve all the nuclear missile targets using Broodwar->getNukeDots()!
 }
 
+//BWAPI calls this when a unit becomes accessible
 void ExampleAIModule::onUnitDiscover(Unit unit){
 	
 
@@ -294,57 +279,27 @@ void ExampleAIModule::onUnitDiscover(Unit unit){
 	//new mineral discovered, is it at the range of a command center?
 	//framecount testing prevents checking on unacessible minerals at game begin
 	if(Broodwar->getFrameCount() != 0 && unit->getType() == UnitTypes::Resource_Mineral_Field){
-		//Unit u = *unit;
-
-		//go through all bases to check if mineral is in range
-		bool mineralInRange = false;
-		int min_distance = 100000;
-		for(Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
-			//Unit cmdUnit = *cmd;
-			/*
-			Broodwar->registerEvent([unit,cmd](Game*)
-				{
-					Broodwar->drawLineMap(cmd->getPosition(), unit->getPosition(), Color(Colors::Blue));
-				},
-				nullptr,  // condition
-				500
-			);
-			*/
-
-			if(cmd->getDistance(unit) < min_distance){
-				min_distance = cmd->getDistance(unit);
-			}
-			if (cmd->getDistance(unit) < BASE_RADIUS){
-				Broodwar->sendText("Mineral distance %d in base radius.",cmd->getDistance(unit));
-				mineralInRange = true;
-				break;
-			}
-			
-		}
-
-		if (! mineralInRange){
-			Broodwar->sendText("Mineral NOT in base radius (dist=%d,Base=%d). Adjusting 'Build CMD' incentive", min_distance, BASE_RADIUS);
-			//should construct a base near the newly discovered mineral, adjusts task incentive
-			buildCommandCenter->setIncentive(.8f);
-			//vector<Task>* thelist = allTasks[BuildCommandCenter];//.insert(new Task(BuildCommandCenter, .8f));
-			//thelist->push_back(*(new Task(BuildCommandCenter, .8f))); 
-			//allTasks.insert(make_pair(BuildCommandCenter,new Task(BuildCommandCenter, .8f)));
-		}
+		discoveredMinerals.insert(unit);
 	}
+	
 }
 
+//BWAPI calls this right before a unit becomes inaccessible
 void ExampleAIModule::onUnitEvade(BWAPI::Unit unit){
 	//Broodwar->sendText("Unit [%s] evaded (became unaccessible)", unit->getType().getName().c_str());
 }
 
+//BWAPI calls this when a unit becomes visible. If Complete Map Information is disabled, this also means that the unit has just become accessible
 void ExampleAIModule::onUnitShow(BWAPI::Unit unit){
 	//Broodwar->sendText("Unit [%s] became visible", unit->getType().getName().c_str());
 }
 
+//BWAPI calls this right before a unit becomes invisible. If Complete Map Information is disabled, this also means that the unit is about to become inaccessible
 void ExampleAIModule::onUnitHide(BWAPI::Unit unit){
 	//Broodwar->sendText("Unit [%s] not visible anymore", unit->getType().getName().c_str());
 }
 
+//BWAPI calls this when an accessible unit is created. Note that this is NOT called when a unit changes type
 void ExampleAIModule::onUnitCreate(BWAPI::Unit unit) {
 	if ( Broodwar->isReplay() ) {
 		// if we are in a replay, then we will print out the build order of the structures
@@ -355,33 +310,24 @@ void ExampleAIModule::onUnitCreate(BWAPI::Unit unit) {
 			Broodwar->sendText("%.2d:%.2d: %s creates a %s", minutes, seconds, unit->getPlayer()->getName().c_str(), unit->getType().c_str());
 		}
     }
-	else{
+	/*else{
 		if(unit->getType() == UnitTypes::Terran_Command_Center){
 			Unitset visibleMinerals = Broodwar->getMinerals();
 			
 			//when base is created, check if it covers all accessible minerals
 			bool allVisible = true;
 			for(Unitset::iterator min = visibleMinerals.begin(); min != visibleMinerals.end(); ++min){
-				if(unit->getDistance(*min) > BASE_RADIUS){
-					allVisible = false;
-					break;
+				if(unit->getDistance(*min) < BASE_RADIUS){
+					//allVisible = false;
+					//break;
+					mineralsOutOfBaseRange--;
 				}
 			}
-
-			if(allVisible){
-				//todo: if mineral were explored but no more in sight, incentive should not go to zero
-				Broodwar->sendText("All minerals in range, resetting 'BuildCMD' task");
-				buildCommandCenter->setIncentive(0);
-			}
-			else{
-				Broodwar->sendText("There are still minerals NOT in range...");
-				buildCommandCenter->setIncentive(0);
-			}
-
 		}
-	}
+	}*/
 }
 
+//BWAPI calls this when a unit dies or otherwise removed from the game (i.e. a mined out mineral patch)
 void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit){
 	if (unit->getPlayer() == Broodwar->self()){
 		Broodwar->sendText("%s lost.", unit->getType().getName().c_str());
@@ -410,22 +356,51 @@ void ExampleAIModule::onSaveGame(std::string gameName){
   Broodwar << "The game was saved to \"" << gameName << "\"" << std::endl;
 }
 
+
+//this is being called at the same time as onUnitCreate...
 void ExampleAIModule::onUnitComplete(BWAPI::Unit unit) {
 	BWAPI::UnitType unitType = unit->getType();
-	//Broodwar->sendText("New unit [%s] created ", unitType.getName().c_str());
+	//Broodwar->sendText("New unit [%s] complete! ", unitType.getName().c_str());
 }
 
 
 void ExampleAIModule::updateTasks(){
 	updateBuildSupplyDepot();
-	updateExplore();
 	updateBuildBarracks();
-	
+	updateBuildCommandCenter();
+	updateExplore();
+}
+
+void ExampleAIModule::updateBuildCommandCenter(){
+
+	//for every discovered mineral, check if it is in range of a command center
+	for(Unitset::iterator mineral = discoveredMinerals.begin(); mineral != discoveredMinerals.end(); ++mineral){
+		bool reachable = false;
+		for(Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
+			if (cmd->getDistance(mineral->getPosition()) < BASE_RADIUS){
+				reachable = true;
+				break;
+			}
+		}
+		if (!reachable){
+			buildCommandCenter->setIncentive(0.8f);
+			Broodwar->drawTextScreen(20,75, "%cThere are minerals out of range", 
+				Text::White
+			);
+			return;
+		}
+	}
+
+	Broodwar->drawTextScreen(20,75, "%cAll minerals in range", 
+		Text::White
+	);
+	buildCommandCenter->setIncentive(0);
 
 }
 
+
 void ExampleAIModule::updateBuildBarracks(){
-	// Calculate the barracks around the command center
+	// Calculates the barracks around the command center
 	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); c++){
 		int barracksNumber = calculateBarracksFromCommandCenter(Broodwar->getUnit(c->getID()));
 		Broodwar->drawTextScreen(437,27,"Barracks near command center [%d]", barracksNumber);
@@ -434,7 +409,6 @@ void ExampleAIModule::updateBuildBarracks(){
 			createBarrackNearCommandCenter(Broodwar->getUnit(c->getID()));
 		}
 	}
-	//updateBuildCommandCenter is done when minerals is discovered...
 }
 
 void ExampleAIModule::updateBuildSupplyDepot(){
