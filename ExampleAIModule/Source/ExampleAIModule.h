@@ -20,8 +20,14 @@ class ExampleAIModule : public BWAPI::AIModule
 	Task* buildCommandCenter;
 	CommanderAgent* _commanderAgent;
 
+	//number of minerals found out of base range
+	//int mineralsOutOfBaseRange;
+
 	//set of command centers
 	Unitset commandCenters;
+
+	//set of minerals that were discovered
+	Unitset discoveredMinerals;
 
 	//map: taskType to list<task> for tasks that may have multiple instances with variable incentives
 	unordered_map<TaskType, vector<Task>*> allTasks;
@@ -59,6 +65,7 @@ public:
 	~ExampleAIModule();
 
 	void updateTasks();
+	void updateBuildCommandCenter();
 	void updateBuildBarracks();
 	void updateBuildSupplyDepot();
 	void updateExplore();
