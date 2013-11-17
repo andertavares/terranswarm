@@ -80,7 +80,7 @@ void ExampleAIModule::onStart() {
 		//tasks are grouped by taskType
 		//insert all TaskTypes into map; all Types will point to empty list
 		for(int tt = TrainMarine; tt != GuardBase; ++tt){
-			allTasks.insert(make_pair(static_cast<TaskType>(tt), new vector<Task>));
+			allTasks[static_cast<TaskType>(tt)] = new vector<Task>;
 		}
 
 		//TaskTypes with single task instance will point to list with the instance
@@ -98,7 +98,7 @@ void ExampleAIModule::onStart() {
 }
 
 void ExampleAIModule::onEnd(bool isWinner) {
-  // Called when the game ends
+	// Called when the game ends
 	if ( isWinner )  {
 		Broodwar->sendText("POWER OVERWHELMING!");
 	}
@@ -112,7 +112,8 @@ void ExampleAIModule::onFrame() {
 
 	// Display the game frame rate as text in the upper left area of the screen
 	Broodwar->drawTextScreen(200, 0,  "FPS: %d", Broodwar->getFPS() );
-	Broodwar->drawTextScreen(200, 20, "Average FPS: %f", Broodwar->getAverageFPS() );
+	Broodwar->drawTextScreen(200, 15, "Average FPS: %f", Broodwar->getAverageFPS() );
+	Broodwar->drawTextScreen(200, 30, "Frame count: %d", Broodwar->getFrameCount() );
 
 	// display some debug info...
 	Broodwar->drawTextScreen(20,0, "%cSupply Depot incentive = %.3f", 
@@ -139,14 +140,14 @@ void ExampleAIModule::onFrame() {
 		buildCommandCenter->getIncentive()
 	);
 
-	Broodwar->drawTextScreen(20,75, "%cBarracks no. / incentives:", 
+	Broodwar->drawTextScreen(20,75, "%c#Brk // Brk inc. // SCV inc:", 
 		Text::White 
 	);
 
 	int yOffset = 0;
 	for (Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
-		Broodwar->drawTextScreen(20,90 + yOffset, "%c%d // %.2f ", 
-			Text::White, builtBarracks[*cmd], buildBarracksIncentives[*cmd]
+		Broodwar->drawTextScreen(20,90 + yOffset, "%c%d // %.2f // %.3f", 
+			Text::White, builtBarracks[*cmd], buildBarracksIncentives[*cmd], trainSCVIncentives[*cmd]
 		);
 		yOffset += 15;
 	}
@@ -173,7 +174,7 @@ void ExampleAIModule::onFrame() {
 	if ( Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0 )
 		return;
 
-	_commanderAgent->onFrame();
+	_commanderAgent->onFrame(allTasks);
 
 	updateTasks();
 
@@ -377,7 +378,28 @@ void ExampleAIModule::updateTasks(){
 	updateBuildSupplyDepot();
 	updateBuildBarracks();
 	updateBuildCommandCenter();
+	updateTrainSCV();
 	updateExplore();
+}
+
+void ExampleAIModule::updateTrainSCV(){
+
+	//keeps track of SCV's per command center
+	//unordered_map<Unit, int> scvPerBase;
+	//unordered_map<Unit, int> mineralsPerBase;
+
+	for(Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){	
+		//scvPerBase[*cmd] = 0;
+		//mineralsPerBase[*cmd] = 0;
+		
+		Unitset mineralsAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsMineralField);
+		Unitset scvAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsWorker && Filter::IsOwned);
+
+		trainSCVIncentives[*cmd] = 1.0f - (scvAround.size() / (3.0f * mineralsAround.size()));
+
+		//Broodwar->sendText("Min: %d / SCV %d / SCV inc = %.3f", mineralsAround.size(), scvAround.size(), (scvAround.size() / (3.0f * mineralsAround.size())));
+
+	}
 }
 
 void ExampleAIModule::updateBuildCommandCenter(){
@@ -430,13 +452,13 @@ void ExampleAIModule::updateBuildBarracks(){
 
 void ExampleAIModule::updateBuildSupplyDepot(){
 	//updates the buildSupplyDepots incentive
-	int dif = (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed())/2; //bwapi returns 2*the actual difference...
-	if (dif < 0) dif = 0;
+	int dif = max(0, (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed())/2); //bwapi returns 2*the actual difference...
+	//if (dif < 0) dif = 0;
 	//incentive is maximum when difference is minimum
 	//buildSupplyDepot->setIncentive(pow(EULER,-dif));
 
 	//buildSupplyDepot->setIncentive(pow(EULER,-dif));
-	buildSupplyDepot->setIncentive(1.0 -(dif/10.0)); //linear 'decay'
+	buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
 
 	//finds a command center to draw a debug text
 	Unitset myUnits = Broodwar->self()->getUnits();

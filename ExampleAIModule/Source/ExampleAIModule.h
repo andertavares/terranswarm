@@ -32,6 +32,9 @@ class ExampleAIModule : public BWAPI::AIModule
 	//map: taskType to list<task> for tasks that may have multiple instances with variable incentives
 	unordered_map<TaskType, vector<Task>*> allTasks;
 
+	//stores the incentives to build SCVs per base
+	unordered_map<Unit, float> trainSCVIncentives;
+
 	//keeps track of the barracks that were scheduled to be built around a command center
 	unordered_map<Unit, int> scheduledBarracks;
 
@@ -72,6 +75,7 @@ public:
 	~ExampleAIModule();
 
 	void updateTasks();
+	void updateTrainSCV();
 	void updateBuildCommandCenter();
 	void updateBuildBarracks();
 	void updateBuildSupplyDepot();
