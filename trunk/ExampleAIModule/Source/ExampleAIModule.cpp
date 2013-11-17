@@ -137,9 +137,19 @@ void ExampleAIModule::onFrame() {
 	Broodwar->drawTextScreen(20,60, "%cBuild CMD center incentive: %.3f", 
 		Text::White, 
 		buildCommandCenter->getIncentive()
-		//mineralsOutOfBaseRange
-		//allTasks[BuildCommandCenter]. [0] getIncentive()
 	);
+
+	Broodwar->drawTextScreen(20,75, "%cBarracks no. / incentives:", 
+		Text::White 
+	);
+
+	int yOffset = 0;
+	for (Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
+		Broodwar->drawTextScreen(20,90 + yOffset, "%c%d // %.2f ", 
+			Text::White, builtBarracks[*cmd], buildBarracksIncentives[*cmd]
+		);
+		yOffset += 15;
+	}
 
 	//draws the command center 'radius'
 	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); ++c){
@@ -269,10 +279,9 @@ void ExampleAIModule::onNukeDetect(BWAPI::Position target)
 //BWAPI calls this when a unit becomes accessible
 void ExampleAIModule::onUnitDiscover(Unit unit){
 	
-
 	Broodwar->sendText("Unit [%s] discovered", unit->getType().getName().c_str());
 
-	if (unit->getType() == UnitTypes::Terran_Command_Center) {
+	if (unit->getPlayer() == Broodwar->self() && unit->getType() == UnitTypes::Terran_Command_Center) {
 		commandCenters.insert(unit);
 	}
 
@@ -359,7 +368,7 @@ void ExampleAIModule::onSaveGame(std::string gameName){
 
 //this is being called at the same time as onUnitCreate...
 void ExampleAIModule::onUnitComplete(BWAPI::Unit unit) {
-	BWAPI::UnitType unitType = unit->getType();
+	//BWAPI::UnitType unitType = unit->getType();
 	//Broodwar->sendText("New unit [%s] complete! ", unitType.getName().c_str());
 }
 
@@ -384,26 +393,34 @@ void ExampleAIModule::updateBuildCommandCenter(){
 		}
 		if (!reachable){
 			buildCommandCenter->setIncentive(0.8f);
-			Broodwar->drawTextScreen(20,75, "%cThere are minerals out of range", 
+			/*Broodwar->drawTextScreen(20,75, "%cThere are minerals out of range", 
 				Text::White
-			);
+			);*/
 			return;
 		}
 	}
 
-	Broodwar->drawTextScreen(20,75, "%cAll minerals in range", 
+	/*Broodwar->drawTextScreen(20,75, "%cAll minerals in range", 
 		Text::White
-	);
+	);*/
 	buildCommandCenter->setIncentive(0);
 
 }
 
 
 void ExampleAIModule::updateBuildBarracks(){
-	// Calculates the barracks around the command center
+	//calculates the number of barracks around the command center
 	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); c++){
 		int barracksNumber = calculateBarracksFromCommandCenter(Broodwar->getUnit(c->getID()));
-		Broodwar->drawTextScreen(437,27,"Barracks near command center [%d]", barracksNumber);
+
+		//updates the number of barracks around all command centers
+		builtBarracks[*c] = barracksNumber;
+		buildBarracksIncentives[*c] = 1.0f - barracksNumber/4.0f;
+		//Broodwar->sendText("emplacing %d // %f", barracksNumber, 1.0f - barracksNumber/4.0f);
+		//Broodwar->sendText("emplaced %d // %f", builtBarracks[*c], buildBarracksIncentives[*c]);
+		//TODO: call createBarrackNearCommandCenter using SwarmGAP rules
+
+		//Broodwar->drawTextScreen(437,27,"Barracks near command center [%d]", barracksNumber);
 		if(barracksNumber < 4){
 			//Broodwar->sendText("Creating new barrack");
 			createBarrackNearCommandCenter(Broodwar->getUnit(c->getID()));

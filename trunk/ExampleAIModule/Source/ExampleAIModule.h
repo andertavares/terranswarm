@@ -35,6 +35,13 @@ class ExampleAIModule : public BWAPI::AIModule
 	//keeps track of the barracks that were scheduled to be built around a command center
 	unordered_map<Unit, int> scheduledBarracks;
 
+	//keeps track of the barracks built around the command centers
+	unordered_map<Unit, int> builtBarracks;
+
+	//incentive to build barracks around the command centers
+	unordered_map<Unit, float> buildBarracksIncentives;
+
+
 	//is a supply depot scheduled to be built?
 	bool scheduledSupplyDepots;
 	
