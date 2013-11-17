@@ -1,25 +1,40 @@
 #include "CommanderAgent.h"
 #include <BWAPI.h>
 #include <iostream>
+#include <unordered_map>
+#include <vector>
+#include "Task.h"
 
 using namespace BWAPI;
 using namespace Filter;
 
-CommanderAgent::CommanderAgent(void)
-	//: _barracks(0),
-	//_commandCenters(0)
-{
+CommanderAgent::CommanderAgent(void) : latencyFrames(10){
 	_barracks.clear();
 	_commandCenters.clear();
 }
 
 
-CommanderAgent::~CommanderAgent(void)
-{
+CommanderAgent::~CommanderAgent(void){
+
 }
 
-void CommanderAgent::onFrame(void)
-{
+void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist) {
+
+	//only acts every 'X' frames (X = latencyFrames)
+	if (Broodwar->getFrameCount() % latencyFrames != 0){
+		return;
+	}
+
+	//also does nothing if there is no supply or minerals available
+	int supplyDiff = max(0, (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed())/2);
+	if (supplyDiff == 0 || Broodwar->self()->minerals() < 50) return;
+
+	//builds a list of feasible tasks
+	unordered_map<Task, float> taskProbabilities;
+
+	
+
+
 	// TODO : Use probabilistic approach to this 
 	Unitset myUnits = Broodwar->self()->getUnits();
 	for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u ) {
@@ -42,7 +57,7 @@ void CommanderAgent::onFrame(void)
 					CommanderAgent::createSupply(Broodwar->getUnit(u->getID()));
 				}			
 			}
-		} //clousure: 
+		} //closure
 	}
 }
 
