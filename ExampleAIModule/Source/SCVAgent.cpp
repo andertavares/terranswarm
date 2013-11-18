@@ -1,17 +1,16 @@
 #include "SCVAgent.h"
 #include <BWAPI.h>
 #include <iostream>
-#include <list>
-#include <unordered_map>
-#include "Task.h"
 
 using namespace BWAPI;
 using namespace std;
 
 SCVAgent::SCVAgent(BWAPI::Unit scv){
+	srand ( time(NULL) );
 	gameUnit = scv;
 	unitId = gameUnit->getID();
-	Broodwar->sendText("SVC id [%d]", gameUnit->getID());
+	lastPosition = Position(0,0);
+	lastFrameCount = Broodwar->getFrameCount();
 }
 
 
@@ -32,7 +31,7 @@ void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 		list<Task>* taskList = iter->second;
 
 		// Task SCV can do = BuildSupplyDepot, BuildBarracks, BuildCommandCenter, Fix, GatherMinerals, Explore
-		// Task from Task.h
+		// TaskType from Task.h
 		if(taskType == BuildSupplyDepot){
 			// Avaliate incentive
 			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
@@ -54,7 +53,8 @@ void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 			}
 		}
 		else if(taskType == GatherMinerals){
-		
+			// If we are not doing anything
+			// Go gather minerals
 		}
 		/*
 		* TODO: See if this method is needed.
@@ -70,17 +70,44 @@ void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 			continue;
 		}
 	}
+
+	
+}
+
+bool SCVAgent::goScout(){
+
+	Position myPos = gameUnit->getPosition();
+	Broodwar->drawLineMap(myPos, lastPosition, Colors::Blue);
+
+	double square_dist = pow((lastPosition.x- myPos.x), 2.0) + pow((lastPosition.y - myPos.y), 2.0);
+	if (lastPosition.x != 0 && lastPosition.y != 0 && square_dist >= pow(3*TILE_SIZE, 2.0)){
+		gameUnit->move(lastPosition);
+		return false;
+	}
+
+	int currentFrameCount = Broodwar->getFrameCount();
+	if ( currentFrameCount >= lastFrameCount + 20){
+		lastFrameCount = currentFrameCount;
+		Position pos = getPositionToScout();
+		Broodwar << "Agent [" << unitId << "] Moving to :" << pos << std::endl;
+
+		gameUnit->move(pos);
+		return true;
+	}
+
+	return false;
 }
 
 Position SCVAgent::getPositionToScout(){
 	Position returnPosition;
 	Unit unit = ((Unit) gameUnit);
 
-	int maxDist = 25;
+	int radiousInPixels = 120*TILE_SIZE;
+	std::deque<Position> positionListInRadious;
+	std::deque<Position> positionListInMap;
 	Position myPos = unit->getPosition();
 	Region myRegion = Broodwar->getRegion( unit->getTilePosition() );
 
-	Broodwar->drawCircleMap(myPos.x, myPos.y, maxDist*TILE_SIZE,Colors::Yellow,false);
 	TilePosition seedTilePos = TilePosition(myPos);
 	
 	int x      = seedTilePos.x;
@@ -94,9 +121,23 @@ Position SCVAgent::getPositionToScout(){
 	while (length < Broodwar->mapWidth()) {
 		returnPosition = Position(x*TILE_SIZE, y*TILE_SIZE);
 		
-		if (x >= 0 && x < Broodwar->mapWidth() && y >= 0 && y < Broodwar->mapHeight() 
-			&& myRegion == Broodwar->getRegionAt(x,y) && Broodwar->hasPath(myPos,returnPosition) ) {
-				if (!Broodwar->isExplored(x,y)) return returnPosition;
+		if (x >= 0 && x < Broodwar->mapWidth() 
+			&& y >= 0 && y < Broodwar->mapHeight() 
+			&& Broodwar->hasPath(myPos,returnPosition) 
+			&& lastPosition.x != returnPosition.x 
+			&& lastPosition.y != returnPosition.y
+			&& !Broodwar->isExplored(x,y)
+			&& Broodwar->isWalkable(x,y)) {
+				double square_dist = pow((x- myPos.x), 2.0) + pow((y - myPos.y), 2.0);
+				if (square_dist < pow(radiousInPixels, 2.0)){
+
+					positionListInRadious.push_back(returnPosition);
+					//lastPosition = returnPosition;
+					//return returnPosition;
+				}
+				else{
+					positionListInMap.push_back(returnPosition);
+				}
 		}
 
 		//otherwise, move to another position
@@ -125,5 +166,22 @@ Position SCVAgent::getPositionToScout(){
 		//Spiral out. Keep going.
 	}
 
+	if(positionListInRadious.size() > 0){
+		int randomIndex = rand() % positionListInRadious.size();
+		returnPosition = positionListInRadious[randomIndex];
+
+		Broodwar << "positionList [" << positionListInRadious.size() << "]" << std::endl;
+		Broodwar << "Agent [" << unitId << "] returning random option in Radious:" << returnPosition << std::endl;
+		lastPosition = returnPosition;
+	}
+	else if(positionListInMap.size() > 0){
+		int randomIndex = rand() % positionListInMap.size();
+		returnPosition = positionListInMap[randomIndex];
+
+		Broodwar << "positionListInMap [" << positionListInMap.size() << "]" << std::endl;
+		Broodwar << "Agent [" << unitId << "] returning random option in Map :" << returnPosition << std::endl;
+		lastPosition = returnPosition;
+	}
+	
 	return returnPosition;
 }

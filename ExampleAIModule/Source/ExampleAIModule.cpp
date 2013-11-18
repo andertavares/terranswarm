@@ -175,6 +175,16 @@ void ExampleAIModule::onFrame() {
 		}
 	}
 
+	// Draw bullets
+	Bulletset bullets = Broodwar->getBullets();
+	for(Bulletset::iterator i = bullets.begin(); i != bullets.end(); ++i){
+		Position p = i->getPosition();
+		double velocityX = i->getVelocityX();
+		double velocityY = i->getVelocityY();
+		Broodwar->drawLineMap(p, p + Position((int)velocityX, (int)velocityY), i->getPlayer() == Broodwar->self() ? Colors::Green : Colors::Red);
+		//Broodwar->drawTextMap(p, "%c%s", i->getPlayer() == Broodwar->self() ? Text::Green : Text::Red, i->getType().c_str());
+	}
+
 	// Prevent spamming by only running our onFrame once every number of latency frames.
 	// Latency frames are the number of frames before commands are processed.
 	if ( Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0 )
@@ -192,6 +202,10 @@ void ExampleAIModule::onFrame() {
 		int unitId =  iter->first;
 		SCVAgent* agent = iter->second;
 		Unit u = agent->getUnit();
+
+		if(unitId == 4){
+			agent->goScout();
+		}
 
 		Broodwar->drawTextMap(u->getPosition().x, u->getPosition().y, "agentId[%d]", unitId);
 
@@ -333,9 +347,7 @@ void ExampleAIModule::onUnitDiscover(Unit unit){
 		// Add SCV to map
 		SCVAgent *agent = new SCVAgent(unit);
 		scvMap[unit->getID()] = agent;
-		//(*scvMap)[unit->getID()] = agent;
-		//Broodwar->sendText("scvmap [%d]", scvMap->size());
-		// TODO Why scvMap here shows a different size than the onframe method?
+		//(*scvMap)[unit->getID()] = agent; When SCVmap is a pointer
 	}
 
 	//new mineral discovered, is it at the range of a command center?
@@ -394,7 +406,7 @@ void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit){
 	if (unit->getPlayer() == Broodwar->self()){
 		Broodwar->sendText("%s lost.", unit->getType().getName().c_str());
 		if(unit->getType() == UnitTypes::Terran_SCV){
-			// Delete this svc from the map
+			// Delete this SCV from the map
 			scvMap.erase(unit->getID()); 
 		}
 	}

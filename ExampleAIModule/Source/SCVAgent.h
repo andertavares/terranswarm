@@ -1,8 +1,12 @@
 //#pragma once
 #include <BWAPI.h>
-#include <list>
+#include <deque>
 #include <unordered_map>
 #include "Task.h"
+#include <iostream>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h> 
 
 using namespace std;
 
@@ -15,7 +19,13 @@ public:
 	bool evaluateIncentive();
 	BWAPI::Unit SCVAgent::getUnit();
 	BWAPI::Position getPositionToScout();
+	bool goScout();
 	BWAPI::Unit gameUnit;
 	int unitId;
+	int lastFrameCount;
+
+private:
+	BWAPI::Position lastPosition;
+	
 };
 
