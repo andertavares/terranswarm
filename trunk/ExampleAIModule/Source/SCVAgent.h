@@ -6,17 +6,16 @@
 
 using namespace std;
 
-class MarineAgent {
-
+class SCVAgent {
+	
 public:
-	MarineAgent(BWAPI::Unit* u);
-	~MarineAgent(void);
+	SCVAgent(BWAPI::Unit scv);
+	~SCVAgent(void);
 	void onTask(unordered_map<TaskType, list<Task>*> taskMap);
 	bool evaluateIncentive();
+	BWAPI::Unit SCVAgent::getUnit();
 	BWAPI::Position getPositionToScout();
-	BWAPI::Unit* gameUnit;
-
-private:
-	
+	BWAPI::Unit gameUnit;
+	int unitId;
 };
 

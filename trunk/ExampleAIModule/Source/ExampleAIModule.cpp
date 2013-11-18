@@ -2,6 +2,7 @@
 #include <cmath>
 #include "ExampleAIModule.h"
 #include "Task.h"
+#include "CommanderAgent.h"
 
 #define EULER 2.71828182845904523536
 #define BASE_RADIUS 20 * TILE_SIZE
@@ -56,7 +57,7 @@ void ExampleAIModule::onStart() {
 	else {// if this is not a replay
   
 		Broodwar->sendText("show me the money");
-		//Broodwar->sendText("operation cwal");
+		Broodwar->sendText("operation cwal");
 
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
 		// If you wish to deal with multiple enemies then you must use enemies().
@@ -95,6 +96,7 @@ void ExampleAIModule::onStart() {
 
 	// Create the main agents
 	_commanderAgent = new CommanderAgent();
+	//scvMap = new unordered_map<int, SCVAgent*>;
 }
 
 void ExampleAIModule::onEnd(bool isWinner) {
@@ -152,6 +154,10 @@ void ExampleAIModule::onFrame() {
 		yOffset += 15;
 	}
 
+	Broodwar->drawTextScreen(20, 90 + yOffset, "Number of SCV in map [%d]", 
+		scvMap.size()
+	);
+
 	//draws the command center 'radius'
 	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); ++c){
 		Position commandCenterPos = c->getPosition();
@@ -178,8 +184,46 @@ void ExampleAIModule::onFrame() {
 
 	updateTasks();
 
+	// Iterate through all the SCV on the map
+	int scvCounter = 0;
+	unordered_map<int, SCVAgent*>::iterator it = scvMap.begin();
+	for(unordered_map<int, SCVAgent*>::iterator iter = scvMap.begin(); iter != scvMap.end(); ++iter){
+		scvCounter++;
+		int unitId =  iter->first;
+		SCVAgent* agent = iter->second;
+		Unit u = agent->getUnit();
+
+		Broodwar->drawTextMap(u->getPosition().x, u->getPosition().y, "agentId[%d]", unitId);
+
+		if ( u->isLockedDown() || u->isMaelstrommed() || u->isStasised() )
+			continue;
+		
+		if ( u->isIdle() ) {
+			// Order workers carrying a resource to return them to the center,
+			// otherwise find a mineral patch to harvest.
+			if ( u->isCarryingGas() || u->isCarryingMinerals() ) {
+				u->returnCargo();
+			}
+			else if ( !u->getPowerUp() ) { // The worker cannot harvest anything if it
+											 // is carrying a powerup such as a flag
+					// Harvest from the nearest mineral patch or gas refinery
+				if ( !u->gather( u->getClosestUnit( IsMineralField || IsRefinery )) ) {
+					// If the call fails, then print the last error message
+					Broodwar << Broodwar->getLastError() << std::endl;
+				}
+
+			} // closure: has no powerup
+		} // closure: if idle
+		
+	}
+	
+	/*Broodwar->drawTextScreen(20, 90 + yOffset, "Number of SCV in map [%d]", 
+		Text::White, scvMap->size()
+	);*/
+
+	
 	// Iterate through all the units that we own
-	Unitset myUnits = Broodwar->self()->getUnits();
+	/*Unitset myUnits = Broodwar->self()->getUnits();
 	for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u ) {
 		// Ignore the unit if it no longer exists
 		// Make sure to include this block when handling any Unit pointer!
@@ -197,18 +241,18 @@ void ExampleAIModule::onFrame() {
 		// Ignore the unit if it is incomplete or busy constructing
 		if ( !u->isCompleted() || u->isConstructing() )
 			continue;
-
+		
 
 		// Finally make the unit do some stuff
 		//code to do distance testing
-		/*if(u->getType() == UnitTypes::Terran_Marine){
-			Unit brk = u->getClosestUnit();
-			
-			Broodwar->drawLineMap(u->getPosition(), brk->getPosition(), Color(Colors::Cyan));
-			Broodwar->drawTextScreen(0, 120,"Distance (m,b) = %d",u->getDistance(brk));
-		}
-		*/
-
+		//if(u->getType() == UnitTypes::Terran_Marine){
+		//	Unit brk = u->getClosestUnit();
+		//	
+		//	Broodwar->drawLineMap(u->getPosition(), brk->getPosition(), Color(Colors::Cyan));
+		//	Broodwar->drawTextScreen(0, 120,"Distance (m,b) = %d",u->getDistance(brk));
+		//}
+		
+		
 		// If the unit is a worker unit
 		if ( u->getType().isWorker() ) {
 			// if our worker is idle
@@ -231,7 +275,7 @@ void ExampleAIModule::onFrame() {
 		}
 		
 	} // closure: unit iterator
-	
+	*/
 
 }
 
@@ -280,10 +324,18 @@ void ExampleAIModule::onNukeDetect(BWAPI::Position target)
 //BWAPI calls this when a unit becomes accessible
 void ExampleAIModule::onUnitDiscover(Unit unit){
 	
-	Broodwar->sendText("Unit [%s] discovered", unit->getType().getName().c_str());
+	Broodwar->sendText("Unit [%s] discovered ID [%d]", unit->getType().getName().c_str(), unit->getID());
 
 	if (unit->getPlayer() == Broodwar->self() && unit->getType() == UnitTypes::Terran_Command_Center) {
 		commandCenters.insert(unit);
+	}
+	else if(unit->getPlayer() == Broodwar->self() && unit->getType() == UnitTypes::Terran_SCV){
+		// Add SCV to map
+		SCVAgent *agent = new SCVAgent(unit);
+		scvMap[unit->getID()] = agent;
+		//(*scvMap)[unit->getID()] = agent;
+		//Broodwar->sendText("scvmap [%d]", scvMap->size());
+		// TODO Why scvMap here shows a different size than the onframe method?
 	}
 
 	//new mineral discovered, is it at the range of a command center?
@@ -341,6 +393,10 @@ void ExampleAIModule::onUnitCreate(BWAPI::Unit unit) {
 void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit){
 	if (unit->getPlayer() == Broodwar->self()){
 		Broodwar->sendText("%s lost.", unit->getType().getName().c_str());
+		if(unit->getType() == UnitTypes::Terran_SCV){
+			// Delete this svc from the map
+			scvMap.erase(unit->getID()); 
+		}
 	}
 	else {
 		Broodwar->sendText("%s shot down.", unit->getType().getName().c_str());
