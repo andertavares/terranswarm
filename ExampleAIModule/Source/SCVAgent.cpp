@@ -1,4 +1,4 @@
-#include "MarineAgent.h"
+#include "SCVAgent.h"
 #include <BWAPI.h>
 #include <iostream>
 #include <list>
@@ -8,36 +8,53 @@
 using namespace BWAPI;
 using namespace std;
 
-MarineAgent::MarineAgent(Unit* u){
-	gameUnit = u;
+SCVAgent::SCVAgent(BWAPI::Unit scv){
+	gameUnit = scv;
+	unitId = gameUnit->getID();
+	Broodwar->sendText("SVC id [%d]", gameUnit->getID());
 }
 
-MarineAgent::~MarineAgent(void){
+
+SCVAgent::~SCVAgent(void){
+
 }
 
-void MarineAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
+Unit SCVAgent::getUnit(){
+	//Broodwar << "Returning id " << unitId << std::endl;
+	return gameUnit;
+}
+
+void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 
 	unordered_map<TaskType, list<Task>*>::iterator it = taskMap.begin();
 	for(unordered_map<TaskType, list<Task>*>::iterator iter = taskMap.begin(); iter != taskMap.end(); ++iter){
 		TaskType taskType =  iter->first;
 		list<Task>* taskList = iter->second;
 
-		// Task Marine can do = Explore, Attack, GuardBase
+		// Task SCV can do = BuildSupplyDepot, BuildBarracks, BuildCommandCenter, Fix, GatherMinerals, Explore
 		// Task from Task.h
-		if(taskType == Explore){
-			// Calculate how far this agent is from the near non explored area
+		if(taskType == BuildSupplyDepot){
 			// Avaliate incentive
 			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 				
 			}
 		}
-		else if(taskType == Attack){
-			// Calculate how and who is beign attacked
-			// Calculate how far this agent is from the enemy base
+		else if(taskType == BuildBarracks){
 			// Avaliate incentive
 			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 				
 			}
+		}
+		else if(taskType == BuildCommandCenter){
+			// Calculate how far is the new command center
+			// Calculate how many minerals are near the command center
+			// Avaliate incentive
+			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+				
+			}
+		}
+		else if(taskType == GatherMinerals){
+		
 		}
 		/*
 		* TODO: See if this method is needed.
@@ -55,7 +72,7 @@ void MarineAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 	}
 }
 
-Position MarineAgent::getPositionToScout(){
+Position SCVAgent::getPositionToScout(){
 	Position returnPosition;
 	Unit unit = ((Unit) gameUnit);
 

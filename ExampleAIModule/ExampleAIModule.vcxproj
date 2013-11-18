@@ -88,18 +88,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="SCVAgent.cpp" />
     <ClCompile Include="Source\CommanderAgent.cpp" />
     <ClCompile Include="Source\Dll.cpp" />
     <ClCompile Include="Source\ExampleAIModule.cpp" />
     <ClCompile Include="Source\MarineAgent.cpp" />
+    <ClCompile Include="Source\SCVAgent.cpp" />
     <ClCompile Include="Source\Task.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SCVAgent.h" />
     <ClInclude Include="Source\CommanderAgent.h" />
     <ClInclude Include="Source\ExampleAIModule.h" />
     <ClInclude Include="Source\MarineAgent.h" />
+    <ClInclude Include="Source\SCVAgent.h" />
     <ClInclude Include="Source\Task.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

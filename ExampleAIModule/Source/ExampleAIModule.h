@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include "Task.h"
 #include "CommanderAgent.h"
+#include <list>
+#include "SCVAgent.h"
 
 using namespace std;
 using namespace BWAPI;
@@ -47,7 +49,9 @@ class ExampleAIModule : public BWAPI::AIModule
 
 	//is a supply depot scheduled to be built?
 	bool scheduledSupplyDepots;
-	
+
+	// Map of SVCs agents
+	unordered_map<int, SCVAgent*> scvMap;
 
 public:
 	// Virtual functions for callbacks, leave these as they are.
