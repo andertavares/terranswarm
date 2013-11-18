@@ -3,16 +3,50 @@
 #include <iostream>
 #include <list>
 #include <unordered_map>
+#include <climits>
 #include "Task.h"
+#include "PositionTask.h"
 
 using namespace BWAPI;
 using namespace std;
 
-MarineAgent::MarineAgent(Unit* u){
-	gameUnit = u;
+MarineAgent::MarineAgent(Unit u) : gameUnit(u), engaged(false){
+	
 }
 
 MarineAgent::~MarineAgent(void){
+}
+
+void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasks){
+	//if is already engaged in task, does nothing
+	if(! gameUnit->isIdle()) return;
+
+	//decides greedily where to attack (chooses the closest point)
+	int minDist = INT_MAX;
+	Task* best = NULL;
+	for(auto task = tasks[Attack]->begin(); task != tasks[Attack]->end(); task++){
+		//task->
+		//PositionTask* atk = static_cast<PositionTask* >( &(*task)) ;
+
+		if(gameUnit->getDistance(task->getPosition()) < minDist){
+			minDist = gameUnit->getDistance(task->getPosition());
+			best = &(*task);
+		}
+		else{
+			//Broodwar->sendText("TGT dist: %d, min: %d", gameUnit->getDistance(atk->getPosition()), minDist);
+		}
+		
+	}
+	
+	if (best != NULL){
+		gameUnit->attack(best->getPosition());
+		//Broodwar->sendText("%d attacking %d,%d!", gameUnit->getID(), best->getPosition().x, best->getPosition().y);
+	}
+	else{
+		//Broodwar->sendText("Best is null.");
+	}
+
+	
 }
 
 void MarineAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){

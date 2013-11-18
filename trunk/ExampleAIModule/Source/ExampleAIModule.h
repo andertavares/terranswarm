@@ -2,9 +2,10 @@
 #include <BWAPI.h>
 #include <vector>
 #include <unordered_map>
+#include <list>
 #include "Task.h"
 #include "CommanderAgent.h"
-#include <list>
+#include "MarineAgent.h"
 #include "SCVAgent.h"
 
 using namespace std;
@@ -53,6 +54,10 @@ class ExampleAIModule : public BWAPI::AIModule
 	// Map of SVCs agents
 	unordered_map<int, SCVAgent*> scvMap;
 
+	unordered_map<int, MarineAgent*> marines; //stores the marines owned
+
+	void _drawStats(); //writes information texts on screen and draws some useful figures
+
 public:
 	// Virtual functions for callbacks, leave these as they are.
 	virtual void onStart();
@@ -79,6 +84,7 @@ public:
 	~ExampleAIModule();
 
 	void updateTasks();
+	void updateAttack();
 	void updateTrainSCV();
 	void updateBuildCommandCenter();
 	void updateBuildBarracks();
