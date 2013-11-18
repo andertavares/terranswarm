@@ -2,6 +2,7 @@
 #include <cmath>
 #include "ExampleAIModule.h"
 #include "Task.h"
+#include "PositionTask.h"
 #include "CommanderAgent.h"
 
 #define EULER 2.71828182845904523536
@@ -112,68 +113,7 @@ void ExampleAIModule::onFrame() {
 	if ( Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self() )
 		return;
 
-	// Display the game frame rate as text in the upper left area of the screen
-	Broodwar->drawTextScreen(200, 0,  "FPS: %d", Broodwar->getFPS() );
-	Broodwar->drawTextScreen(200, 15, "Average FPS: %f", Broodwar->getAverageFPS() );
-	Broodwar->drawTextScreen(200, 30, "Frame count: %d", Broodwar->getFrameCount() );
-
-	// display some debug info...
-	Broodwar->drawTextScreen(20,0, "%cSupply Depot incentive = %.3f", 
-		Text::White, 
-		buildSupplyDepot->getIncentive()
-	); 
-	Broodwar->drawTextScreen(20,15, "%cExplore incentive = %.3f", 
-		Text::White, 
-		explore->getIncentive()
-	);
-
-	Broodwar->drawTextScreen(20,30, "%cTrain marine incentive = %.3f", 
-		Text::White, 
-		trainMarine->getIncentive()
-	);
-
-	Broodwar->drawTextScreen(20,45, "%cGather minerals incentive = %.3f", 
-		Text::White, 
-		gatherMinerals->getIncentive()
-	);
-
-	Broodwar->drawTextScreen(20,60, "%cBuild CMD center incentive: %.3f", 
-		Text::White, 
-		buildCommandCenter->getIncentive()
-	);
-
-	Broodwar->drawTextScreen(20,75, "%c#Brk // Brk inc. // SCV inc:", 
-		Text::White 
-	);
-
-	int yOffset = 0;
-	for (Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
-		Broodwar->drawTextScreen(20,90 + yOffset, "%c%d // %.2f // %.3f", 
-			Text::White, builtBarracks[*cmd], buildBarracksIncentives[*cmd], trainSCVIncentives[*cmd]
-		);
-		yOffset += 15;
-	}
-
-	Broodwar->drawTextScreen(20, 90 + yOffset, "Number of SCV in map [%d]", 
-		scvMap.size()
-	);
-
-	//draws the command center 'radius'
-	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); ++c){
-		Position commandCenterPos = c->getPosition();
-		//Unitset units = Broodwar->getUnitsInRadius(commandCenterPos, BASE_RADIUS*TILE_SIZE);
-		Broodwar->drawCircleMap(commandCenterPos, BASE_RADIUS, Color(Colors::Blue));
-	}
-
-	//draws a circle around the minerals
-	Unitset minerals = Broodwar->getMinerals();
-	//Broodwar->sendText("#minerals: %d", minerals.size());
-	for (Unitset::iterator m = minerals.begin(); m != minerals.end(); ++m){
-		if (m->getType().isMineralField()) {
-			//Broodwar->sendText( "Drawing circle...");
-			Broodwar->drawCircleMap(m->getPosition(), m->getType().dimensionLeft(),Color(Colors::Blue));
-		}
-	}
+	_drawStats();
 
 	// Draw bullets
 	Bulletset bullets = Broodwar->getBullets();
@@ -190,9 +130,14 @@ void ExampleAIModule::onFrame() {
 	if ( Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0 )
 		return;
 
+	updateTasks();
+
 	_commanderAgent->onFrame(allTasks);
 
-	updateTasks();
+	//iterates through all marines
+	for(auto marine = marines.begin(); marine != marines.end(); marine++){
+		marine->second->onFrame(allTasks);
+	}
 
 	// Iterate through all the SCV on the map
 	int scvCounter = 0;
@@ -207,7 +152,7 @@ void ExampleAIModule::onFrame() {
 			agent->goScout();
 		}
 
-		Broodwar->drawTextMap(u->getPosition().x, u->getPosition().y, "agentId[%d]", unitId);
+		//Broodwar->drawTextMap(u->getPosition().x, u->getPosition().y, "agentId[%d]", unitId);
 
 		if ( u->isLockedDown() || u->isMaelstrommed() || u->isStasised() )
 			continue;
@@ -349,6 +294,39 @@ void ExampleAIModule::onUnitDiscover(Unit unit){
 		scvMap[unit->getID()] = agent;
 		//(*scvMap)[unit->getID()] = agent; When SCVmap is a pointer
 	}
+	else if(unit->getPlayer() == Broodwar->self() && unit->getType() == UnitTypes::Terran_Marine){
+		// Add marine to HashTable
+		marines[unit->getID()] = new MarineAgent(unit);
+	}
+
+	//if unit is enemy, adds it to 'attack' task list, if it isn't in range of an attack task
+	//it seems that it works only for buildings... must check for mobile enemy units
+	if(unit->getPlayer() != Broodwar->self() && unit->getPlayer() != Broodwar->neutral()){ 
+		bool inRange = false;
+
+		//tests if unit is already included in the area of another 'attack' task
+		for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
+			//task->
+
+			//PositionTask* atk = static_cast<PositionTask* >( &(*task)) ; 
+			if(unit->getDistance(task->getPosition()) < 6*TILE_SIZE){
+				inRange = true;
+				break;
+			}
+		}
+
+		if(! inRange){
+			Task* atk = new Task(Attack, .8f, unit->getPosition());
+			allTasks[Attack]->push_back(*atk);
+			Broodwar->sendText("Attack task added, pos=%d,%d // %d,%d ", unit->getPosition().x, unit->getPosition().y, atk->getPosition().x, atk->getPosition().y);
+
+			for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
+				//PositionTask* atk = static_cast<PositionTask* >( &(*task)) ; 
+				Broodwar->sendText("pos=%d,%d", task->getPosition().x, task->getPosition().y);
+			}
+		}
+
+	}
 
 	//new mineral discovered, is it at the range of a command center?
 	//framecount testing prevents checking on unacessible minerals at game begin
@@ -363,12 +341,18 @@ void ExampleAIModule::onUnitEvade(BWAPI::Unit unit){
 	//Broodwar->sendText("Unit [%s] evaded (became unaccessible)", unit->getType().getName().c_str());
 }
 
-//BWAPI calls this when a unit becomes visible. If Complete Map Information is disabled, this also means that the unit has just become accessible
+/*
+ * BWAPI calls this when a unit becomes visible. If Complete Map Information is disabled,
+ * this also means that the unit has just become accessible
+ */
 void ExampleAIModule::onUnitShow(BWAPI::Unit unit){
 	//Broodwar->sendText("Unit [%s] became visible", unit->getType().getName().c_str());
 }
 
-//BWAPI calls this right before a unit becomes invisible. If Complete Map Information is disabled, this also means that the unit is about to become inaccessible
+/* 
+ * BWAPI calls this right before a unit becomes invisible. If Complete Map Information is disabled, 
+ * this also means that the unit is about to become inaccessible
+ */
 void ExampleAIModule::onUnitHide(BWAPI::Unit unit){
 	//Broodwar->sendText("Unit [%s] not visible anymore", unit->getType().getName().c_str());
 }
@@ -409,6 +393,9 @@ void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit){
 			// Delete this SCV from the map
 			scvMap.erase(unit->getID()); 
 		}
+		else if(unit->getType() == UnitTypes::Terran_Marine){
+			marines.erase(unit->getID());
+		}
 	}
 	else {
 		Broodwar->sendText("%s shot down.", unit->getType().getName().c_str());
@@ -443,6 +430,7 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit) {
 
 
 void ExampleAIModule::updateTasks(){
+	updateAttack();
 	updateBuildSupplyDepot();
 	updateBuildBarracks();
 	updateBuildCommandCenter();
@@ -450,22 +438,80 @@ void ExampleAIModule::updateTasks(){
 	updateExplore();
 }
 
+/**
+  * Cleans up attack tasks whose targets are not in position anymore
+  * AttackTasks are added at onUnitDiscover()
+  */
+void ExampleAIModule::updateAttack(){
+	//traverse the task list to check if positions are visible and still have enemies
+	//TODO: this isn't working...
+	vector<Task> toDelete;
+	for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
+
+		if(Broodwar->isVisible(task->getPosition().x / TILE_SIZE , task->getPosition().y / TILE_SIZE)){
+			Unitset inRange = Broodwar->getUnitsInRadius(task->getPosition(), 6*TILE_SIZE, Filter::IsEnemy);
+			//Broodwar->sendText("%d in range of attack task.", inRange.size());
+			if (inRange.size() == 0) {
+				//allTasks[Attack]->erase(task); cannot do this, or ERROR HAPPENS
+				Broodwar->sendText("Attack task removed");
+				toDelete.push_back(*task);
+			}
+
+		}
+	}
+
+	/*the code below doesn't work to calculate the diff between two vectors
+	//toDelete -= *(allTasks[Attack]);
+	vector<Task> alias = *allTasks[Attack];
+	std::sort(toDelete.begin(), toDelete.end());
+	std::sort(alias.begin(), alias.end());
+
+	std::vector<Task>* difference = new std::vector<Task>();
+	std::set_difference(
+		alias.begin(), alias.end(),
+		toDelete.begin(), toDelete.end(),
+		std::back_inserter( *difference )
+	);
+
+	allTasks[Attack] = difference;
+	delete &alias;
+	//alias -= toDelete;
+	*/
+
+	//obtains a list with all enemies from all players
+	/*
+	Playerset foes = Broodwar->enemies();
+	Unitset enemyUnits;// = new Unitset();// Broodwar->enemy()->getUnits();
+	enemyUnits.clear();
+
+	for(auto foe = foes.begin(); foe != foes.end(); ++foe){
+		enemyUnits += foe->getUnits();
+	}
+
+	Broodwar->drawTextScreen(250,45, "#foes: %d", enemyUnits.size());
+
+	//clears the old attack task list
+	//allTasks[Attack]->clear();
+
+	//adds a task with a position for every enemy unit in the task list
+	for(auto foeUnit = enemyUnits.begin(); foeUnit != enemyUnits.end(); ++foeUnit) {
+		PositionTask* atk = new PositionTask(Attack, .8f, foeUnit->getPosition());
+		allTasks[Attack]->push_back(*atk);
+	}
+
+	*/
+
+	
+}
+
 void ExampleAIModule::updateTrainSCV(){
 
-	//keeps track of SCV's per command center
-	//unordered_map<Unit, int> scvPerBase;
-	//unordered_map<Unit, int> mineralsPerBase;
-
 	for(Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){	
-		//scvPerBase[*cmd] = 0;
-		//mineralsPerBase[*cmd] = 0;
 		
 		Unitset mineralsAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsMineralField);
 		Unitset scvAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsWorker && Filter::IsOwned);
 
 		trainSCVIncentives[*cmd] = 1.0f - (scvAround.size() / (3.0f * mineralsAround.size()));
-
-		//Broodwar->sendText("Min: %d / SCV %d / SCV inc = %.3f", mineralsAround.size(), scvAround.size(), (scvAround.size() / (3.0f * mineralsAround.size())));
 
 	}
 }
@@ -483,16 +529,10 @@ void ExampleAIModule::updateBuildCommandCenter(){
 		}
 		if (!reachable){
 			buildCommandCenter->setIncentive(0.8f);
-			/*Broodwar->drawTextScreen(20,75, "%cThere are minerals out of range", 
-				Text::White
-			);*/
 			return;
 		}
 	}
 
-	/*Broodwar->drawTextScreen(20,75, "%cAll minerals in range", 
-		Text::White
-	);*/
 	buildCommandCenter->setIncentive(0);
 
 }
@@ -619,4 +659,87 @@ void ExampleAIModule::createBarrackNearCommandCenter(Unit u) {
 				
 			} // closure: supplyBuilder is valid
 	} // closure: insufficient supply
+}
+
+
+void ExampleAIModule::_drawStats(){
+	// Display the game frame rate as text in the upper left area of the screen
+	Broodwar->drawTextScreen(250, 0,  "FPS: %d", Broodwar->getFPS() );
+	Broodwar->drawTextScreen(250, 15, "Average FPS: %f", Broodwar->getAverageFPS() );
+	Broodwar->drawTextScreen(250, 30, "Frame count: %d", Broodwar->getFrameCount() );
+
+	// display some debug info...
+	Broodwar->drawTextScreen(20, 0, "%cSupply Depot incentive = %.3f", 
+		Text::White, 
+		buildSupplyDepot->getIncentive()
+	); 
+	Broodwar->drawTextScreen(20, 15, "%cExplore incentive = %.3f", 
+		Text::White, 
+		explore->getIncentive()
+	);
+
+	Broodwar->drawTextScreen(20, 30, "%c#Marines: %d // #atk tasks: %d // Train incentive = %.3f", 
+		Text::White, 
+		marines.size(),
+		allTasks[Attack]->size(),
+		trainMarine->getIncentive()
+	);
+
+	Broodwar->drawTextScreen(20, 45, "%c#SCVs: %d // Mine incentive = %.3f", 
+		Text::White, 
+		scvMap.size(),
+		gatherMinerals->getIncentive()
+	);
+
+	Broodwar->drawTextScreen(20, 60, "%cBuild CMD center incentive: %.3f", 
+		Text::White, 
+		buildCommandCenter->getIncentive()
+	);
+
+	Broodwar->drawTextScreen(20,75, "%c#Brk // Brk inc. // SCV inc:", 
+		Text::White 
+	);
+
+	int yOffset = 0;
+	for (Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
+		Broodwar->drawTextScreen(20,90 + yOffset, "%c%d // %.2f // %.3f", 
+			Text::White, builtBarracks[*cmd], buildBarracksIncentives[*cmd], trainSCVIncentives[*cmd]
+		);
+		yOffset += 15;
+	}
+
+	Broodwar->drawTextScreen(20, 90 + yOffset, "Number of SCV in map [%d]", 
+		scvMap.size()
+	);
+
+	//draws the command center 'radius'
+	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); ++c){
+		Position commandCenterPos = c->getPosition();
+		//Unitset units = Broodwar->getUnitsInRadius(commandCenterPos, BASE_RADIUS*TILE_SIZE);
+		Broodwar->drawCircleMap(commandCenterPos, BASE_RADIUS, Color(Colors::Blue));
+	}
+
+	//draws a circle around the minerals
+	Unitset minerals = Broodwar->getMinerals();
+	for (Unitset::iterator m = minerals.begin(); m != minerals.end(); ++m){
+		if (m->getType().isMineralField()) {
+			Broodwar->drawCircleMap(m->getPosition(), m->getType().dimensionLeft(),Color(Colors::Blue));
+		}
+	}
+
+	//writes info under SCVS
+	for(auto s = scvMap.begin(); s != scvMap.end(); s++){
+		Broodwar->drawTextMap(s->second->getUnit()->getPosition(), "ID[%d]", s->second->unitId);
+	}
+
+	//writes debug info under marines
+	/*for(auto m = marines.begin(); m != marines.end(); ++m){
+		MarineAgent* mar = m->second;
+		Broodwar->drawTextMap(mar->gameUnit->getPosition(),"%d,%d", mar->gameUnit->getPosition().x, mar->gameUnit->getPosition().y);
+	}*/
+
+	//draws circles around Attack targets
+	for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
+		Broodwar->drawCircleMap(task->getPosition(), 6*TILE_SIZE, Color(Colors::Red));
+	}
 }
