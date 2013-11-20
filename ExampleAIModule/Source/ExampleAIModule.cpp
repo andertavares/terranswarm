@@ -299,34 +299,7 @@ void ExampleAIModule::onUnitDiscover(Unit unit){
 		marines[unit->getID()] = new MarineAgent(unit);
 	}
 
-	//if unit is enemy, adds it to 'attack' task list, if it isn't in range of an attack task
-	//it seems that it works only for buildings... must check for mobile enemy units
-	if(unit->getPlayer() != Broodwar->self() && unit->getPlayer() != Broodwar->neutral()){ 
-		bool inRange = false;
-
-		//tests if unit is already included in the area of another 'attack' task
-		for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
-			//task->
-
-			//PositionTask* atk = static_cast<PositionTask* >( &(*task)) ; 
-			if(unit->getDistance(task->getPosition()) < 6*TILE_SIZE){
-				inRange = true;
-				break;
-			}
-		}
-
-		if(! inRange){
-			Task* atk = new Task(Attack, .8f, unit->getPosition());
-			allTasks[Attack]->push_back(*atk);
-			Broodwar->sendText("Attack task added, pos=%d,%d // %d,%d ", unit->getPosition().x, unit->getPosition().y, atk->getPosition().x, atk->getPosition().y);
-
-			for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
-				//PositionTask* atk = static_cast<PositionTask* >( &(*task)) ; 
-				Broodwar->sendText("pos=%d,%d", task->getPosition().x, task->getPosition().y);
-			}
-		}
-
-	}
+	
 
 	//new mineral discovered, is it at the range of a command center?
 	//framecount testing prevents checking on unacessible minerals at game begin
@@ -439,69 +412,104 @@ void ExampleAIModule::updateTasks(){
 }
 
 /**
+  * Create new Tasks for each enemy units not covered by attack tasks
   * Cleans up attack tasks whose targets are not in position anymore
   * AttackTasks are added at onUnitDiscover()
   */
 void ExampleAIModule::updateAttack(){
 	//traverse the task list to check if positions are visible and still have enemies
-	//TODO: this isn't working...
-	vector<Task> toDelete;
+	vector<Task>* preserved = new vector<Task>(); //stores the tasks that should not be removed
+
 	for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
 
 		if(Broodwar->isVisible(task->getPosition().x / TILE_SIZE , task->getPosition().y / TILE_SIZE)){
 			Unitset inRange = Broodwar->getUnitsInRadius(task->getPosition(), 6*TILE_SIZE, Filter::IsEnemy);
 			//Broodwar->sendText("%d in range of attack task.", inRange.size());
 			if (inRange.size() == 0) {
-				//allTasks[Attack]->erase(task); cannot do this, or ERROR HAPPENS
 				Broodwar->sendText("Attack task removed");
-				toDelete.push_back(*task);
+				//toDelete.push_back(*task);
+			}
+			else {
+				preserved->push_back(*task);
 			}
 
 		}
+		else { //keeps invisible attack targets, so that they can be investigated
+			preserved->push_back(*task);
+		}
 	}
+	
 
-	/*the code below doesn't work to calculate the diff between two vectors
-	//toDelete -= *(allTasks[Attack]);
-	vector<Task> alias = *allTasks[Attack];
-	std::sort(toDelete.begin(), toDelete.end());
-	std::sort(alias.begin(), alias.end());
+	//brings preserved tasks to the main task vector
+	allTasks[Attack]->swap(*preserved);
+	delete preserved; //hope this doesn't invalidates tasks...
+	//in this point, tasks whose targets are not visible were removed
 
-	std::vector<Task>* difference = new std::vector<Task>();
-	std::set_difference(
-		alias.begin(), alias.end(),
-		toDelete.begin(), toDelete.end(),
-		std::back_inserter( *difference )
-	);
-
-	allTasks[Attack] = difference;
-	delete &alias;
-	//alias -= toDelete;
-	*/
+	// --- Now, adds new tasks for enemy units not covered by existent attack tasks ---
 
 	//obtains a list with all enemies from all players
-	/*
 	Playerset foes = Broodwar->enemies();
-	Unitset enemyUnits;// = new Unitset();// Broodwar->enemy()->getUnits();
+	Unitset enemyUnits;
 	enemyUnits.clear();
 
 	for(auto foe = foes.begin(); foe != foes.end(); ++foe){
 		enemyUnits += foe->getUnits();
 	}
 
-	Broodwar->drawTextScreen(250,45, "#foes: %d", enemyUnits.size());
-
-	//clears the old attack task list
-	//allTasks[Attack]->clear();
+	//Broodwar->drawTextScreen(250,45, "#foes: %d", enemyUnits.size());
 
 	//adds a task with a position for every enemy unit in the task list
 	for(auto foeUnit = enemyUnits.begin(); foeUnit != enemyUnits.end(); ++foeUnit) {
-		PositionTask* atk = new PositionTask(Attack, .8f, foeUnit->getPosition());
-		allTasks[Attack]->push_back(*atk);
+		bool inRange = false;
+
+		//tests if unit is already included in the area of another 'attack' task
+		for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
+			//task->
+
+			//PositionTask* atk = static_cast<PositionTask* >( &(*task)) ; 
+			if(foeUnit->getDistance(task->getPosition()) < 6*TILE_SIZE){
+				inRange = true;
+				break;
+			}
+		}
+
+		if(! inRange){
+			Task* atk = new Task(Attack, .8f, foeUnit->getPosition());
+			allTasks[Attack]->push_back(*atk);
+			//Broodwar->sendText("Attack task added, pos=%d,%d // %d,%d ", unit->getPosition().x, unit->getPosition().y, atk->getPosition().x, atk->getPosition().y);
+		}
 	}
 
-	*/
+	/*
+	//if unit is enemy, adds it to 'attack' task list, if it isn't in range of an attack task
+	//it seems that it works only for buildings... must check for mobile enemy units
+	if(unit->getPlayer() != Broodwar->self() && unit->getPlayer() != Broodwar->neutral()){ 
+		bool inRange = false;
 
-	
+		//tests if unit is already included in the area of another 'attack' task
+		for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
+			//task->
+
+			//PositionTask* atk = static_cast<PositionTask* >( &(*task)) ; 
+			if(unit->getDistance(task->getPosition()) < 6*TILE_SIZE){
+				inRange = true;
+				break;
+			}
+		}
+
+		if(! inRange){
+			Task* atk = new Task(Attack, .8f, unit->getPosition());
+			allTasks[Attack]->push_back(*atk);
+			Broodwar->sendText("Attack task added, pos=%d,%d // %d,%d ", unit->getPosition().x, unit->getPosition().y, atk->getPosition().x, atk->getPosition().y);
+
+			for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
+				//PositionTask* atk = static_cast<PositionTask* >( &(*task)) ; 
+				Broodwar->sendText("pos=%d,%d", task->getPosition().x, task->getPosition().y);
+			}
+		}
+
+	}
+	*/
 }
 
 void ExampleAIModule::updateTrainSCV(){
