@@ -36,6 +36,9 @@
     <ClCompile Include="Source\util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\TaskAssociation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\ExampleAIModule.h">
@@ -54,6 +57,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\TaskAssociation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

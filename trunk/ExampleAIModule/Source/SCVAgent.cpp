@@ -3,7 +3,6 @@
 #include <BWAPI.h>
 #include <deque>
 #include <unordered_map>
-#include "Task.h"
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
@@ -13,6 +12,7 @@
 #include "SCVAgent.h"
 #include "util.h"
 #include "ExampleAIModule.h"
+#include "TaskAssociation.h"
 
 using namespace BWAPI;
 using namespace Filter;
@@ -52,25 +52,17 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, Unitset t
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0, 1);
 
-	vector<Task> feasibleTasks;
-	feasibleTasks.clear(); //initializes the task vector
-	vector<Task>::iterator fit = feasibleTasks.begin();
+	vector<TaskAssociation> taskAssociations;
+	//feasibleTasks.clear(); //initializes the task vector
+	//vector<Task>::iterator fit = feasibleTasks.begin();
 	
 	//inserts all tasks that SCV can perform
-	feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildBarracks]->begin(),taskMap[BuildBarracks]->end());
+	/*feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildBarracks]->begin(),taskMap[BuildBarracks]->end());
 	feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildSupplyDepot]->begin(),taskMap[BuildSupplyDepot]->end());
 	feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildCommandCenter]->begin(),taskMap[BuildCommandCenter]->end());
 	feasibleTasks.insert(feasibleTasks.begin(),taskMap[Explore]->begin(),taskMap[Explore]->end());
+	*/
 	
-	if(gameUnit->getID() == 1){
-		int offset = 0;
-		//Broodwar->drawTextScreen(200,115,"%d items", feasibleTasks.size());
-		for (auto task = feasibleTasks.begin(); task != feasibleTasks.end(); task++){
-			Broodwar->drawTextScreen(200,115+offset,"%d - %d", task->getTaskType(), task->getIncentive());
-			offset += 15;
-		}
-		
-	}
 	/*
 	switch (state){
 	case BUILDING_BARRACKS:
@@ -88,15 +80,55 @@ MOVING_TO_NEW_BASE, IN_BASE_AREA, BUILDING_BASE
 	}
 
 	//TODO: calculate the T values for feasible tasks...
+	for(auto taskIter = taskMap.begin(); taskIter != taskMap.end(); ++taskIter){
+		//if( == 
+		float capability = 0;
 
-	Task* toPerform = weightedSelection(feasibleTasks);
+		switch(taskIter->first){
+		
+		case BuildBarracks:
+		case BuildSupplyDepot:
+		case BuildCommandCenter:
+		case GatherMinerals:
+			capability = 1;
+			break;
+
+		case Explore:
+			capability = 0.1;
+			break;
+
+		} //closure: switch
+
+		if (capability == 0){
+			continue; //agent is not able to perform tasks of this type, go to next
+		}
+		for(auto task = taskIter->second->begin(); task != taskIter->second->end(); task++){
+				
+			taskAssociations.push_back(TaskAssociation(&(*task), capability));
+		}
+	}
+	if(gameUnit->getID() == 1){
+		int offset = 0;
+		//Broodwar->drawTextScreen(200,115,"%d items", feasibleTasks.size());
+		for (auto ta = taskAssociations.begin(); ta != taskAssociations.end(); ta++){
+			Broodwar->drawTextScreen(200,115+offset,"%d - %d", ta->task()->getTaskType(), ta->task()->getIncentive());
+			offset += 15;
+		}
+		
+	}
+
+	Task* toPerform = weightedSelection(taskAssociations);
 	if (toPerform == NULL){
 		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nInvalid task");
 		return;
 	}
 	
 	if(toPerform->getTaskType() == GatherMinerals){
-		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nMIN");
+		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nGAT");
+		if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
+			// If the call fails, then print the last error message
+			Broodwar << Broodwar->getLastError() << std::endl;
+		}
 		state = GATHERING_MINERALS;
 	}
 
