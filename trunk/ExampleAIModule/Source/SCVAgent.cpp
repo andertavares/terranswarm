@@ -1,4 +1,5 @@
 #include "SCVAgent.h"
+#include "ExampleAIModule.h"
 #include <BWAPI.h>
 #include <iostream>
 
@@ -33,13 +34,13 @@ void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 		// Task SCV can do = BuildSupplyDepot, BuildBarracks, BuildCommandCenter, Fix, GatherMinerals, Explore
 		// TaskType from Task.h
 		if(taskType == BuildSupplyDepot){
-			// Avaliate incentive
+			// evaluate incentive
 			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 				
 			}
 		}
 		else if(taskType == BuildBarracks){
-			// Avaliate incentive
+			// evaluate incentive
 			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 				
 			}
@@ -47,7 +48,7 @@ void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 		else if(taskType == BuildCommandCenter){
 			// Calculate how far is the new command center
 			// Calculate how many minerals are near the command center
-			// Avaliate incentive
+			// evaluate incentive
 			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 				
 			}
@@ -69,10 +70,126 @@ void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 		else {
 			continue;
 		}
+	}	
+}
+
+void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
+	//Unitset uncoveredMinerals;
+	
+	if (state == MOVING_TO_NEW_BASE) {
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nMoving to base");
+		Broodwar->drawLineMap(gameUnit->getPosition(),nearBaseArea,Color(Colors::Green));
+		gameUnit->move(nearBaseArea);
+
+		Region targetReg = Broodwar->getRegionAt(nearBaseArea);
+		Region myReg = gameUnit->getRegion();
+
+		//Broodwar->drawTextMap(gameUnit->getPosition(),"\nmyReg: %d, tgtReg: %d, d:%d", myReg->getID(), targetReg->getID(), gameUnit->getDistance(nearBaseArea));
+
+		//sometimes regions are buggy, so we test if we are very close to the target point
+		if(myReg->getID() == targetReg->getID() || (gameUnit->getDistance(nearBaseArea)/TILE_SIZE) <= 1){
+		//}
+
+		//if destination is in sight
+		//if (gameUnit->getType().sightRange() > gameUnit->getDistance(nearBaseArea) ){
+			//Broodwar->sendText("Arrived!");
+			state = IN_BASE_AREA;
+		}
+
+	}
+	
+	else if (state == IN_BASE_AREA){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nIn base area");
+		//must find suitable location to build base
+		Broodwar->drawCircleMap(gameUnit->getPosition(), gameUnit->getType().sightRange(),Color(Colors::Cyan));
+		UnitType centerType = gameUnit->getType().getRace().getCenter();
+		TilePosition targetBuildLocation = Broodwar->getBuildLocation(centerType, gameUnit->getTilePosition() );
+
+		//TilePosition targetBuildLocation = Broodwar->getBuildLocation(supplyProviderType, supplyBuilder->getTilePosition());
+		if ( targetBuildLocation ){
+
+			// Register an event that draws the target build location
+			Broodwar->registerEvent([targetBuildLocation,centerType](Game*)
+			{
+				Broodwar->drawBoxMap( Position(targetBuildLocation),
+					Position(targetBuildLocation + centerType.tileSize()),
+					Colors::Blue);
+			},
+				nullptr,  // condition
+				centerType.buildTime() + 100 );  // frames to run
+
+			if ( targetBuildLocation ){
+
+				// Order the builder to construct the supply structure
+				gameUnit->build( centerType, targetBuildLocation );
+				state = BUILDING_BASE;
+			}
+		}
+		
+	}
+
+	else if(state == BUILDING_BASE){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nBuilding Base");
+		//when finished, clears all
+		if(! gameUnit->isConstructing()){
+			state = NOT_BUILDING_BASE;
+		}
+	}
+
+	else {
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nelse");
+		nearBaseArea = pointNearNewBase(theMinerals, commandCenters);
+		//checks consistency of new assigned point
+		if(nearBaseArea.x != -1 && nearBaseArea.y != -1) {
+			//Broodwar->sendText("Tgt point inconsistent");
+			Broodwar->drawTextMap(gameUnit->getPosition(),"\n\ninconsistent tgt");
+			state = MOVING_TO_NEW_BASE;
+		}
 	}
 
 	
+
+
 }
+
+Position SCVAgent::pointNearNewBase(Unitset theMinerals, Unitset commandCenters){
+
+	Unit closestMineral = NULL; //mineral to which the base will be built
+	//closestMineralPosition = new Position(0,0);
+
+	int minDistance = INT_MAX;
+
+	//finds out which mineral is closest to the scv
+	Unitset::iterator mineral;
+	//bool allReachable = true;
+	for (mineral = theMinerals.begin(); mineral != theMinerals.end(); ++mineral){
+		bool reachable = false;
+		for(Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
+			if (cmd->getDistance(mineral->getPosition()) < BASE_RADIUS){
+				reachable = true;
+				break;
+			}
+		}
+		if (!reachable){
+			//allReachable = false;
+			if (gameUnit->getDistance(*mineral) < minDistance){
+				minDistance = gameUnit->getDistance(*mineral);
+				closestMineral = *mineral;
+			}
+		}
+	}
+	/*if(allReachable) {
+		return Position(0,0);//returns dummy position if all minerals are in range...
+	}*/
+	if (closestMineral == NULL){
+		//Broodwar->sendText("Dummy position returned");
+		return Position(-1,-1);//returns dummy position if all minerals are in range...
+	}
+	return closestMineral->getPosition();
+
+}
+
+
 
 bool SCVAgent::goScout(){
 

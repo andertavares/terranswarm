@@ -6,7 +6,6 @@
 #include "CommanderAgent.h"
 
 #define EULER 2.71828182845904523536
-#define BASE_RADIUS 20 * TILE_SIZE
 
 using namespace BWAPI;
 using namespace Filter;
@@ -302,7 +301,7 @@ void ExampleAIModule::onUnitDiscover(Unit unit){
 	
 
 	//new mineral discovered, is it at the range of a command center?
-	//framecount testing prevents checking on unacessible minerals at game begin
+	//framecount test prevents checking on unacessible minerals at game begin
 	if(Broodwar->getFrameCount() != 0 && unit->getType() == UnitTypes::Resource_Mineral_Field){
 		discoveredMinerals.insert(unit);
 	}
@@ -525,6 +524,11 @@ void ExampleAIModule::updateTrainSCV(){
 }
 
 void ExampleAIModule::updateBuildCommandCenter(){
+
+	if(buildCommandCenter->getIncentive() > 0) {
+		scvMap[3]->buildCommandCenter(discoveredMinerals, commandCenters);
+	}
+
 
 	//for every discovered mineral, check if it is in range of a command center
 	for(Unitset::iterator mineral = discoveredMinerals.begin(); mineral != discoveredMinerals.end(); ++mineral){
