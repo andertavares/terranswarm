@@ -1,4 +1,4 @@
-//#pragma once
+#pragma once
 #include <BWAPI.h>
 #include <deque>
 #include <unordered_map>
@@ -10,19 +10,33 @@
 
 using namespace std;
 
+enum State {
+	NOT_BUILDING_BASE,
+	MOVING_TO_NEW_BASE,
+	IN_BASE_AREA,
+	BUILDING_BASE,
+};
+
 class SCVAgent {
+	State state;
+	Position nearBaseArea; //will build a base near this position
 	
 public:
 	SCVAgent(BWAPI::Unit scv);
 	~SCVAgent(void);
+	
+	int unitId;
+	int lastFrameCount;
+	BWAPI::Unit gameUnit;
+
 	void onTask(unordered_map<TaskType, list<Task>*> taskMap);
 	bool evaluateIncentive();
 	BWAPI::Unit SCVAgent::getUnit();
 	BWAPI::Position getPositionToScout();
 	bool goScout();
-	BWAPI::Unit gameUnit;
-	int unitId;
-	int lastFrameCount;
+	void buildCommandCenter(Unitset theMinerals, Unitset commandCenters);
+	Position pointNearNewBase(Unitset theMinerals, Unitset commandCenters);
+	
 
 private:
 	BWAPI::Position lastPosition;

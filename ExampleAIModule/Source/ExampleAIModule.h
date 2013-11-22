@@ -8,12 +8,13 @@
 #include "MarineAgent.h"
 #include "SCVAgent.h"
 
+#define BASE_RADIUS 20 * TILE_SIZE
+
 using namespace std;
 using namespace BWAPI;
 // Remember not to use "Broodwar" in any global class constructor!
 
-class ExampleAIModule : public BWAPI::AIModule
-{
+class ExampleAIModule : public BWAPI::AIModule {
 
 	//tasks that will have a single instance
 	Task* gatherMinerals;
