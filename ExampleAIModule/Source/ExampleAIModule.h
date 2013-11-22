@@ -1,4 +1,5 @@
-//#pragma once
+#pragma once
+
 #include <BWAPI.h>
 #include <vector>
 #include <unordered_map>
@@ -7,6 +8,7 @@
 #include "CommanderAgent.h"
 #include "MarineAgent.h"
 #include "SCVAgent.h"
+
 
 #define BASE_RADIUS 20 * TILE_SIZE
 

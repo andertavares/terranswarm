@@ -1,8 +1,10 @@
+#pragma once
+
+#include <unordered_map>
 #include <iostream>
 #include <cmath>
 #include "ExampleAIModule.h"
 #include "Task.h"
-#include "PositionTask.h"
 #include "CommanderAgent.h"
 
 #define EULER 2.71828182845904523536
@@ -131,7 +133,7 @@ void ExampleAIModule::onFrame() {
 
 	updateTasks();
 
-	_commanderAgent->onFrame(allTasks);
+	_commanderAgent->onFrame(allTasks, trainSCVIncentives);
 
 	//iterates through all marines
 	for(auto marine = marines.begin(); marine != marines.end(); marine++){
@@ -146,6 +148,8 @@ void ExampleAIModule::onFrame() {
 		int unitId =  iter->first;
 		SCVAgent* agent = iter->second;
 		Unit u = agent->getUnit();
+
+		agent->onTask(allTasks);
 
 		if(unitId == 4){
 			agent->goScout();
@@ -424,7 +428,17 @@ void ExampleAIModule::updateAttack(){
 		if(Broodwar->isVisible(task->getPosition().x / TILE_SIZE , task->getPosition().y / TILE_SIZE)){
 			Unitset inRange = Broodwar->getUnitsInRadius(task->getPosition(), 6*TILE_SIZE, Filter::IsEnemy);
 			//Broodwar->sendText("%d in range of attack task.", inRange.size());
-			if (inRange.size() == 0) {
+			
+			// Check if the unit can be reached by the marines
+			// Sometimes cloacked or burrowed units can be marked as enemy but it cannot be attacked
+			bool onlyCloackedUnits = true;
+			for(auto u = inRange.begin(); u != inRange.end(); ++u) {
+				if(!u->isCloaked() && !u->isBurrowed() & !u->isInvincible()){
+					onlyCloackedUnits = false;
+					break;
+				}
+			}
+			if (inRange.size() == 0 || onlyCloackedUnits) {
 				Broodwar->sendText("Attack task removed");
 				//toDelete.push_back(*task);
 			}
@@ -472,7 +486,8 @@ void ExampleAIModule::updateAttack(){
 			}
 		}
 
-		if(! inRange){
+		// Hector : extra validation to ignore unreachable targets
+		if(! inRange && !foeUnit->isCloaked() && !foeUnit->isBurrowed() & !foeUnit->isInvincible()){
 			Task* atk = new Task(Attack, .8f, foeUnit->getPosition());
 			allTasks[Attack]->push_back(*atk);
 			//Broodwar->sendText("Attack task added, pos=%d,%d // %d,%d ", unit->getPosition().x, unit->getPosition().y, atk->getPosition().x, atk->getPosition().y);
@@ -577,17 +592,23 @@ void ExampleAIModule::updateBuildSupplyDepot(){
 	//incentive is maximum when difference is minimum
 	//buildSupplyDepot->setIncentive(pow(EULER,-dif));
 
+	// TODO: Check if this is ok
+	UnitType supplyProviderType = UnitTypes::Terran_Supply_Depot;
+	if (  Broodwar->self()->incompleteUnitCount(supplyProviderType) > 0 ) {
+		dif = dif/5.0f;
+	}
+
 	//buildSupplyDepot->setIncentive(pow(EULER,-dif));
 	buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
 
-	//finds a command center to draw a debug text
-	Unitset myUnits = Broodwar->self()->getUnits();
+	// TODO: finds a command center to draw a debug text
+	/*Unitset myUnits = Broodwar->self()->getUnits();
 	Unitset::iterator u = NULL;
 	for ( u = myUnits.begin(); u != myUnits.end(); ++u ) {
 		if ( u->getType().isResourceDepot() ) {
 			break;
 		}
-	}
+	}*/
 }
 
 void ExampleAIModule::updateExplore(){
@@ -720,8 +741,8 @@ void ExampleAIModule::_drawStats(){
 		yOffset += 15;
 	}
 
-	Broodwar->drawTextScreen(20, 90 + yOffset, "Number of SCV in map [%d]", 
-		scvMap.size()
+	Broodwar->drawTextScreen(20, 90 + yOffset, "No of SCV [%d] Marines [%d]", 
+		scvMap.size(), marines.size()
 	);
 
 	//draws the command center 'radius'
