@@ -12,13 +12,16 @@
 
 using namespace std;
 
-enum State {
-	CREATED,
-	NOT_BUILDING_BASE,
+enum State { //7,4,2
+	NO_TASK,
+	//NOT_BUILDING_BASE,
 	MOVING_TO_NEW_BASE,
 	IN_BASE_AREA,
 	BUILDING_BASE,
-	BUILDING_SUPPLY
+	BUILDING_SUPPLY_DEPOT,
+	BUILDING_BARRACKS,
+	GATHERING_MINERALS,
+	EXPLORING
 };
 
 class SCVAgent {
@@ -33,8 +36,8 @@ public:
 	int lastFrameCount;
 	BWAPI::Unit gameUnit;
 
-	void onTask(unordered_map<TaskType, list<Task>*> taskMap);
-	void onFrame(unordered_map<TaskType, list<Task>*> taskMap, Unitset theMinerals, Unitset commandCenters);
+	//void onTask(unordered_map<TaskType, vector<Task>*> taskMap);
+	void onFrame(unordered_map<TaskType, vector<Task>*> taskMap, Unitset theMinerals, Unitset commandCenters);
 	bool evaluateIncentive();
 	BWAPI::Unit SCVAgent::getUnit();
 	BWAPI::Position getPositionToScout();
