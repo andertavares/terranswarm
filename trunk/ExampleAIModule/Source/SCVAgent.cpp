@@ -31,9 +31,16 @@ SCVAgent::~SCVAgent(void){
 
 }
 
+/**
+  * Returns the Unit that this agent refers to in the game
+  */
 Unit SCVAgent::getUnit(){
 	//Broodwar << "Returning id " << unitId << std::endl;
 	return gameUnit;
+}
+
+void SCVAgent::onFrame(unordered_map<TaskType, list<Task>*> taskMap, Unitset theMinerals, Unitset commandCenters){
+	
 }
 
 void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
@@ -96,6 +103,11 @@ void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 	}	
 }
 
+/**
+  * Implements the decision of building a new command center (cmd).
+  * The SCV chooses a location (near mineral field) to build the cmd, moves towards it and
+  * places the new cmd close to the location
+  */
 void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 	//Unitset uncoveredMinerals;
 	
@@ -129,7 +141,7 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 		TilePosition targetBuildLocation = Broodwar->getBuildLocation(centerType, gameUnit->getTilePosition() );
 
 		//TilePosition targetBuildLocation = Broodwar->getBuildLocation(supplyProviderType, supplyBuilder->getTilePosition());
-		if ( targetBuildLocation ){
+		if (targetBuildLocation){
 
 			// Register an event that draws the target build location
 			Broodwar->registerEvent([targetBuildLocation,centerType](Game*)
@@ -138,13 +150,13 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 					Position(targetBuildLocation + centerType.tileSize()),
 					Colors::Blue);
 			},
-				nullptr,  // condition
-				centerType.buildTime() + 100 );  // frames to run
+			nullptr,  // condition
+			centerType.buildTime() + 100 );  // frames to run
 
 			//if ( targetBuildLocation ){
 
 				// Order the builder to construct the supply structure
-				gameUnit->build( centerType, targetBuildLocation );
+				gameUnit->build(centerType, targetBuildLocation);
 				state = BUILDING_BASE;
 			//}
 		}
@@ -169,10 +181,6 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 			state = MOVING_TO_NEW_BASE;
 		}
 	}
-
-	
-
-
 }
 
 Position SCVAgent::pointNearNewBase(Unitset theMinerals, Unitset commandCenters){

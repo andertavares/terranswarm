@@ -28,6 +28,7 @@ public:
 	float getIncentive();
 	void setIncentive(float incentive);
 	TaskType getTaskType();
+	bool operator<(Task& b);
 
 	Position getPosition();
 };

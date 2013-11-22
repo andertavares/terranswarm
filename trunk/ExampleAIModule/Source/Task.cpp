@@ -12,6 +12,13 @@ Task::Task(TaskType taskType, float incentive, Position pos) : type(taskType), i
 
 }
 
+/**
+  * Returns whether this task has a lower incentive than task b
+  */
+bool Task::operator<(Task& b){
+	return incentive < b.getIncentive();
+}
+
 
 void Task::setIncentive(float incentive){
 	this->incentive = incentive;
