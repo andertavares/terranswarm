@@ -3,7 +3,6 @@
 #include <BWAPI.h>
 #include <deque>
 #include <unordered_map>
-#include "Task.h"
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
@@ -35,6 +34,7 @@ public:
 	BWAPI::Unit gameUnit;
 
 	void onTask(unordered_map<TaskType, list<Task>*> taskMap);
+	void onFrame(unordered_map<TaskType, list<Task>*> taskMap, Unitset theMinerals, Unitset commandCenters);
 	bool evaluateIncentive();
 	BWAPI::Unit SCVAgent::getUnit();
 	BWAPI::Position getPositionToScout();

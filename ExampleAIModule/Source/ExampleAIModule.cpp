@@ -422,7 +422,10 @@ void ExampleAIModule::updateTasks(){
 void ExampleAIModule::updateAttack(){
 	//traverse the task list to check if positions are visible and still have enemies
 	vector<Task>* preserved = new vector<Task>(); //stores the tasks that should not be removed
+	UnitType marineType = UnitTypes::Terran_Marine;
 
+	Broodwar->drawTextScreen(200,120,"marine seek: %d // sight: %d", marineType.seekRange(), marineType.sightRange());
+	
 	for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
 
 		if(Broodwar->isVisible(task->getPosition().x / TILE_SIZE , task->getPosition().y / TILE_SIZE)){
@@ -573,33 +576,27 @@ void ExampleAIModule::updateBuildBarracks(){
 		//updates the number of barracks around all command centers
 		builtBarracks[*c] = barracksNumber;
 		buildBarracksIncentives[*c] = 1.0f - barracksNumber/4.0f;
-		//Broodwar->sendText("emplacing %d // %f", barracksNumber, 1.0f - barracksNumber/4.0f);
-		//Broodwar->sendText("emplaced %d // %f", builtBarracks[*c], buildBarracksIncentives[*c]);
 		//TODO: call createBarrackNearCommandCenter using SwarmGAP rules
 
-		//Broodwar->drawTextScreen(437,27,"Barracks near command center [%d]", barracksNumber);
 		if(barracksNumber < 4){
-			//Broodwar->sendText("Creating new barrack");
 			createBarrackNearCommandCenter(Broodwar->getUnit(c->getID()));
 		}
 	}
 }
 
+/**
+  * Updates the incentive for the Task buildSupplyDepot
+  **/
 void ExampleAIModule::updateBuildSupplyDepot(){
-	//updates the buildSupplyDepots incentive
 	int dif = max(0, (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed())/2); //bwapi returns 2*the actual difference...
-	//if (dif < 0) dif = 0;
+	
 	//incentive is maximum when difference is minimum
-	//buildSupplyDepot->setIncentive(pow(EULER,-dif));
 
 	// TODO: Check if this is ok
 	UnitType supplyProviderType = UnitTypes::Terran_Supply_Depot;
 	if (  Broodwar->self()->incompleteUnitCount(supplyProviderType) > 0 ) {
 		dif = dif/5.0f;
-	}
-
-	//buildSupplyDepot->setIncentive(pow(EULER,-dif));
-	buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
+	}	buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
 
 	// TODO: finds a command center to draw a debug text
 	/*Unitset myUnits = Broodwar->self()->getUnits();
