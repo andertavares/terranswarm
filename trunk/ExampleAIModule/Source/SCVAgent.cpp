@@ -11,6 +11,7 @@
 #include <random>
 #include <iostream>
 #include "SCVAgent.h"
+#include "util.h"
 #include "ExampleAIModule.h"
 
 using namespace BWAPI;
@@ -23,7 +24,7 @@ SCVAgent::SCVAgent(BWAPI::Unit scv){
 	unitId = gameUnit->getID();
 	lastPosition = Position(0,0);
 	lastFrameCount = Broodwar->getFrameCount();
-	state = CREATED;
+	state = NO_TASK;
 }
 
 
@@ -39,26 +40,92 @@ Unit SCVAgent::getUnit(){
 	return gameUnit;
 }
 
+/*
 void SCVAgent::onFrame(unordered_map<TaskType, list<Task>*> taskMap, Unitset theMinerals, Unitset commandCenters){
 	
 }
+*/
 
-void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
+void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, Unitset theMinerals, Unitset commandCenters){
 
 	std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0, 1);
 
-	unordered_map<TaskType, list<Task>*>::iterator it = taskMap.begin();
-	for(unordered_map<TaskType, list<Task>*>::iterator iter = taskMap.begin(); iter != taskMap.end(); ++iter){
+	vector<Task> feasibleTasks;
+	feasibleTasks.clear(); //initializes the task vector
+	vector<Task>::iterator fit = feasibleTasks.begin();
+	
+	//inserts all tasks that SCV can perform
+	feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildBarracks]->begin(),taskMap[BuildBarracks]->end());
+	feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildSupplyDepot]->begin(),taskMap[BuildSupplyDepot]->end());
+	feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildCommandCenter]->begin(),taskMap[BuildCommandCenter]->end());
+	feasibleTasks.insert(feasibleTasks.begin(),taskMap[Explore]->begin(),taskMap[Explore]->end());
+	
+	if(gameUnit->getID() == 1){
+		int offset = 0;
+		//Broodwar->drawTextScreen(200,115,"%d items", feasibleTasks.size());
+		for (auto task = feasibleTasks.begin(); task != feasibleTasks.end(); task++){
+			Broodwar->drawTextScreen(200,115+offset,"%d - %d", task->getTaskType(), task->getIncentive());
+			offset += 15;
+		}
+		
+	}
+	/*
+	switch (state){
+	case BUILDING_BARRACKS:
+	case BUILDING_SUPPLY_DEPOT:
+	case MOVING_TO_NEW_BASE:
+		return;
+		return
+MOVING_TO_NEW_BASE, IN_BASE_AREA, BUILDING_BASE
+	}*/
+
+	//only chooses another task if current is gathering minerals or doing nothing
+	if(! (state == GATHERING_MINERALS || state == NO_TASK) ){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBusy %d", state);
+		return;
+	}
+
+	//TODO: calculate the T values for feasible tasks...
+
+	Task* toPerform = weightedSelection(feasibleTasks);
+	if (toPerform == NULL){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nInvalid task");
+		return;
+	}
+	
+	if(toPerform->getTaskType() == GatherMinerals){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nMIN");
+		state = GATHERING_MINERALS;
+	}
+
+	if(toPerform->getTaskType() == BuildSupplyDepot){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBS");
+		state = BUILDING_SUPPLY_DEPOT;
+		createSupply();
+	}
+
+	if(toPerform->getTaskType() == BuildBarracks){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBB");
+		state = BUILDING_BARRACKS;
+	}
+
+	if(toPerform->getTaskType() == BuildCommandCenter){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBC");
+		buildCommandCenter(theMinerals, commandCenters);
+	}
+
+	//unordered_map<TaskType, list<Task>*>::iterator it = taskMap.begin();
+	/*for(unordered_map<TaskType, vector<Task>*>::iterator iter = taskMap.begin(); iter != taskMap.end(); ++iter){
 		TaskType taskType =  iter->first;
-		list<Task>* taskList = iter->second;
+		vector<Task>* taskList = iter->second;
 
 		// Task SCV can do = BuildSupplyDepot, BuildBarracks, BuildCommandCenter, Fix, GatherMinerals, Explore
 		// TaskType from Task.h
 		if(taskType == BuildSupplyDepot){
 			// evaluate incentive
-			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+			for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 				
 				double uniformOn01 = dis(gen);
 				if(uniformOn01 <= it->getIncentive()){
@@ -71,7 +138,7 @@ void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 		}
 		else if(taskType == BuildBarracks){
 			// evaluate incentive
-			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+			for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 				
 			}
 		}
@@ -79,7 +146,7 @@ void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 			// Calculate how far is the new command center
 			// Calculate how many minerals are near the command center
 			// evaluate incentive
-			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+			for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 				
 			}
 		}
@@ -96,11 +163,11 @@ void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 				
 			}
-		}*/
+		}*
 		else {
 			continue;
 		}
-	}	
+	}	*/
 }
 
 /**
@@ -122,7 +189,7 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 		//Broodwar->drawTextMap(gameUnit->getPosition(),"\nmyReg: %d, tgtReg: %d, d:%d", myReg->getID(), targetReg->getID(), gameUnit->getDistance(nearBaseArea));
 
 		//sometimes regions are buggy, so we test if we are very close to the target point
-		if(myReg->getID() == targetReg->getID() || (gameUnit->getDistance(nearBaseArea)/TILE_SIZE) <= 1){
+		if(myReg->getID() == targetReg->getID() || (gameUnit->getDistance(nearBaseArea)/TILE_SIZE) <= 2){
 		//}
 
 		//if destination is in sight
@@ -167,7 +234,7 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nBuilding Base");
 		//when finished, clears all
 		if(! gameUnit->isConstructing()){
-			state = NOT_BUILDING_BASE;
+			state = NO_TASK;// NOT_BUILDING_BASE;
 		}
 	}
 
@@ -335,7 +402,7 @@ Position SCVAgent::getPositionToScout(){
 }
 
 void SCVAgent::createSupply(){
-	state = BUILDING_SUPPLY;
+	state = BUILDING_SUPPLY_DEPOT;
 	UnitType supplyProviderType = gameUnit->getType().getRace().getSupplyProvider();
 	if ( supplyProviderType.isBuilding() ){
 		TilePosition targetBuildLocation = Broodwar->getBuildLocation(supplyProviderType, gameUnit->getTilePosition());

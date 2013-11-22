@@ -149,7 +149,7 @@ void ExampleAIModule::onFrame() {
 		SCVAgent* agent = iter->second;
 		Unit u = agent->getUnit();
 
-		agent->onTask(allTasks);
+		agent->onFrame(allTasks, discoveredMinerals, commandCenters);
 
 		if(unitId == 4){
 			agent->goScout();
@@ -424,12 +424,12 @@ void ExampleAIModule::updateAttack(){
 	vector<Task>* preserved = new vector<Task>(); //stores the tasks that should not be removed
 	UnitType marineType = UnitTypes::Terran_Marine;
 
-	Broodwar->drawTextScreen(200,120,"marine seek: %d // sight: %d", marineType.seekRange(), marineType.sightRange());
+	//Broodwar->drawTextScreen(200,120,"marine seek: %d // sight: %d", marineType.seekRange(), marineType.sightRange());
 	
 	for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
 
 		if(Broodwar->isVisible(task->getPosition().x / TILE_SIZE , task->getPosition().y / TILE_SIZE)){
-			Unitset inRange = Broodwar->getUnitsInRadius(task->getPosition(), 6*TILE_SIZE, Filter::IsEnemy);
+			Unitset inRange = Broodwar->getUnitsInRadius(task->getPosition(), marineType.sightRange(), Filter::IsEnemy);
 			//Broodwar->sendText("%d in range of attack task.", inRange.size());
 			
 			// Check if the unit can be reached by the marines
@@ -483,7 +483,7 @@ void ExampleAIModule::updateAttack(){
 			//task->
 
 			//PositionTask* atk = static_cast<PositionTask* >( &(*task)) ; 
-			if(foeUnit->getDistance(task->getPosition()) < 6*TILE_SIZE){
+			if(foeUnit->getDistance(task->getPosition()) < marineType.sightRange()){
 				inRange = true;
 				break;
 			}
@@ -536,7 +536,7 @@ void ExampleAIModule::updateTrainSCV(){
 		Unitset mineralsAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsMineralField);
 		Unitset scvAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsWorker && Filter::IsOwned);
 
-		trainSCVIncentives[*cmd] = 1.0f - (scvAround.size() / (3.0f * mineralsAround.size()));
+		trainSCVIncentives[*cmd] = 1.0f - (scvAround.size() / (2.0f * mineralsAround.size()));
 
 	}
 }
@@ -595,8 +595,10 @@ void ExampleAIModule::updateBuildSupplyDepot(){
 	// TODO: Check if this is ok
 	UnitType supplyProviderType = UnitTypes::Terran_Supply_Depot;
 	if (  Broodwar->self()->incompleteUnitCount(supplyProviderType) > 0 ) {
-		dif = dif/5.0f;
-	}	buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
+		dif = dif/5.0; //atenuates the difference if a supply depot is being built
+	}
+
+	buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
 
 	// TODO: finds a command center to draw a debug text
 	/*Unitset myUnits = Broodwar->self()->getUnits();
@@ -613,7 +615,7 @@ void ExampleAIModule::updateExplore(){
 	int width = Broodwar->mapWidth();
 	int height = Broodwar->mapHeight();
 
-	//check which tiles were explorated
+	//check which tiles were explored
 	for (int hTile = 0; hTile < width; hTile++){ 
 		for (int vTile = 0; vTile < height ; vTile++){
 			if (Broodwar->isExplored(hTile,vTile)){
@@ -698,11 +700,16 @@ void ExampleAIModule::_drawStats(){
 	Broodwar->drawTextScreen(250, 15, "Average FPS: %f", Broodwar->getAverageFPS() );
 	Broodwar->drawTextScreen(250, 30, "Frame count: %d", Broodwar->getFrameCount() );
 
+	_drawExploredStats();
+
 	// display some debug info...
 	Broodwar->drawTextScreen(20, 0, "%cSupply Depot incentive = %.3f", 
 		Text::White, 
-		buildSupplyDepot->getIncentive()
+		allTasks[BuildSupplyDepot]->at(0).getIncentive()
 	); 
+
+	Broodwar->sendText("%d", &allTasks[BuildSupplyDepot]->at(0) == buildSupplyDepot);
+
 	Broodwar->drawTextScreen(20, 15, "%cExplore incentive = %.3f", 
 		Text::White, 
 		explore->getIncentive()
@@ -771,5 +778,26 @@ void ExampleAIModule::_drawStats(){
 	//draws circles around Attack targets
 	for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
 		Broodwar->drawCircleMap(task->getPosition(), 6*TILE_SIZE, Color(Colors::Red));
+	}
+}
+
+/**
+  * Draws green dots on explored tiles and red on unexplored ones
+  */
+void ExampleAIModule::_drawExploredStats(){
+	int width = Broodwar->mapWidth();
+	int height = Broodwar->mapHeight();
+
+	//check which tiles were explored
+	for (int hTile = 0; hTile < width; hTile++){ 
+		for (int vTile = 0; vTile < height ; vTile++){
+			if (Broodwar->isExplored(hTile,vTile)){
+				//exploredTiles++;
+				Broodwar->drawDotMap(hTile*TILE_SIZE+16,vTile*TILE_SIZE+16,Colors::Green);
+			}
+			else{
+				Broodwar->drawDotMap(hTile*TILE_SIZE+16,vTile*TILE_SIZE+16,Colors::Red);
+			}
+		}
 	}
 }

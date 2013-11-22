@@ -10,13 +10,13 @@
 using namespace BWAPI;
 using namespace Filter;
 
-CommanderAgent::CommanderAgent(void) : latencyFrames(10){
+CommanderAgent::CommanderAgent() : latencyFrames(10){
 	_barracks.clear();
 	_commandCenters.clear();
 }
 
 
-CommanderAgent::~CommanderAgent(void){
+CommanderAgent::~CommanderAgent(){
 
 }
 

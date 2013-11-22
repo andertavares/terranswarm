@@ -60,6 +60,7 @@ class ExampleAIModule : public BWAPI::AIModule {
 	unordered_map<int, MarineAgent*> marines; //stores the marines owned
 
 	void _drawStats(); //writes information texts on screen and draws some useful figures
+	void _drawExploredStats();
 
 public:
 	// Virtual functions for callbacks, leave these as they are.
