@@ -1,4 +1,5 @@
 #pragma once
+
 #include <BWAPI.h>
 #include <deque>
 #include <unordered_map>
@@ -7,14 +8,18 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h> 
+#include <random>
+#include <iostream>
 
 using namespace std;
 
 enum State {
+	CREATED,
 	NOT_BUILDING_BASE,
 	MOVING_TO_NEW_BASE,
 	IN_BASE_AREA,
 	BUILDING_BASE,
+	BUILDING_SUPPLY
 };
 
 class SCVAgent {
@@ -36,6 +41,7 @@ public:
 	bool goScout();
 	void buildCommandCenter(Unitset theMinerals, Unitset commandCenters);
 	Position pointNearNewBase(Unitset theMinerals, Unitset commandCenters);
+	void createSupply();
 	
 
 private:

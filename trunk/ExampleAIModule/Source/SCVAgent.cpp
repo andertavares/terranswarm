@@ -1,9 +1,20 @@
+#pragma once
+
+#include <BWAPI.h>
+#include <deque>
+#include <unordered_map>
+#include "Task.h"
+#include <iostream>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h> 
+#include <random>
+#include <iostream>
 #include "SCVAgent.h"
 #include "ExampleAIModule.h"
-#include <BWAPI.h>
-#include <iostream>
 
 using namespace BWAPI;
+using namespace Filter;
 using namespace std;
 
 SCVAgent::SCVAgent(BWAPI::Unit scv){
@@ -12,6 +23,7 @@ SCVAgent::SCVAgent(BWAPI::Unit scv){
 	unitId = gameUnit->getID();
 	lastPosition = Position(0,0);
 	lastFrameCount = Broodwar->getFrameCount();
+	state = CREATED;
 }
 
 
@@ -26,6 +38,10 @@ Unit SCVAgent::getUnit(){
 
 void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 
+	std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0, 1);
+
 	unordered_map<TaskType, list<Task>*>::iterator it = taskMap.begin();
 	for(unordered_map<TaskType, list<Task>*>::iterator iter = taskMap.begin(); iter != taskMap.end(); ++iter){
 		TaskType taskType =  iter->first;
@@ -37,6 +53,13 @@ void SCVAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 			// evaluate incentive
 			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 				
+				double uniformOn01 = dis(gen);
+				if(uniformOn01 <= it->getIncentive()){
+					createSupply();
+					Broodwar->drawTextMap(gameUnit->getPosition(),"\nBuilding supply");
+					Broodwar << "Agent [" << unitId << "] building supply depot" << std::endl;
+					return;
+				}
 			}
 		}
 		else if(taskType == BuildBarracks){
@@ -118,12 +141,12 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 				nullptr,  // condition
 				centerType.buildTime() + 100 );  // frames to run
 
-			if ( targetBuildLocation ){
+			//if ( targetBuildLocation ){
 
 				// Order the builder to construct the supply structure
 				gameUnit->build( centerType, targetBuildLocation );
 				state = BUILDING_BASE;
-			}
+			//}
 		}
 		
 	}
@@ -206,7 +229,7 @@ bool SCVAgent::goScout(){
 	if ( currentFrameCount >= lastFrameCount + 20){
 		lastFrameCount = currentFrameCount;
 		Position pos = getPositionToScout();
-		Broodwar << "Agent [" << unitId << "] Moving to :" << pos << std::endl;
+		Broodwar << "Agent [" << unitId << "] Scouting to :" << pos << std::endl;
 
 		gameUnit->move(pos);
 		return true;
@@ -287,18 +310,38 @@ Position SCVAgent::getPositionToScout(){
 		int randomIndex = rand() % positionListInRadious.size();
 		returnPosition = positionListInRadious[randomIndex];
 
-		Broodwar << "positionList [" << positionListInRadious.size() << "]" << std::endl;
-		Broodwar << "Agent [" << unitId << "] returning random option in Radious:" << returnPosition << std::endl;
+		//Broodwar << "positionList [" << positionListInRadious.size() << "]" << std::endl;
+		//Broodwar << "Agent [" << unitId << "] returning random option in Radious:" << returnPosition << std::endl;
 		lastPosition = returnPosition;
 	}
 	else if(positionListInMap.size() > 0){
 		int randomIndex = rand() % positionListInMap.size();
 		returnPosition = positionListInMap[randomIndex];
 
-		Broodwar << "positionListInMap [" << positionListInMap.size() << "]" << std::endl;
-		Broodwar << "Agent [" << unitId << "] returning random option in Map :" << returnPosition << std::endl;
+		//Broodwar << "positionListInMap [" << positionListInMap.size() << "]" << std::endl;
+		//Broodwar << "Agent [" << unitId << "] returning random option in Map :" << returnPosition << std::endl;
 		lastPosition = returnPosition;
 	}
 	
 	return returnPosition;
+}
+
+void SCVAgent::createSupply(){
+	state = BUILDING_SUPPLY;
+	UnitType supplyProviderType = gameUnit->getType().getRace().getSupplyProvider();
+	if ( supplyProviderType.isBuilding() ){
+		TilePosition targetBuildLocation = Broodwar->getBuildLocation(supplyProviderType, gameUnit->getTilePosition());
+		if ( targetBuildLocation ){
+			// Register an event that draws the target build location
+			Broodwar->registerEvent([targetBuildLocation,supplyProviderType](Game*){
+					Broodwar->drawBoxMap( Position(targetBuildLocation), Position(targetBuildLocation + supplyProviderType.tileSize()),	Colors::Blue);
+				},
+				nullptr,  // condition
+				supplyProviderType.buildTime() + 100 
+			);  // frames to run
+
+			// Order the builder to construct the supply structure
+			gameUnit->build( supplyProviderType, targetBuildLocation );
+		}
+	}
 }
