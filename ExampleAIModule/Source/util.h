@@ -1,5 +1,5 @@
 #pragma once
 #include <vector>
-#include "Task.h"
+#include "TaskAssociation.h"
 
-Task* weightedSelection(std::vector<Task>& theTasks);
+Task* weightedSelection(std::vector<TaskAssociation>& theTasks);
