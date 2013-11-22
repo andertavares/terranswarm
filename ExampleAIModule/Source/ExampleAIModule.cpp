@@ -71,15 +71,8 @@ void ExampleAIModule::onStart() {
 
 		//clears the list of discovered minerals
 		discoveredMinerals.clear();
-
-		//creates the tasksTypes
-		//trainMarine and gatherMinerals are always present, so they're created separately
-		trainMarine = new Task(TrainMarine, .8f);
-		gatherMinerals = new Task(GatherMinerals, .8f);
-		buildCommandCenter = new Task(BuildCommandCenter, 0);
-		buildSupplyDepot = new Task(BuildSupplyDepot, 0);
-		explore = new Task(Explore, 0);
-
+		
+		//initializes the map of task lists
 		//tasks are grouped by taskType
 		//insert all TaskTypes into map; all Types will point to empty list
 		for(int tt = TrainMarine; tt != GuardBase; ++tt){
@@ -88,11 +81,18 @@ void ExampleAIModule::onStart() {
 
 		//TaskTypes with single task instance will point to list with the instance
 		//TaskTypes with multiple instances will remain pointing to empty list (will be fulfilled on demand)
-		allTasks[TrainMarine]->push_back(*trainMarine); //push_front(*trainMarine);
-		allTasks[GatherMinerals]->push_back(*gatherMinerals);
-		allTasks[BuildSupplyDepot]->push_back(*buildSupplyDepot);
-		allTasks[Explore]->push_back(*explore);
-		allTasks[BuildCommandCenter]->push_back(*buildCommandCenter);
+		allTasks[TrainMarine]->push_back(Task(TrainMarine, .8f)); 
+		allTasks[GatherMinerals]->push_back(Task(GatherMinerals, .8f));
+		allTasks[BuildSupplyDepot]->push_back(Task(BuildSupplyDepot, 0));
+		allTasks[Explore]->push_back(Task(Explore, 0));
+		allTasks[BuildCommandCenter]->push_back(Task(BuildCommandCenter, 0));
+
+		//retrieves the single-instance tasks and stores them in pointers for easier remembering
+		trainMarine = &allTasks[TrainMarine]->at(0);
+		gatherMinerals = &allTasks[GatherMinerals]->at(0);
+		buildCommandCenter = &allTasks[BuildCommandCenter]->at(0);
+		buildSupplyDepot = &allTasks[BuildSupplyDepot]->at(0);
+		explore = &allTasks[Explore]->at(0);
 
 	}
 
@@ -182,62 +182,7 @@ void ExampleAIModule::onFrame() {
 	/*Broodwar->drawTextScreen(20, 90 + yOffset, "Number of SCV in map [%d]", 
 		Text::White, scvMap->size()
 	);*/
-
 	
-	// Iterate through all the units that we own
-	/*Unitset myUnits = Broodwar->self()->getUnits();
-	for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u ) {
-		// Ignore the unit if it no longer exists
-		// Make sure to include this block when handling any Unit pointer!
-		if ( !u->exists() )
-			continue;
-
-		// Ignore the unit if it has one of the following status ailments
-		if ( u->isLockedDown() || u->isMaelstrommed() || u->isStasised() )
-			continue;
-
-		// Ignore the unit if it is in one of the following states
-		if ( u->isLoaded() || !u->isPowered() || u->isStuck() )
-			continue;
-
-		// Ignore the unit if it is incomplete or busy constructing
-		if ( !u->isCompleted() || u->isConstructing() )
-			continue;
-		
-
-		// Finally make the unit do some stuff
-		//code to do distance testing
-		//if(u->getType() == UnitTypes::Terran_Marine){
-		//	Unit brk = u->getClosestUnit();
-		//	
-		//	Broodwar->drawLineMap(u->getPosition(), brk->getPosition(), Color(Colors::Cyan));
-		//	Broodwar->drawTextScreen(0, 120,"Distance (m,b) = %d",u->getDistance(brk));
-		//}
-		
-		
-		// If the unit is a worker unit
-		if ( u->getType().isWorker() ) {
-			// if our worker is idle
-			if ( u->isIdle() ) {
-				// Order workers carrying a resource to return them to the center,
-				// otherwise find a mineral patch to harvest.
-				if ( u->isCarryingGas() || u->isCarryingMinerals() ) {
-					u->returnCargo();
-				}
-				else if ( !u->getPowerUp() ) { // The worker cannot harvest anything if it
-											 // is carrying a powerup such as a flag
-					// Harvest from the nearest mineral patch or gas refinery
-					if ( !u->gather( u->getClosestUnit( IsMineralField || IsRefinery )) ) {
-						// If the call fails, then print the last error message
-						Broodwar << Broodwar->getLastError() << std::endl;
-					}
-
-				} // closure: has no powerup
-			} // closure: if idle
-		}
-		
-	} // closure: unit iterator
-	*/
 
 }
 
@@ -246,10 +191,6 @@ void ExampleAIModule::onSendText(std::string text)
 
   // Send the text to the game if it is not being processed.
   Broodwar->sendText("%s", text.c_str());
-
-
-  // Make sure to use %s and pass the text as a parameter,
-  // otherwise you may run into problems when you use the %(percent) character!
 
 }
 
@@ -539,6 +480,7 @@ void ExampleAIModule::updateTrainSCV(){
 		trainSCVIncentives[*cmd] = 1.0f - (scvAround.size() / (2.0f * mineralsAround.size()));
 
 	}
+	//Broodwar->getu
 }
 
 void ExampleAIModule::updateBuildCommandCenter(){
@@ -570,18 +512,25 @@ void ExampleAIModule::updateBuildCommandCenter(){
 
 void ExampleAIModule::updateBuildBarracks(){
 	//calculates the number of barracks around the command center
+	vector<Task>* newBarracksNeeded = new vector<Task>();
+
 	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); c++){
 		int barracksNumber = calculateBarracksFromCommandCenter(Broodwar->getUnit(c->getID()));
 
 		//updates the number of barracks around all command centers
 		builtBarracks[*c] = barracksNumber;
 		buildBarracksIncentives[*c] = 1.0f - barracksNumber/4.0f;
+		newBarracksNeeded->push_back(Task(BuildBarracks, 1.0f - barracksNumber/4.0f, c->getPosition()));
+
 		//TODO: call createBarrackNearCommandCenter using SwarmGAP rules
 
 		if(barracksNumber < 4){
 			createBarrackNearCommandCenter(Broodwar->getUnit(c->getID()));
 		}
 	}
+
+	allTasks[BuildBarracks]->swap(*newBarracksNeeded);
+	delete newBarracksNeeded; //hope this doesn't invalidates the barracks
 }
 
 /**
@@ -597,7 +546,7 @@ void ExampleAIModule::updateBuildSupplyDepot(){
 	if (  Broodwar->self()->incompleteUnitCount(supplyProviderType) > 0 ) {
 		dif = dif/5.0; //atenuates the difference if a supply depot is being built
 	}
-
+	//allTasks[BuildSupplyDepot]->at(0).setIncentive(1.0f - (dif/10.0f));
 	buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
 
 	// TODO: finds a command center to draw a debug text
@@ -705,10 +654,10 @@ void ExampleAIModule::_drawStats(){
 	// display some debug info...
 	Broodwar->drawTextScreen(20, 0, "%cSupply Depot incentive = %.3f", 
 		Text::White, 
-		allTasks[BuildSupplyDepot]->at(0).getIncentive()
+		buildSupplyDepot->getIncentive()
 	); 
 
-	Broodwar->sendText("%d", &allTasks[BuildSupplyDepot]->at(0) == buildSupplyDepot);
+	//Broodwar->sendText("%d", &allTasks[BuildSupplyDepot]->at(0) == buildSupplyDepot);
 
 	Broodwar->drawTextScreen(20, 15, "%cExplore incentive = %.3f", 
 		Text::White, 
@@ -733,17 +682,26 @@ void ExampleAIModule::_drawStats(){
 		buildCommandCenter->getIncentive()
 	);
 
-	Broodwar->drawTextScreen(20,75, "%c#Brk // Brk inc. // SCV inc:", 
+	Broodwar->drawTextScreen(20,75, "%cBrk inc. // SCV inc:", 
 		Text::White 
 	);
 
 	int yOffset = 0;
-	for (Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
+	/*for (Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
 		Broodwar->drawTextScreen(20,90 + yOffset, "%c%d // %.2f // %.3f", 
 			Text::White, builtBarracks[*cmd], buildBarracksIncentives[*cmd], trainSCVIncentives[*cmd]
 		);
 		yOffset += 15;
+	}*/
+
+	for(auto brkTask = allTasks[BuildBarracks]->begin(); brkTask != allTasks[BuildBarracks]->end(); ++brkTask){
+		Unit cmdCenterAtPos = Broodwar->getUnitsInRadius(brkTask->getPosition(), 5)[0];
+		Broodwar->drawTextScreen(20,90 + yOffset, "%c%.2f // %.3f", 
+			Text::White, brkTask->getIncentive(), trainSCVIncentives[cmdCenterAtPos]
+		);
+		yOffset += 15;
 	}
+
 
 	Broodwar->drawTextScreen(20, 90 + yOffset, "No of SCV [%d] Marines [%d]", 
 		scvMap.size(), marines.size()
