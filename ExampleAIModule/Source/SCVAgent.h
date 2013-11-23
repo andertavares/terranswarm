@@ -38,10 +38,12 @@ public:
 	void buildCommandCenter(Unitset theMinerals, Unitset commandCenters);
 	Position pointNearNewBase(Unitset theMinerals, Unitset commandCenters);
 	void createSupply();
+	void createBarrackNearCommandCenter(Position commandCenterPos);
 	
 
 private:
 	BWAPI::Position lastPosition;
+	int lastChecked;
 	
 };
 

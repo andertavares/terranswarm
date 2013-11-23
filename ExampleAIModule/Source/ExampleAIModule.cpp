@@ -58,8 +58,9 @@ void ExampleAIModule::onStart() {
 	}
 	else {// if this is not a replay
   
-		Broodwar->sendText("show me the money");
-		Broodwar->sendText("operation cwal");
+		//Broodwar->sendText("show me the money");
+		//Broodwar->sendText("operation cwal");
+		Broodwar->sendText("/speed 0");
 
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
 		// If you wish to deal with multiple enemies then you must use enemies().
@@ -82,7 +83,7 @@ void ExampleAIModule::onStart() {
 		//TaskTypes with single task instance will point to list with the instance
 		//TaskTypes with multiple instances will remain pointing to empty list (will be fulfilled on demand)
 		allTasks[TrainMarine]->push_back(Task(TrainMarine, .8f)); 
-		allTasks[GatherMinerals]->push_back(Task(GatherMinerals, .8f));
+		allTasks[GatherMinerals]->push_back(Task(GatherMinerals, .6f));
 		allTasks[BuildSupplyDepot]->push_back(Task(BuildSupplyDepot, 0));
 		allTasks[Explore]->push_back(Task(Explore, 0));
 		allTasks[BuildCommandCenter]->push_back(Task(BuildCommandCenter, 0));
@@ -132,10 +133,19 @@ void ExampleAIModule::onFrame() {
 		return;
 
 	// Reinsert supply depot task
+	if(allTasks[BuildCommandCenter]->size() <= 0){
+		allTasks[BuildCommandCenter]->push_back(Task(BuildCommandCenter, 0));
+		buildCommandCenter = &allTasks[BuildCommandCenter]->at(0);
+	}
 	if(allTasks[BuildSupplyDepot]->size() <= 0){
 		allTasks[BuildSupplyDepot]->push_back(Task(BuildSupplyDepot, 0));
 		buildSupplyDepot = &allTasks[BuildSupplyDepot]->at(0);
 	}
+	if(allTasks[Explore]->size() <= 0){
+		allTasks[Explore]->push_back(Task(Explore, 0));
+		explore = &allTasks[Explore]->at(0);
+	}
+	
 
 	updateTasks();
 
@@ -147,23 +157,21 @@ void ExampleAIModule::onFrame() {
 	}
 
 	// Iterate through all the SCV on the map
-	int scvCounter = 0;
 	unordered_map<int, SCVAgent*>::iterator it = scvMap.begin();
 	for(unordered_map<int, SCVAgent*>::iterator iter = scvMap.begin(); iter != scvMap.end(); ++iter){
-		scvCounter++;
 		int unitId =  iter->first;
 		SCVAgent* agent = iter->second;
 		Unit u = agent->getUnit();
 
 		agent->onFrame(&allTasks, discoveredMinerals, commandCenters);
 
-		if(unitId == 4){
+		/*if(unitId == 4){
 			agent->goScout();
-		}
+		}*/
 
-		if(unitId == 3){
+		/*if(unitId == 3){
 			agent->buildCommandCenter(discoveredMinerals, commandCenters);
-		}
+		}*/
 
 		//Broodwar->drawTextMap(u->getPosition().x, u->getPosition().y, "agentId[%d]", unitId);
 
@@ -237,7 +245,7 @@ void ExampleAIModule::onNukeDetect(BWAPI::Position target)
 //BWAPI calls this when a unit becomes accessible
 void ExampleAIModule::onUnitDiscover(Unit unit){
 	
-	Broodwar->sendText("Unit [%s] discovered ID [%d]", unit->getType().getName().c_str(), unit->getID());
+	//Broodwar->sendText("Unit [%s] discovered ID [%d]", unit->getType().getName().c_str(), unit->getID());
 
 	if (unit->getPlayer() == Broodwar->self() && unit->getType() == UnitTypes::Terran_Command_Center) {
 		commandCenters.insert(unit);
@@ -553,9 +561,9 @@ void ExampleAIModule::updateBuildBarracks(){
 
 		//TODO: call createBarrackNearCommandCenter using SwarmGAP rules
 
-		if(barracksNumber < 4){
+		/*if(barracksNumber < 4){
 			createBarrackNearCommandCenter(Broodwar->getUnit(c->getID()));
-		}
+		}*/
 	}
 
 	allTasks[BuildBarracks]->swap(*newBarracksNeeded);
@@ -570,11 +578,13 @@ void ExampleAIModule::updateBuildSupplyDepot(){
 	if(Broodwar->self()->supplyTotal() == 400){
 		//max supply reached, no need to build more depots
 		buildSupplyDepot->setIncentive(0);
+		return;
 	}
 
 	if(Broodwar->self()->minerals() < UnitTypes::Terran_Supply_Depot.mineralPrice()){
 		//not enough minerals, can't build more depots
 		buildSupplyDepot->setIncentive(0);
+		return;
 	}
 
 	int dif = max(0, (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed())/2); //bwapi returns 2*the actual difference...
@@ -588,7 +598,7 @@ void ExampleAIModule::updateBuildSupplyDepot(){
 		buildSupplyDepot->setIncentive(0.0f);
 	}
 	else{
-		buildSupplyDepot->setIncentive(1.0f - (dif/10.0f));
+		buildSupplyDepot->setIncentive(max(0.0f,1.0f - (dif/10.0f)));
 	}
 	//allTasks[BuildSupplyDepot]->at(0).setIncentive(1.0f - (dif/10.0f));
 	//buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
@@ -745,11 +755,6 @@ void ExampleAIModule::_drawStats(){
 		);
 		yOffset += 15;
 	}
-
-
-	Broodwar->drawTextScreen(20, 90 + yOffset, "No of SCV [%d] Marines [%d]", 
-		scvMap.size(), marines.size()
-	);
 
 	//draws the command center 'radius'
 	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); ++c){

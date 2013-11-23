@@ -27,6 +27,7 @@ SCVAgent::SCVAgent(BWAPI::Unit scv){
 	lastPosition = Position(0,0);
 	lastFrameCount = Broodwar->getFrameCount();
 	state = NO_TASK;
+	lastChecked = 0;
 }
 
 
@@ -44,6 +45,15 @@ Unit SCVAgent::getUnit(){
 
 void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters){
 	
+	if(!gameUnit->isCompleted()){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nIncomplete");
+		return;
+	}
+
+	if(state == EXPLORING){
+		if(goScout()) return;
+	}
+
 	//only chooses another task if current is gathering minerals or doing nothing
 	/*if(! (state == GATHERING_MINERALS || state == NO_TASK) ){
 		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBusy %d", state);
@@ -150,71 +160,155 @@ MOVING_TO_NEW_BASE, IN_BASE_AREA, BUILDING_BASE
 
 	// Validate actions and status
 	if(gameUnit->isConstructing() || gameUnit->isMoving()){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nConstructing or moving");
 		return;
 	}
 
 	// Simple approach to local incentives
-	for(unordered_map<TaskType, vector<Task>*>::iterator iter = taskMap->begin(); iter != taskMap->end(); ++iter){
-		TaskType taskType =  iter->first;
-		vector<Task>* taskList = iter->second;
+	if ( lastChecked + 75 < Broodwar->getFrameCount() || lastChecked == 0) {
+		for(unordered_map<TaskType, vector<Task>*>::iterator iter = taskMap->begin(); iter != taskMap->end(); ++iter){
+			TaskType taskType =  iter->first;
+			vector<Task>* taskList = iter->second;
 
-		if(taskType == BuildSupplyDepot){
-			for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){		
-				float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-				//Broodwar << "Agent [" << unitId << "] supply depot incentive [" << it->getIncentive() << "] value [" << rNumber << "]" << std::endl;
-				if(it->getIncentive() > rNumber * 0.9){
+			if(taskType == GatherMinerals){
+				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+					auto task = it;
+					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					TaskAssociation taskA = TaskAssociation(&(*task), 0.7f);
+
+					if(taskA.tValue() > rNumber){
+						state = GATHERING_MINERALS;
+						Broodwar->drawTextMap(gameUnit->getPosition(),"\Gathering");
+						lastChecked = Broodwar->getFrameCount();
+						
+						if ( gameUnit->isCarryingGas() || gameUnit->isCarryingMinerals() ) {
+							gameUnit->returnCargo();
+						}
+						else if ( !gameUnit->getPowerUp() ) { 
+							if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
+								Broodwar << Broodwar->getLastError() << std::endl;
+							}
+						}
+						return;
+					}
+				}
+			}
+			else if(taskType == BuildSupplyDepot){
+				
+				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+				//for (auto task = taskList->begin(); task != taskList->end(); task++){		
+					auto task = it;
+					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					TaskAssociation taskA = TaskAssociation(&(*task), 0.5f);
 					
-					// Check if other SCV near by are constructing the same thing
-					Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 50 * TILE_SIZE, Filter::IsWorker);
-					int scvNearConstructingSCV = 0;
-					for(Unitset::iterator scvIt = scvAround.begin(); scvIt != scvAround.end(); ++scvIt){
-						if(scvIt->isConstructing() ){
-							//&& scvIt->getBuildUnit() !=NULL
-							//&& scvIt->getBuildUnit()->getType() == UnitTypes::Terran_Supply_Depot){
-							scvNearConstructingSCV++;
+					if(taskA.tValue() > rNumber){
+						Broodwar << "Agent [" << unitId << "] Task suppy dep " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
+						// Check if other SCV near by are constructing the same thing
+						Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 50 * TILE_SIZE, Filter::IsWorker);
+						int scvNearConstructingSCV = 0;
+						for(Unitset::iterator scvIt = scvAround.begin(); scvIt != scvAround.end(); ++scvIt){
+							if(scvIt->isConstructing() ){
+								//&& scvIt->getBuildUnit() !=NULL
+								//&& scvIt->getBuildUnit()->getType() == UnitTypes::Terran_Supply_Depot){
+								scvNearConstructingSCV++;
+							}
+						}
+					
+						if(scvNearConstructingSCV <= 1){
+							Broodwar->drawTextMap(gameUnit->getPosition(),"\Supply Depot");
+							lastChecked = Broodwar->getFrameCount();
+							createSupply();
+							it = taskList->erase(it);
+							return;
 						}
 					}
+				}
+			}
+			else if(taskType == BuildBarracks){
+				// evaluate incentive
+				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+					auto task = it;
+					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					TaskAssociation taskA = TaskAssociation(&(*task), 0.5f);
 					
-					if(scvNearConstructingSCV <= 0){
-						createSupply();
+					if(taskA.tValue() > rNumber){
+						Broodwar << "Agent [" << unitId << "] Task barrack " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
+						// Check if other SCV near by are constructing the same thing
+						Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 50 * TILE_SIZE, Filter::IsWorker);
+						int scvNearConstructingSCV = 0;
+						for(Unitset::iterator scvIt = scvAround.begin(); scvIt != scvAround.end(); ++scvIt){
+							if(scvIt->isConstructing() ){
+								scvNearConstructingSCV++;
+							}
+						}
+					
+						if(scvNearConstructingSCV <= 1){
+							Broodwar->drawTextMap(gameUnit->getPosition(),"\Barrack");
+							lastChecked = Broodwar->getFrameCount();
+							createBarrackNearCommandCenter(it->getPosition());
+							it = taskList->erase(it);
+							return;
+						}
+					}
+				}
+			}
+			else if(taskType == Explore){
+				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+					auto task = it;
+					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					TaskAssociation taskA = TaskAssociation(&(*task), 0.00001f);
+
+					if(taskA.tValue() > rNumber){
+						state = EXPLORING;
+						Broodwar->drawTextMap(gameUnit->getPosition(),"\Explore");
+						lastChecked = Broodwar->getFrameCount();
+						goScout();
+						it = taskList->erase(it);
+						return;
+					}
+				}
+			}
+			else if(taskType == BuildCommandCenter){
+				// Calculate how far is the new command center
+				// Calculate how many minerals are near the command center
+				// evaluate incentive
+				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+					auto task = it;
+					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					TaskAssociation taskA = TaskAssociation(&(*task), 0.5f);
+
+					if(taskA.tValue() > rNumber){
+						Broodwar << "Agent [" << unitId << "] Task command " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
+						lastChecked = Broodwar->getFrameCount();
+						buildCommandCenter(theMinerals, commandCenters);
 						it = taskList->erase(it);
 						return;
 					}
 				}
 			}
 		}
-		else if(taskType == BuildBarracks){
-			// evaluate incentive
-			for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
-				
-			}
-		}
-		else if(taskType == BuildCommandCenter){
-			// Calculate how far is the new command center
-			// Calculate how many minerals are near the command center
-			// evaluate incentive
-			for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
-				
-			}
-		}
-	}
 
-	// Default action
-	if ( gameUnit->isIdle() ) {
-		// Order workers carrying a resource to return them to the center,
-		// otherwise find a mineral patch to harvest.
-		if ( gameUnit->isCarryingGas() || gameUnit->isCarryingMinerals() ) {
-			gameUnit->returnCargo();
-		}
-		else if ( !gameUnit->getPowerUp() ) { // The worker cannot harvest anything if it
-										 // is carrying a powerup such as a flag
-				// Harvest from the nearest mineral patch or gas refinery
-			if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
-				// If the call fails, then print the last error message
-				Broodwar << Broodwar->getLastError() << std::endl;
+		// Default action
+		if ( gameUnit->isIdle() ) {
+			lastChecked = Broodwar->getFrameCount();
+			//Broodwar->drawTextMap(gameUnit->getPosition(),"\nIdle");
+			// Order workers carrying a resource to return them to the center,
+			// otherwise find a mineral patch to harvest.
+			if ( gameUnit->isCarryingGas() || gameUnit->isCarryingMinerals() ) {
+				gameUnit->returnCargo();
 			}
-		} // closure: has no powerup
-	} // closure: if idle
+			else if ( !gameUnit->getPowerUp() ) { 
+					// The worker cannot harvest anything if it
+					// is carrying a powerup such as a flag
+					// Harvest from the nearest mineral patch or gas refinery
+				if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
+					// If the call fails, then print the last error message
+					Broodwar << Broodwar->getLastError() << std::endl;
+				}
+			} // closure: has no powerup
+		} // closure: if idle
+	}
+	
 }
 
 /**
@@ -351,7 +445,7 @@ bool SCVAgent::goScout(){
 	if ( currentFrameCount >= lastFrameCount + 20){
 		lastFrameCount = currentFrameCount;
 		Position pos = getPositionToScout();
-		Broodwar << "Agent [" << unitId << "] Scouting to :" << pos << std::endl;
+		//Broodwar << "Agent [" << unitId << "] Scouting to :" << pos << std::endl;
 
 		gameUnit->move(pos);
 		return true;
@@ -465,5 +559,25 @@ void SCVAgent::createSupply(){
 			// Order the builder to construct the supply structure
 			gameUnit->build( supplyProviderType, targetBuildLocation );
 		}
+	}
+}
+
+void SCVAgent::createBarrackNearCommandCenter(Position commandCenterPos) {
+	UnitType barrackType = UnitTypes::Terran_Barracks;
+
+	TilePosition targetBuildLocation = Broodwar->getBuildLocation(barrackType, gameUnit->getTilePosition());
+	if ( targetBuildLocation ){
+		// Register an event that draws the target build location
+		Broodwar->registerEvent([targetBuildLocation,barrackType](Game*)
+			{
+				Broodwar->drawBoxMap( Position(targetBuildLocation),
+					Position(targetBuildLocation + barrackType.tileSize()),
+					Colors::Blue);
+			},
+				nullptr,  // condition
+			barrackType.buildTime() + 100 );  // frames to run
+
+		// Order the builder to construct the supply structure
+		gameUnit->build( barrackType, targetBuildLocation );
 	}
 }
