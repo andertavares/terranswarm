@@ -58,8 +58,8 @@ void ExampleAIModule::onStart() {
 	}
 	else {// if this is not a replay
   
-		//Broodwar->sendText("show me the money");
-		//Broodwar->sendText("operation cwal");
+		Broodwar->sendText("show me the money");
+		Broodwar->sendText("operation cwal");
 
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
 		// If you wish to deal with multiple enemies then you must use enemies().
@@ -495,6 +495,12 @@ void ExampleAIModule::updateTrainSCV(){
 
 void ExampleAIModule::updateBuildCommandCenter(){
 
+	//if we don't have enough minerals for a CMD center, sets zero incentive
+	if (Broodwar->self()->minerals() < UnitTypes::Terran_Command_Center.mineralPrice()){
+		buildCommandCenter->setIncentive(0.0f);
+		return;
+	}
+
 	/*if(buildCommandCenter->getIncentive() > 0) {
 		if(scvMap[3] != NULL){
 			scvMap[3]->buildCommandCenter(discoveredMinerals, commandCenters);
@@ -523,6 +529,9 @@ void ExampleAIModule::updateBuildCommandCenter(){
 
 
 void ExampleAIModule::updateBuildBarracks(){
+
+	
+
 	//calculates the number of barracks around the command center
 	vector<Task>* newBarracksNeeded = new vector<Task>();
 
@@ -532,7 +541,15 @@ void ExampleAIModule::updateBuildBarracks(){
 		//updates the number of barracks around all command centers
 		builtBarracks[*c] = barracksNumber;
 		buildBarracksIncentives[*c] = 1.0f - barracksNumber/4.0f;
-		newBarracksNeeded->push_back(Task(BuildBarracks, 1.0f - barracksNumber/4.0f, c->getPosition()));
+
+		float incentive = 1.0f - barracksNumber/4.0f;
+
+		//sets incentive to ZERO if we have not enough minerals
+		if(Broodwar->self()->minerals() < UnitTypes::Terran_Barracks.mineralPrice()){
+			incentive = 0.0f;
+		}
+
+		newBarracksNeeded->push_back(Task(BuildBarracks, incentive, c->getPosition()));
 
 		//TODO: call createBarrackNearCommandCenter using SwarmGAP rules
 
@@ -552,6 +569,11 @@ void ExampleAIModule::updateBuildSupplyDepot(){
 	
 	if(Broodwar->self()->supplyTotal() == 400){
 		//max supply reached, no need to build more depots
+		buildSupplyDepot->setIncentive(0);
+	}
+
+	if(Broodwar->self()->minerals() < UnitTypes::Terran_Supply_Depot.mineralPrice()){
+		//not enough minerals, can't build more depots
 		buildSupplyDepot->setIncentive(0);
 	}
 
@@ -749,6 +771,11 @@ void ExampleAIModule::_drawStats(){
 		Broodwar->drawTextMap(s->second->getUnit()->getPosition(), "ID[%d]", s->second->unitId);
 	}
 
+	//writes info under marines
+	for(auto m = marines.begin(); m != marines.end(); m++){
+		Broodwar->drawTextMap(m->second->gameUnit->getPosition(), "ID[%d]", m->second->gameUnit->getID());
+	}
+
 	//writes debug info under marines
 	/*for(auto m = marines.begin(); m != marines.end(); ++m){
 		MarineAgent* mar = m->second;
@@ -757,7 +784,7 @@ void ExampleAIModule::_drawStats(){
 
 	//draws circles around Attack targets
 	for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
-		Broodwar->drawCircleMap(task->getPosition(), 6*TILE_SIZE, Color(Colors::Red));
+		Broodwar->drawCircleMap(task->getPosition(), UnitTypes::Terran_Marine.sightRange(), Color(Colors::Red));
 	}
 }
 
