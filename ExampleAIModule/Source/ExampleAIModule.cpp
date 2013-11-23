@@ -621,7 +621,7 @@ void ExampleAIModule::updateExplore(){
 		}
 	}
 	//explored incentive is % of map unrevealed; if game is more than 5 minutes (doesn't scout too early)
-	if (Broodwar->getFrameCount()/24 > 300) {
+	if (Broodwar->getFrameCount()/24 > 60) {
 		explore->setIncentive(1.0f - float(exploredTiles) / (width * height));
 	}
     //int minutes = seconds/60;

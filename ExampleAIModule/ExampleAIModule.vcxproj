@@ -98,6 +98,7 @@
     <ClCompile Include="Source\util.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\AgentStates.h" />
     <ClInclude Include="Source\CommanderAgent.h" />
     <ClInclude Include="Source\ExampleAIModule.h" />
     <ClInclude Include="Source\MarineAgent.h" />
