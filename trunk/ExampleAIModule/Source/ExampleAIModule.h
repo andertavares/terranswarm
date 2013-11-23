@@ -50,14 +50,12 @@ class ExampleAIModule : public BWAPI::AIModule {
 	//incentive to build barracks around the command centers
 	unordered_map<Unit, float> buildBarracksIncentives;
 
+	// Map of SVCs agents
+	unordered_map<int, SCVAgent*> scvMap;
+	unordered_map<int, MarineAgent*> marines; //stores the marines owned
 
 	//is a supply depot scheduled to be built?
 	bool scheduledSupplyDepots;
-
-	// Map of SVCs agents
-	unordered_map<int, SCVAgent*> scvMap;
-
-	unordered_map<int, MarineAgent*> marines; //stores the marines owned
 
 	void _drawStats(); //writes information texts on screen and draws some useful figures
 	void _drawExploredStats();
@@ -96,4 +94,5 @@ public:
 	void updateExplore();
 	int calculateBarracksFromCommandCenter(BWAPI::Unit cmdCenter);
 	void createBarrackNearCommandCenter(BWAPI::Unit cmdCenter);
+
 };

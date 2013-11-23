@@ -163,7 +163,7 @@ void ExampleAIModule::onFrame() {
 		SCVAgent* agent = iter->second;
 		Unit u = agent->getUnit();
 
-		agent->onFrame(&allTasks, discoveredMinerals, commandCenters);
+		agent->onFrame(&allTasks, discoveredMinerals, commandCenters, scvMap);
 
 		/*if(unitId == 4){
 			agent->goScout();
