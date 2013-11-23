@@ -43,7 +43,7 @@ Unit SCVAgent::getUnit(){
 	return gameUnit;
 }
 
-void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters){
+void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters, unordered_map<int, SCVAgent*> scvMap){
 	
 	if(!gameUnit->isCompleted()){
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nIncomplete");
@@ -51,112 +51,24 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 	}
 
 	if(state == EXPLORING){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nExploring");
 		if(goScout()) return;
 	}
 
-	//only chooses another task if current is gathering minerals or doing nothing
-	/*if(! (state == GATHERING_MINERALS || state == NO_TASK) ){
-		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBusy %d", state);
-		return;
-	}*/
-
-	vector<TaskAssociation> taskAssociations;
-	//feasibleTasks.clear(); //initializes the task vector
-	//vector<Task>::iterator fit = feasibleTasks.begin();
-	
-	//inserts all tasks that SCV can perform
-	/*feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildBarracks]->begin(),taskMap[BuildBarracks]->end());
-	feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildSupplyDepot]->begin(),taskMap[BuildSupplyDepot]->end());
-	feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildCommandCenter]->begin(),taskMap[BuildCommandCenter]->end());
-	feasibleTasks.insert(feasibleTasks.begin(),taskMap[Explore]->begin(),taskMap[Explore]->end());
-	*/
-	
-	/*
-	switch (state){
-	case BUILDING_BARRACKS:
-	case BUILDING_SUPPLY_DEPOT:
-	case MOVING_TO_NEW_BASE:
-		return;
-		return
-MOVING_TO_NEW_BASE, IN_BASE_AREA, BUILDING_BASE
-	}*/
-
-	/*
-	//TODO: calculate the T values for feasible tasks...
-	for(auto taskIter = taskMap.begin(); taskIter != taskMap.end(); ++taskIter){
-		float capability = 0;
-
-		switch(taskIter->first){
-			case BuildBarracks:
-			case BuildSupplyDepot:
-			case BuildCommandCenter:
-			case GatherMinerals:
-				capability = 1;
-				break;
-
-			case Explore:
-				capability = 0.3;
-				break;
-		} //closure: switch
-
-		if (capability == 0){
-			continue; //agent is not able to perform tasks of this type, go to next
-		}
-		for(auto task = taskIter->second->begin(); task != taskIter->second->end(); task++){
-			taskAssociations.push_back(TaskAssociation(&(*task), capability));
-
-			if(gameUnit->getID() == 1){
-				Broodwar->sendText("TI: %.2f, K: %.2f",task->getIncentive(),capability);
-			}
-		}
-	}
-	
-	// Debug
-	if(gameUnit->getID() == 1){
-		int offset = 0;
-		//Broodwar->drawTextScreen(200,115,"%d items", feasibleTasks.size());
-		for (auto ta = taskAssociations.begin(); ta != taskAssociations.end(); ta++){
-			Broodwar->drawTextScreen(200,115+offset,"%d - %d", ta->task()->getTaskType(), ta->task()->getIncentive());
-			offset += 15;
-		}	
-	}
-
-	Task* toPerform = NULL;
-	for(auto ta = taskAssociations.begin(); ta != taskAssociations.end(); ++ta){
-		float random = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1));
-		if(ta->tValue() > random){
-			toPerform = ta->task();
-			break;
-		}
-	}
-
-	if (toPerform == NULL || toPerform->getTaskType() == GatherMinerals){
-		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nGAT");
-		if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
-			// If the call fails, then print the last error message
-			Broodwar << Broodwar->getLastError() << std::endl;
-		}
-		state = GATHERING_MINERALS;
-	}
-
-	if(toPerform->getTaskType() == BuildSupplyDepot){
-		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBS");
-		state = BUILDING_SUPPLY_DEPOT;
-		createSupply();
-	}
-
-	if(toPerform->getTaskType() == BuildBarracks){
-		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBB");
-		state = BUILDING_BARRACKS;
-	}
-
-	if(toPerform->getTaskType() == BuildCommandCenter){
-		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBC");
+	if(state == MOVING_TO_NEW_BASE ||
+		state == IN_BASE_AREA ||
+		state == BUILDING_BASE){
+		
 		buildCommandCenter(theMinerals, commandCenters);
+		return;
 	}
 
-	toPerform->setIncentive(0.0f);
-	*/
+	if(gameUnit->isGatheringMinerals()){
+		if(gameUnit->getOrder() == Orders::MiningMinerals){
+			Broodwar->drawTextMap(gameUnit->getPosition(),"\nGathering");
+			return;
+		}
+	}
 
 	// Validate actions and status
 	if(gameUnit->isConstructing() || gameUnit->isMoving()){
@@ -178,7 +90,7 @@ MOVING_TO_NEW_BASE, IN_BASE_AREA, BUILDING_BASE
 
 					if(taskA.tValue() > rNumber){
 						state = GATHERING_MINERALS;
-						Broodwar->drawTextMap(gameUnit->getPosition(),"\Gathering");
+						Broodwar->drawTextMap(gameUnit->getPosition(),"\nGathering");
 						lastChecked = Broodwar->getFrameCount();
 						
 						if ( gameUnit->isCarryingGas() || gameUnit->isCarryingMinerals() ) {
@@ -215,7 +127,7 @@ MOVING_TO_NEW_BASE, IN_BASE_AREA, BUILDING_BASE
 						}
 					
 						if(scvNearConstructingSCV <= 1){
-							Broodwar->drawTextMap(gameUnit->getPosition(),"\Supply Depot");
+							Broodwar->drawTextMap(gameUnit->getPosition(),"\nSupply Depot");
 							lastChecked = Broodwar->getFrameCount();
 							createSupply();
 							it = taskList->erase(it);
@@ -243,28 +155,12 @@ MOVING_TO_NEW_BASE, IN_BASE_AREA, BUILDING_BASE
 						}
 					
 						if(scvNearConstructingSCV <= 1){
-							Broodwar->drawTextMap(gameUnit->getPosition(),"\Barrack");
+							Broodwar->drawTextMap(gameUnit->getPosition(),"\nBarrack");
 							lastChecked = Broodwar->getFrameCount();
 							createBarrackNearCommandCenter(it->getPosition());
 							it = taskList->erase(it);
 							return;
 						}
-					}
-				}
-			}
-			else if(taskType == Explore){
-				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
-					auto task = it;
-					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-					TaskAssociation taskA = TaskAssociation(&(*task), 0.00001f);
-
-					if(taskA.tValue() > rNumber){
-						state = EXPLORING;
-						Broodwar->drawTextMap(gameUnit->getPosition(),"\Explore");
-						lastChecked = Broodwar->getFrameCount();
-						goScout();
-						it = taskList->erase(it);
-						return;
 					}
 				}
 			}
@@ -275,14 +171,56 @@ MOVING_TO_NEW_BASE, IN_BASE_AREA, BUILDING_BASE
 				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 					auto task = it;
 					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-					TaskAssociation taskA = TaskAssociation(&(*task), 0.5f);
+					TaskAssociation taskA = TaskAssociation(&(*task), 1.0f);
 
 					if(taskA.tValue() > rNumber){
-						Broodwar << "Agent [" << unitId << "] Task command " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
-						lastChecked = Broodwar->getFrameCount();
-						buildCommandCenter(theMinerals, commandCenters);
-						it = taskList->erase(it);
-						return;
+
+						bool isOthersExpanding = false;
+						for(auto agent = scvMap.begin(); agent != scvMap.end(); agent++){
+							if(agent->second->unitId != unitId && 
+								(agent->second->state == MOVING_TO_NEW_BASE ||
+								agent->second->state == IN_BASE_AREA || 
+								agent->second->state == BUILDING_BASE)){
+								isOthersExpanding = true;
+								break;
+							}
+						}
+
+						if(!isOthersExpanding){
+							Broodwar << "Agent [" << unitId << "] Task command " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
+							lastChecked = Broodwar->getFrameCount();
+							buildCommandCenter(theMinerals, commandCenters);
+							it = taskList->erase(it);
+							return;
+						}
+					}
+				}
+			}
+			else if(taskType == Explore){
+				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+					auto task = it;
+					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					TaskAssociation taskA = TaskAssociation(&(*task), 0.0f);
+
+					if(taskA.tValue() > rNumber){
+						
+						bool isOthersScouting = false;
+						for(auto agent = scvMap.begin(); agent != scvMap.end(); agent++){
+							if(agent->second->unitId != unitId && agent->second->state == EXPLORING){
+								isOthersScouting = true;
+								break;
+							}
+						}
+
+						if(!isOthersScouting){
+							Broodwar << "Agent [" << unitId << "] Task explore " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
+							state = EXPLORING;
+							Broodwar->drawTextMap(gameUnit->getPosition(),"\nExplore");
+							lastChecked = Broodwar->getFrameCount();
+							goScout();
+							it = taskList->erase(it);
+							return;
+						}
 					}
 				}
 			}
@@ -581,3 +519,107 @@ void SCVAgent::createBarrackNearCommandCenter(Position commandCenterPos) {
 		gameUnit->build( barrackType, targetBuildLocation );
 	}
 }
+
+	//only chooses another task if current is gathering minerals or doing nothing
+	/*if(! (state == GATHERING_MINERALS || state == NO_TASK) ){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBusy %d", state);
+		return;
+	}*/
+
+	vector<TaskAssociation> taskAssociations;
+	//feasibleTasks.clear(); //initializes the task vector
+	//vector<Task>::iterator fit = feasibleTasks.begin();
+	
+	//inserts all tasks that SCV can perform
+	/*feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildBarracks]->begin(),taskMap[BuildBarracks]->end());
+	feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildSupplyDepot]->begin(),taskMap[BuildSupplyDepot]->end());
+	feasibleTasks.insert(feasibleTasks.begin(),taskMap[BuildCommandCenter]->begin(),taskMap[BuildCommandCenter]->end());
+	feasibleTasks.insert(feasibleTasks.begin(),taskMap[Explore]->begin(),taskMap[Explore]->end());
+	*/
+	
+	/*
+	switch (state){
+	case BUILDING_BARRACKS:
+	case BUILDING_SUPPLY_DEPOT:
+	case MOVING_TO_NEW_BASE:
+		return;
+		return
+MOVING_TO_NEW_BASE, IN_BASE_AREA, BUILDING_BASE
+	}*/
+
+	/*
+	//TODO: calculate the T values for feasible tasks...
+	for(auto taskIter = taskMap.begin(); taskIter != taskMap.end(); ++taskIter){
+		float capability = 0;
+
+		switch(taskIter->first){
+			case BuildBarracks:
+			case BuildSupplyDepot:
+			case BuildCommandCenter:
+			case GatherMinerals:
+				capability = 1;
+				break;
+
+			case Explore:
+				capability = 0.3;
+				break;
+		} //closure: switch
+
+		if (capability == 0){
+			continue; //agent is not able to perform tasks of this type, go to next
+		}
+		for(auto task = taskIter->second->begin(); task != taskIter->second->end(); task++){
+			taskAssociations.push_back(TaskAssociation(&(*task), capability));
+
+			if(gameUnit->getID() == 1){
+				Broodwar->sendText("TI: %.2f, K: %.2f",task->getIncentive(),capability);
+			}
+		}
+	}
+	
+	// Debug
+	if(gameUnit->getID() == 1){
+		int offset = 0;
+		//Broodwar->drawTextScreen(200,115,"%d items", feasibleTasks.size());
+		for (auto ta = taskAssociations.begin(); ta != taskAssociations.end(); ta++){
+			Broodwar->drawTextScreen(200,115+offset,"%d - %d", ta->task()->getTaskType(), ta->task()->getIncentive());
+			offset += 15;
+		}	
+	}
+
+	Task* toPerform = NULL;
+	for(auto ta = taskAssociations.begin(); ta != taskAssociations.end(); ++ta){
+		float random = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1));
+		if(ta->tValue() > random){
+			toPerform = ta->task();
+			break;
+		}
+	}
+
+	if (toPerform == NULL || toPerform->getTaskType() == GatherMinerals){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nGAT");
+		if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
+			// If the call fails, then print the last error message
+			Broodwar << Broodwar->getLastError() << std::endl;
+		}
+		state = GATHERING_MINERALS;
+	}
+
+	if(toPerform->getTaskType() == BuildSupplyDepot){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBS");
+		state = BUILDING_SUPPLY_DEPOT;
+		createSupply();
+	}
+
+	if(toPerform->getTaskType() == BuildBarracks){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBB");
+		state = BUILDING_BARRACKS;
+	}
+
+	if(toPerform->getTaskType() == BuildCommandCenter){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"%\nBC");
+		buildCommandCenter(theMinerals, commandCenters);
+	}
+
+	toPerform->setIncentive(0.0f);
+	*/
