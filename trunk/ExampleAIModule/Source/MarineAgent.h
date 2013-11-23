@@ -1,8 +1,9 @@
-//#pragma once
+#pragma once
 #include <BWAPI.h>
 #include <list>
 #include <unordered_map>
 #include "Task.h"
+#include "AgentStates.h"
 
 using namespace std;
 

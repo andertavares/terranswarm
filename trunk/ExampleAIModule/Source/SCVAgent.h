@@ -2,6 +2,7 @@
 
 #include <BWAPI.h>
 #include <deque>
+#include <map>
 #include <unordered_map>
 #include <iostream>
 #include <stdlib.h>
@@ -10,20 +11,11 @@
 #include <random>
 #include <iostream>
 #include "Task.h"
+#include "AgentStates.h"
 
 using namespace std;
 
-enum State { //7,4,2
-	NO_TASK,
-	//NOT_BUILDING_BASE,
-	MOVING_TO_NEW_BASE,
-	IN_BASE_AREA,
-	BUILDING_BASE,
-	BUILDING_SUPPLY_DEPOT,
-	BUILDING_BARRACKS,
-	GATHERING_MINERALS,
-	EXPLORING
-};
+//map<State, std::string> stateNames;
 
 class SCVAgent {
 	State state;
