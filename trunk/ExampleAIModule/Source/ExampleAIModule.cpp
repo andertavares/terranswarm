@@ -58,8 +58,8 @@ void ExampleAIModule::onStart() {
 	}
 	else {// if this is not a replay
   
-		Broodwar->sendText("show me the money");
-		Broodwar->sendText("operation cwal");
+		//Broodwar->sendText("show me the money");
+		//Broodwar->sendText("operation cwal");
 
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
 		// If you wish to deal with multiple enemies then you must use enemies().
@@ -131,6 +131,12 @@ void ExampleAIModule::onFrame() {
 	if ( Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0 )
 		return;
 
+	// Reinsert supply depot task
+	if(allTasks[BuildSupplyDepot]->size() <= 0){
+		allTasks[BuildSupplyDepot]->push_back(Task(BuildSupplyDepot, 0));
+		buildSupplyDepot = &allTasks[BuildSupplyDepot]->at(0);
+	}
+
 	updateTasks();
 
 	_commanderAgent->onFrame(allTasks, trainSCVIncentives);
@@ -149,15 +155,19 @@ void ExampleAIModule::onFrame() {
 		SCVAgent* agent = iter->second;
 		Unit u = agent->getUnit();
 
-		agent->onFrame(allTasks, discoveredMinerals, commandCenters);
+		agent->onFrame(&allTasks, discoveredMinerals, commandCenters);
 
 		if(unitId == 4){
 			agent->goScout();
 		}
 
+		if(unitId == 3){
+			agent->buildCommandCenter(discoveredMinerals, commandCenters);
+		}
+
 		//Broodwar->drawTextMap(u->getPosition().x, u->getPosition().y, "agentId[%d]", unitId);
 
-		if ( u->isLockedDown() || u->isMaelstrommed() || u->isStasised() )
+		/*if ( u->isLockedDown() || u->isMaelstrommed() || u->isStasised() )
 			continue;
 		
 		if ( u->isIdle() ) {
@@ -176,7 +186,7 @@ void ExampleAIModule::onFrame() {
 
 			} // closure: has no powerup
 		} // closure: if idle
-		
+		*/
 	}
 	
 	/*Broodwar->drawTextScreen(20, 90 + yOffset, "Number of SCV in map [%d]", 
@@ -485,9 +495,11 @@ void ExampleAIModule::updateTrainSCV(){
 
 void ExampleAIModule::updateBuildCommandCenter(){
 
-	if(buildCommandCenter->getIncentive() > 0) {
-		scvMap[3]->buildCommandCenter(discoveredMinerals, commandCenters);
-	}
+	/*if(buildCommandCenter->getIncentive() > 0) {
+		if(scvMap[3] != NULL){
+			scvMap[3]->buildCommandCenter(discoveredMinerals, commandCenters);
+		}
+	}*/
 
 
 	//for every discovered mineral, check if it is in range of a command center
@@ -550,10 +562,14 @@ void ExampleAIModule::updateBuildSupplyDepot(){
 	// TODO: Check if this is ok
 	UnitType supplyProviderType = UnitTypes::Terran_Supply_Depot;
 	if (  Broodwar->self()->incompleteUnitCount(supplyProviderType) > 0 ) {
-		dif = dif/5.0; //atenuates the difference if a supply depot is being built
+		//dif = dif/5.0; //atenuates the difference if a supply depot is being built
+		buildSupplyDepot->setIncentive(0.0f);
+	}
+	else{
+		buildSupplyDepot->setIncentive(1.0f - (dif/10.0f));
 	}
 	//allTasks[BuildSupplyDepot]->at(0).setIncentive(1.0f - (dif/10.0f));
-	buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
+	//buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
 
 	// TODO: finds a command center to draw a debug text
 	/*Unitset myUnits = Broodwar->self()->getUnits();

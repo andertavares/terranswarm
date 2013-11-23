@@ -30,7 +30,7 @@ public:
 	BWAPI::Unit gameUnit;
 
 	//void onTask(unordered_map<TaskType, vector<Task>*> taskMap);
-	void onFrame(unordered_map<TaskType, vector<Task>*> taskMap, Unitset theMinerals, Unitset commandCenters);
+	void onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters);
 	bool evaluateIncentive();
 	BWAPI::Unit SCVAgent::getUnit();
 	BWAPI::Position getPositionToScout();

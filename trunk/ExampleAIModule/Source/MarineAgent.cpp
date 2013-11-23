@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include <climits>
 #include "Task.h"
-#include "PositionTask.h"
 
 using namespace BWAPI;
 using namespace std;

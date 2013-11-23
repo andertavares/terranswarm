@@ -24,7 +24,7 @@ Task* weightedSelection(vector<TaskAssociation>& theTasks){
 	//traverses the list until it finds the task that matches the random number
 	float acc = 0;
 	for(auto ta = theTasks.begin(); ta != theTasks.end(); ++ta){
-		if(acc + ta->tValue() > random){
+		if(acc + ta->tValue() < random){
 			return ta->task(); 
 		}
 	}
