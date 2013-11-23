@@ -8,8 +8,13 @@
 using namespace std;
 
 class MarineAgent {
-	
-	bool engaged;
+
+	//bool engaged;
+	int state;
+	int unitId;
+	int lastFrameCount;
+	Position lastPosition;
+	//static int MAX_MAP_DISTANCE;
 
 public:
 	MarineAgent(BWAPI::Unit u);
@@ -18,6 +23,8 @@ public:
 	void onFrame(unordered_map<TaskType, vector<Task>*> tasks);
 	bool evaluateIncentive();
 	BWAPI::Position getPositionToScout();
+	bool goScout();
+
 	BWAPI::Unit gameUnit;
 
 private:

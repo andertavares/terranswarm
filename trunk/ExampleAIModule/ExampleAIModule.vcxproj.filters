@@ -62,5 +62,8 @@
     <ClInclude Include="Source\TaskAssociation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\AgentStates.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
