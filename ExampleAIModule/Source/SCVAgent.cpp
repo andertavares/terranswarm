@@ -18,6 +18,8 @@ using namespace BWAPI;
 using namespace Filter;
 using namespace std;
 
+//SCVAgent::stateNames[NO_TASK] = NO_TASK;
+
 SCVAgent::SCVAgent(BWAPI::Unit scv){
 	srand ( time(NULL) );
 	gameUnit = scv;
@@ -39,12 +41,6 @@ Unit SCVAgent::getUnit(){
 	//Broodwar << "Returning id " << unitId << std::endl;
 	return gameUnit;
 }
-
-/*
-void SCVAgent::onFrame(unordered_map<TaskType, list<Task>*> taskMap, Unitset theMinerals, Unitset commandCenters){
-	
-}
-*/
 
 void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, Unitset theMinerals, Unitset commandCenters){
 
@@ -94,7 +90,7 @@ MOVING_TO_NEW_BASE, IN_BASE_AREA, BUILDING_BASE
 			break;
 
 		case Explore:
-			capability = 0.1;
+			capability = 0.1f;
 			break;
 
 		} //closure: switch
@@ -105,6 +101,10 @@ MOVING_TO_NEW_BASE, IN_BASE_AREA, BUILDING_BASE
 		for(auto task = taskIter->second->begin(); task != taskIter->second->end(); task++){
 				
 			taskAssociations.push_back(TaskAssociation(&(*task), capability));
+
+			if(gameUnit->getID() == 1){
+				Broodwar->sendText("TI: %.2f, K: %.2f",task->getIncentive(),capability);
+			}
 		}
 	}
 	if(gameUnit->getID() == 1){

@@ -537,6 +537,12 @@ void ExampleAIModule::updateBuildBarracks(){
   * Updates the incentive for the Task buildSupplyDepot
   **/
 void ExampleAIModule::updateBuildSupplyDepot(){
+	
+	if(Broodwar->self()->supplyTotal() == 400){
+		//max supply reached, no need to build more depots
+		buildSupplyDepot->setIncentive(0);
+	}
+
 	int dif = max(0, (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed())/2); //bwapi returns 2*the actual difference...
 	
 	//incentive is maximum when difference is minimum
