@@ -103,7 +103,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 				}
 			}
 			else if(taskType == BuildSupplyDepot){
-				
+				//TODO: one supply at time
 				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 				//for (auto task = taskList->begin(); task != taskList->end(); task++){		
 					auto task = it;
@@ -135,6 +135,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 			}
 			else if(taskType == BuildBarracks){
 				// evaluate incentive
+				//TODO: build barracks around new bases
 				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 					auto task = it;
 					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -281,6 +282,7 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 		TilePosition targetBuildLocation = Broodwar->getBuildLocation(centerType, gameUnit->getTilePosition() );
 
 		//TilePosition targetBuildLocation = Broodwar->getBuildLocation(supplyProviderType, supplyBuilder->getTilePosition());
+		//TODO: insist in case of "something is in the way" error
 		if (targetBuildLocation){
 
 			// Register an event that draws the target build location
