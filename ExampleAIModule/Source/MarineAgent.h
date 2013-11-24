@@ -7,11 +7,12 @@
 
 using namespace std;
 
-#define MEETING_RADIUS TILE_SIZE * 15
+#define MEETING_RADIUS TILE_SIZE * 10
 
 class MarineAgent {
 
 	//bool engaged;
+	int latencyFrames;
 	int state;
 	int unitId;
 	int lastFrameCount;
