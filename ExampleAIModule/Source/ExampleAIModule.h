@@ -88,6 +88,7 @@ public:
 	void updateTasks();
 	void updateAttack();
 	void updateTrainSCV();
+	void updateTrainMarine();
 	void updateBuildCommandCenter();
 	void updateBuildBarracks();
 	void updateBuildSupplyDepot();

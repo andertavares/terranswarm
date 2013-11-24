@@ -55,10 +55,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 		if(goScout()) return;
 	}
 
-	if(state == MOVING_TO_NEW_BASE ||
-		state == IN_BASE_AREA ||
-		state == BUILDING_BASE){
-		
+	if(isBuildingExpansion()){
 		buildCommandCenter(theMinerals, commandCenters);
 		return;
 	}
@@ -116,7 +113,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 					if(taskA.tValue() > rNumber){
 						Broodwar << "Agent [" << unitId << "] Task suppy dep " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
 						// Check if other SCV near by are constructing the same thing
-						Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 50 * TILE_SIZE, Filter::IsWorker);
+						Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 20 * TILE_SIZE, Filter::IsWorker);
 						int scvNearConstructingSCV = 0;
 						for(Unitset::iterator scvIt = scvAround.begin(); scvIt != scvAround.end(); ++scvIt){
 							if(scvIt->isConstructing() ){
@@ -175,18 +172,15 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 
 					if(taskA.tValue() > rNumber){
 
-						bool isOthersExpanding = false;
+						bool isOtherExpanding = false;
 						for(auto agent = scvMap.begin(); agent != scvMap.end(); agent++){
-							if(agent->second->unitId != unitId && 
-								(agent->second->state == MOVING_TO_NEW_BASE ||
-								agent->second->state == IN_BASE_AREA || 
-								agent->second->state == BUILDING_BASE)){
-								isOthersExpanding = true;
+							if(agent->second->unitId != unitId && agent->second->isBuildingExpansion()){
+								isOtherExpanding = true;
 								break;
 							}
 						}
 
-						if(!isOthersExpanding){
+						if(!isOtherExpanding){
 							Broodwar << "Agent [" << unitId << "] Task command " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
 							lastChecked = Broodwar->getFrameCount();
 							buildCommandCenter(theMinerals, commandCenters);
@@ -327,6 +321,10 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 			state = MOVING_TO_NEW_BASE;
 		}
 	}
+}
+
+bool SCVAgent::isBuildingExpansion(){
+	return state == MOVING_TO_NEW_BASE || state == IN_BASE_AREA || state == BUILDING_BASE;
 }
 
 Position SCVAgent::pointNearNewBase(Unitset theMinerals, Unitset commandCenters){

@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include "Task.h"
+#include "TaskAssociation.h"
 #include <random>
 #include <iostream>
 
@@ -22,6 +23,16 @@ CommanderAgent::~CommanderAgent(){
 
 void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, unordered_map<Unit, float> trainSCVIncentives) {
 
+	//debug info
+	for(unordered_map<Unit, float>::iterator iter = trainSCVIncentives.begin(); iter != trainSCVIncentives.end(); ++iter){
+		Unit u =  iter->first;
+		float incentive = iter->second;
+		//double uniformOn01 = dis(gen);
+		Task scv = Task(TrainWorker, iter->second);//&tasklist[TrainWorker]->at(0);
+		TaskAssociation trainSCV = TaskAssociation(&scv, .7f);
+		//Broodwar->drawTextMap(u->getPosition(),"SCV inc: %.3f, T: %.3f", trainSCV.task()->getIncentive(), trainSCV.tValue());
+	}
+
 	//only acts every 'X' frames (X = latencyFrames)
 	if (Broodwar->getFrameCount() % latencyFrames != 0){
 		return;
@@ -31,19 +42,25 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 	int supplyDiff = max(0, (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed())/2);
 	if (supplyDiff == 0 || Broodwar->self()->minerals() < 50) return;
 
-	//builds a list of feasible tasks
-	unordered_map<Task, float> taskProbabilities;
-
+	
 	std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0, 1);
 
+
+
 	for(unordered_map<Unit, float>::iterator iter = trainSCVIncentives.begin(); iter != trainSCVIncentives.end(); ++iter){
 		Unit u =  iter->first;
 		float incentive = iter->second;
-		double uniformOn01 = dis(gen);
+		//double uniformOn01 = dis(gen);
+		Task scv = Task(TrainWorker, iter->second);//&tasklist[TrainWorker]->at(0);
+		TaskAssociation trainSCV = TaskAssociation(&scv, .7f);
 
-		if(uniformOn01 <= incentive){
+		//Broodwar->drawTextMap(u->getPosition(),"SCV inc: %.3f, T: %.3f", trainSCV.task()->getIncentive(), trainSCV.tValue());
+
+		if( (rand() / float(RAND_MAX)) < trainSCV.tValue()){
+
+		//if(uniformOn01 <= incentive){
 			if ( u->getType().isResourceDepot() ) {
 				// Order the depot to construct more workers! But only when it is idle.
 				if ( u->isIdle() && !u->train(u->getType().getRace().getWorker()) ) {
@@ -57,24 +74,15 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 		}
 	}
 
-	// TODO : Use probabilistic approach to this 
+	//iterates through the barracks
+	TaskAssociation trainMarine = TaskAssociation(&tasklist[TrainMarine]->at(0), .7f);
 	Unitset myUnits = Broodwar->self()->getUnits();
 	for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u ) {
-		/*
-		if ( u->getType().isResourceDepot() ) {
-			// Order the depot to construct more workers! But only when it is idle.
-			if ( u->isIdle() && !u->train(u->getType().getRace().getWorker()) ) {
-				Error lastErr = Broodwar->getLastError();
-				if(lastErr == Errors::Insufficient_Supply){
-					//Broodwar->sendText("SVC can't be created - %s", lastErr.toString().c_str());	
-					CommanderAgent::createSupply(Broodwar->getUnit(u->getID()));
-				}
-			} // closure: failed to train idle unit
-
-		} //closure: isResourceDepot
-		else*/ 
+		
+		
 		if ( u->getType() == UnitTypes::Terran_Barracks ) {
-			if ( u->isIdle() && !u->train(UnitTypes::Terran_Marine)) {
+			
+			if ((rand() / float(RAND_MAX)) < trainMarine.tValue() && u->isIdle() && !u->train(UnitTypes::Terran_Marine)) {
 				Error lastErr = Broodwar->getLastError();
 				if(lastErr == Errors::Insufficient_Supply){
 					//Broodwar->sendText("Marine can't be created - %s", lastErr.toString().c_str());	
