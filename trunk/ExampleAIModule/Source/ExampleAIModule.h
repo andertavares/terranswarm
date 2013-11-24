@@ -86,6 +86,7 @@ public:
 	~ExampleAIModule();
 
 	void updateTasks();
+	void updateRepair();
 	void updateAttack();
 	void updateTrainSCV();
 	void updateTrainMarine();

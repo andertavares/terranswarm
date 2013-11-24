@@ -25,7 +25,7 @@ ExampleAIModule::~ExampleAIModule(){
 
 void ExampleAIModule::onStart() {
 	// Hello World!
-	Broodwar->sendText("TerranSwarm by Anderson & Hector is online!");
+	Broodwar->sendText("TerranSwarm is online!");
 
 	// Print the map name.
 	// BWAPI returns std::string when retrieving a string, don't forget to add .c_str() when printing!
@@ -104,7 +104,7 @@ void ExampleAIModule::onStart() {
 
 void ExampleAIModule::onEnd(bool isWinner) {
 	// Called when the game ends
-	if ( isWinner )  {
+	if (!Broodwar->isReplay() && isWinner )  {
 		Broodwar->sendText("POWER OVERWHELMING!");
 	}
 }
@@ -365,6 +365,7 @@ void ExampleAIModule::onUnitComplete(BWAPI::Unit unit) {
 
 
 void ExampleAIModule::updateTasks(){
+	updateRepair();
 	updateAttack();
 	updateBuildSupplyDepot();
 	updateBuildBarracks();
@@ -372,6 +373,31 @@ void ExampleAIModule::updateTasks(){
 	updateTrainMarine();
 	updateTrainSCV();
 	updateExplore();
+}
+
+void ExampleAIModule::updateRepair(){
+	//clears all repair tasks and insert new ones relative to buildings needing repair
+	allTasks[Repair]->clear();
+
+	for(auto bldg = Broodwar->self()->getUnits().begin(); bldg != Broodwar->self()->getUnits().end(); bldg++){
+		//discards non buildings and unfinished buildings
+		if (!bldg->getType().isBuilding() || bldg->isBeingConstructed()){
+			continue;
+		}
+		float hpRate = bldg->getHitPoints() / float(bldg->getType().maxHitPoints());
+		if ( hpRate < .6f){ //starts repairing when HP is less than 60%
+			float incentive = 1.0f - hpRate;
+
+			//incentive drops a third for each scv that decided to repair the damaged unit
+			for(auto scv = scvMap.begin(); scv != scvMap.end(); scv++){
+				if(scv->second->repairTarget == *bldg){
+					incentive *= .66f;
+				}
+			}
+
+			allTasks[Repair]->push_back(Task(Repair, incentive, bldg->getPosition()));
+		}
+	}
 }
 
 /**
@@ -450,8 +476,9 @@ void ExampleAIModule::updateAttack(){
 		}
 
 		// Hector : extra validation to ignore unreachable targets
-		//TODO: test is reachable and is walkable
-		if(! inRange && !foeUnit->isCloaked() && !foeUnit->isBurrowed() && !foeUnit->isInvincible()){
+		//TODO: test is reachable 
+		Position foePos = foeUnit->getPosition();
+		if(! inRange && !foeUnit->isCloaked() && !foeUnit->isBurrowed() && !foeUnit->isInvincible() && Broodwar->isWalkable(foePos.x / 8, foePos.y / 8)){
 			Task* atk = new Task(Attack, .8f, foeUnit->getPosition());
 			allTasks[Attack]->push_back(*atk);
 			//Broodwar->sendText("Attack task added, pos=%d,%d // %d,%d ", unit->getPosition().x, unit->getPosition().y, atk->getPosition().x, atk->getPosition().y);
@@ -551,32 +578,23 @@ void ExampleAIModule::updateBuildCommandCenter(){
 
 void ExampleAIModule::updateBuildBarracks(){
 
-	
-
 	//calculates the number of barracks around the command center
 	vector<Task>* newBarracksNeeded = new vector<Task>();
 
 	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); c++){
 		int barracksNumber = calculateBarracksFromCommandCenter(Broodwar->getUnit(c->getID()));
-
-		//updates the number of barracks around all command centers
-		builtBarracks[*c] = barracksNumber;
-		buildBarracksIncentives[*c] = max(0.0f, 1.0f - barracksNumber/4.0f);
-
-		float incentive =  max(0.0f, 1.0f - barracksNumber/4.0f);
+		float incentive =  max(0.0f, 1.0f - barracksNumber/3.0f);
 
 		//sets incentive to ZERO if we have not enough minerals
 		if(Broodwar->self()->minerals() < UnitTypes::Terran_Barracks.mineralPrice()){
 			incentive = 0.0f;
 		}
 
+		//updates the number of barracks around all command centers
+		builtBarracks[*c] = barracksNumber;
+		buildBarracksIncentives[*c] = incentive;
+
 		newBarracksNeeded->push_back(Task(BuildBarracks, incentive, c->getPosition()));
-
-		//TODO: call createBarrackNearCommandCenter using SwarmGAP rules
-
-		/*if(barracksNumber < 4){
-			createBarrackNearCommandCenter(Broodwar->getUnit(c->getID()));
-		}*/
 	}
 
 	allTasks[BuildBarracks]->swap(*newBarracksNeeded);
@@ -600,31 +618,35 @@ void ExampleAIModule::updateBuildSupplyDepot(){
 		return;
 	}
 
-	int dif = max(0, (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed())/2); //bwapi returns 2*the actual difference...
+	int availableSupply = Broodwar->self()->supplyTotal();
+	//increases available supply if we are already building a supply depot
+
+	for (auto scv = scvMap.begin(); scv != scvMap.end(); scv++){
+		if(scv->second->state == BUILDING_SUPPLY_DEPOT){
+			availableSupply += 16; //adds 2*supply provided by a depot
+		}
+	}
+
+	int dif = max(0, (availableSupply - Broodwar->self()->supplyUsed())/2); //bwapi returns 2*the actual difference...
 	
 	//incentive is maximum when difference is minimum
+	//buildSupplyDepot->setIncentive(max(0.0f,1.0f - (dif/10.0f))); //linear decay
+	buildSupplyDepot->setIncentive(max(0.0f, pow(float(EULER),-dif/2.0f))); //exponential decay
 
+	/*
 	// TODO: Check if this is ok
 	UnitType supplyProviderType = UnitTypes::Terran_Supply_Depot;
 	if (  Broodwar->self()->incompleteUnitCount(supplyProviderType) > 0 ) {
 		//dif = dif/5.0; //atenuates the difference if a supply depot is being built
-		buildSupplyDepot->setIncentive(0.0f);
+		//buildSupplyDepot->setIncentive(0.0f);
 	}
 	else{
-		//buildSupplyDepot->setIncentive(max(0.0f,1.0f - (dif/10.0f)));
-		buildSupplyDepot->setIncentive(max(0.0, pow(EULER,-dif)));
+		buildSupplyDepot->setIncentive(max(0.0f,1.0f - (dif/10.0f))); //linear decay
+		//buildSupplyDepot->setIncentive(max(0.0, pow(EULER,-dif))); //exponential decay
 	}
 	//allTasks[BuildSupplyDepot]->at(0).setIncentive(1.0f - (dif/10.0f));
 	//buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
-
-	// TODO: finds a command center to draw a debug text
-	/*Unitset myUnits = Broodwar->self()->getUnits();
-	Unitset::iterator u = NULL;
-	for ( u = myUnits.begin(); u != myUnits.end(); ++u ) {
-		if ( u->getType().isResourceDepot() ) {
-			break;
-		}
-	}*/
+	*/
 }
 
 void ExampleAIModule::updateExplore(){
@@ -750,7 +772,12 @@ void ExampleAIModule::_drawStats(){
 		buildCommandCenter->getIncentive()
 	);
 
-	Broodwar->drawTextScreen(20,75, "%cBrk inc. // SCV inc:", 
+	Broodwar->drawTextScreen(20, 75, "%cRepair tasks: %d", 
+		Text::White, 
+		allTasks[Repair]->size()
+	);
+
+	Broodwar->drawTextScreen(20,90, "%cBrk inc. // SCV inc:", 
 		Text::White 
 	);
 
@@ -764,7 +791,7 @@ void ExampleAIModule::_drawStats(){
 
 	for(auto brkTask = allTasks[BuildBarracks]->begin(); brkTask != allTasks[BuildBarracks]->end(); ++brkTask){
 		Unit cmdCenterAtPos = Broodwar->getUnitsInRadius(brkTask->getPosition(), 5)[0];
-		Broodwar->drawTextScreen(20,90 + yOffset, "%c%.2f // %.3f", 
+		Broodwar->drawTextScreen(20,105 + yOffset, "%c%.2f // %.3f", 
 			Text::White, brkTask->getIncentive(), trainSCVIncentives[cmdCenterAtPos]
 		);
 		yOffset += 15;

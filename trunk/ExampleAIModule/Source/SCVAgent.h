@@ -15,6 +15,8 @@
 
 using namespace std;
 
+#define EULER 2.71828182845904523536
+
 //map<State, std::string> stateNames;
 
 class SCVAgent {
@@ -27,19 +29,29 @@ public:
 	
 	int unitId;
 	int lastFrameCount;
-	BWAPI::Unit gameUnit;
+	Unit gameUnit;
+	Unit repairTarget;
+	Position atkTarget;
+	Unit toAttack;
 
 	//void onTask(unordered_map<TaskType, vector<Task>*> taskMap);
 	void onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters, unordered_map<int, SCVAgent*> scvMap);
 	bool evaluateIncentive();
 	BWAPI::Unit SCVAgent::getUnit();
 	BWAPI::Position getPositionToScout();
+
+	void attack(Position theTarget);
+	void attack();
+
 	bool goScout();
+	void goRepair(Position dmgUnitPos);
+	void goRepair();
 	void buildCommandCenter(Unitset theMinerals, Unitset commandCenters);
 	Position pointNearNewBase(Unitset theMinerals, Unitset commandCenters);
 	void createSupply();
 	void createBarrackNearCommandCenter(Position commandCenterPos);
 	bool isBuildingExpansion();
+	bool isRepairing();
 	State state;
 	
 

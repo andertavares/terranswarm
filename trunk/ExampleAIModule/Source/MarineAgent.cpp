@@ -16,7 +16,7 @@
 using namespace BWAPI;
 using namespace std;
 
-MarineAgent::MarineAgent(Unit u) : gameUnit(u), state(NO_TASK){
+MarineAgent::MarineAgent(Unit u) : gameUnit(u), state(NO_TASK), latencyFrames(5){
 	lastPosition = Position(0,0);
 	lastFrameCount = Broodwar->getFrameCount();
 }
@@ -27,12 +27,15 @@ MarineAgent::~MarineAgent(void){
 void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unordered_map<int, MarineAgent*> colleagues){
 	//if is already engaged in task, does nothing
 	
-	if(! gameUnit->isIdle() || !gameUnit->isCompleted() ) return;
+	if(! gameUnit->isIdle() || !gameUnit->isCompleted() || Broodwar->getFrameCount() % latencyFrames != 0) {
+		return;
+	}
+
 
 	state = NO_TASK;
 	vector<TaskAssociation> taskAssociations;
 
-	int maxDistance = Position(0,0).getDistance(Position(Broodwar->mapWidth() * TILE_SIZE, Broodwar->mapHeight() * TILE_SIZE));
+	int maxDistance = Position(0,0).getApproxDistance(Position(Broodwar->mapWidth() * TILE_SIZE, Broodwar->mapHeight() * TILE_SIZE));
 	Task* toPerform = NULL;
 	for(auto taskIter = taskMap.begin(); taskIter != taskMap.end(); ++taskIter){
 		
@@ -44,10 +47,9 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 		
 		case Attack:
 			//inserts an TaskAssociation for each Attack task; capability is proportional to distance to the task
-			//TODO: increase capability with the number of colleagues attacking
 
 			for (auto atk = taskIter->second->begin(); atk != taskIter->second->end(); atk++){
-				capability = 1.0f - (gameUnit->getDistance(atk->getPosition()) / float(maxDistance));
+				capability = 1.0f - (gameUnit->getPosition().getApproxDistance(atk->getPosition()) / float(maxDistance));
 
 				if( (rand() / RAND_MAX) < TaskAssociation(&(*atk), capability).tValue()){
 					toPerform = &(*atk);
@@ -134,45 +136,78 @@ void MarineAgent::attack(Position theTarget, unordered_map<int, MarineAgent*> co
 void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 	Broodwar->drawCircleMap(gameUnit->getPosition(),MEETING_RADIUS,Color(Colors::Green));
 	//if(state == PACKING) {
-		//first, packs with colleagues to build an effective force
-		Broodwar->drawTextMap(gameUnit->getPosition(),"\nPCK");
-		int packSize = 0;
-		int colleaguesAround = 0;
 
-		//counts how many colleagues are close and attacking
-		for(auto colleague = colleagues.begin(); colleague != colleagues.end(); colleague++){
-			int dist = gameUnit->getDistance(colleague->second->gameUnit);
+	//first, packs with colleagues to build an effective force
+	//Broodwar->drawTextMap(gameUnit->getPosition(),"\nPCK");
+	int packSize = 0;
+	int colleaguesAround = 0;
 
-			if (dist < MEETING_RADIUS){
-				colleaguesAround++;
-			}
+	//counts how many colleagues are close and attacking
+	for(auto colleague = colleagues.begin(); colleague != colleagues.end(); colleague++){
+		int dist = gameUnit->getPosition().getApproxDistance((colleague->second->gameUnit->getPosition()));
 
-			if (colleague->second->isOnAttack() &&  dist < gameUnit->getType().sightRange()){
-				packSize++;
-			}
+		if (dist < MEETING_RADIUS){
+			colleaguesAround++;
 		}
 
-		//if pack size is enough or has not enough colleagues around to pack, attacks
-		if(packSize >= 6 || colleaguesAround == packSize) {
+		if (colleague->second->isOnAttack() &&  dist < gameUnit->getType().sightRange()){
+			packSize++;
+		}
+	}
+	Broodwar->drawTextMap(gameUnit->getPosition(),"\nPCK sz:%d; meetRadius:%d", packSize, colleaguesAround);
+
+	//if pack size is enough or has not enough colleagues around to pack, attacks
+	if(packSize >= 6 || colleaguesAround == packSize) {
+		state = ATTACKING;
+	}
+	else{ //tries to pack-up with near colleagues
+		//tries to get close to the marine with the lowest ID around
+		Unit oldestColleague = oldestColleagueAround();
+		if (oldestColleague == NULL){
+			//nobody found, attacks alone
 			state = ATTACKING;
 		}
-		else{ //tries to pack-up with near colleagues
-			//tries to get close to the marine with the lowest ID around
-			Unit oldestColleague = oldestColleagueAround();
-			if (oldestColleague == NULL){
-				//nobody found, attacks alone
-				state = ATTACKING;
-			}
-			else {
-				//found a buddy, moves towards him firing up anything in the way
-				gameUnit->attack(oldestColleague->getPosition());
-				Broodwar->drawLineMap(gameUnit->getPosition(), oldestColleague->getPosition(), Color(Colors::Green));
-			}
+		else {
+			//found a buddy, moves towards him firing up anything in the way
+			gameUnit->attack(oldestColleague->getPosition());
+			Broodwar->drawLineMap(gameUnit->getPosition(), oldestColleague->getPosition(), Color(Colors::Green));
 		}
-	//}
+	}
+	//}//closure: state==PACKING
 
 	if(state == ATTACKING){
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nATK");
+		/*
+		//if there are targets nearby, choose one appropriately
+		Unitset foesAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), gameUnit->getType().groundWeapon().maxRange(), Filter::IsEnemy);
+		Unit victim = NULL;
+		float minHpRate = 1.0f;
+		for(auto foe = foesAround.begin(); foe != foesAround.end(); ++foe){
+			//shot workers or medics is priority
+			if (foe->getType().isWorker() || foe->getType() == UnitTypes::Terran_Medic){
+				victim = *foe;
+				break;
+			}
+
+			//else, shoots the enemy unit closest to death
+			float hpRate = foe->getHitPoints() + foe->getShields() / float(foe->getType().maxHitPoints() + foe->getType().maxShields());
+			if (hpRate < minHpRate){
+				victim = *foe;
+				minHpRate = hpRate;
+			}
+
+		}
+
+
+		if (victim == NULL) {
+			gameUnit->attack(target);
+			Broodwar->drawLineMap(gameUnit->getPosition(),target,Color(Colors::Red));
+		}
+		else {
+			gameUnit->attack(victim);
+			Broodwar->drawLineMap(gameUnit->getPosition(),victim->getPosition,Color(Colors::Red));
+		}
+		*/
 		gameUnit->attack(target);
 	}
 
@@ -196,7 +231,7 @@ Unit MarineAgent::oldestColleagueAround(){
 	return oldest;
 
 }
-
+/*
 void MarineAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 
 	unordered_map<TaskType, list<Task>*>::iterator it = taskMap.begin();
@@ -222,7 +257,6 @@ void MarineAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 			}
 		}
 		/*
-		* TODO: See if this method is needed.
 		else if(taskType == GuardBase){
 			// Calculate how far from this base this agent is
 			// Calculate how many enemies are close to the base
@@ -230,13 +264,13 @@ void MarineAgent::onTask(unordered_map<TaskType, list<Task>*> taskMap){
 			for (list<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 				
 			}
-		}*/
+		}*
 		else {
 			continue;
 		}
 	}
 }
-
+*/
 
 
 
@@ -259,7 +293,7 @@ bool MarineAgent::goScout(){
 	if ( currentFrameCount >= lastFrameCount + 20){
 		lastFrameCount = currentFrameCount;
 		Position pos = getPositionToScout();
-		Broodwar << "Agent [" << unitId << "] Scouting to :" << pos << std::endl;
+		Broodwar << "Agent [" << gameUnit->getID() << "] Scouting to :" << pos << std::endl;
 
 		gameUnit->attack(pos);
 		return true;

@@ -9,7 +9,7 @@ enum TaskType{
 	BuildSupplyDepot,
 	BuildBarracks,
 	BuildCommandCenter,
-	Fix,
+	Repair,
 	GatherMinerals,
 	Explore,
 	Attack,
