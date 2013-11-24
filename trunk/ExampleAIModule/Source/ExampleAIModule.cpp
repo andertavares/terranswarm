@@ -153,7 +153,7 @@ void ExampleAIModule::onFrame() {
 
 	//iterates through all marines
 	for(auto marine = marines.begin(); marine != marines.end(); marine++){
-		marine->second->onFrame(allTasks);
+		marine->second->onFrame(allTasks, marines);
 	}
 
 	// Iterate through all the SCV on the map
@@ -369,6 +369,7 @@ void ExampleAIModule::updateTasks(){
 	updateBuildSupplyDepot();
 	updateBuildBarracks();
 	updateBuildCommandCenter();
+	updateTrainMarine();
 	updateTrainSCV();
 	updateExplore();
 }
@@ -488,6 +489,11 @@ void ExampleAIModule::updateAttack(){
 	*/
 }
 
+void ExampleAIModule::updateTrainMarine(){
+	//tries to make a 12 marines per base (attempts to save some money to expansions
+	trainMarine->setIncentive(max(0.0f, 1.0f - (marines.size() / ( 12.0f * commandCenters.size()))));
+}
+
 void ExampleAIModule::updateTrainSCV(){
 
 	for(Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){	
@@ -495,7 +501,7 @@ void ExampleAIModule::updateTrainSCV(){
 		Unitset mineralsAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsMineralField);
 		Unitset scvAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsWorker && Filter::IsOwned);
 
-		trainSCVIncentives[*cmd] = 1.0f - (scvAround.size() / (2.0f * mineralsAround.size()));
+		trainSCVIncentives[*cmd] = max(0.0f, 1.0f - (scvAround.size() / (2.5f * mineralsAround.size())));
 
 	}
 	//Broodwar->getu
@@ -548,7 +554,7 @@ void ExampleAIModule::updateBuildBarracks(){
 
 		//updates the number of barracks around all command centers
 		builtBarracks[*c] = barracksNumber;
-		buildBarracksIncentives[*c] = 1.0f - barracksNumber/4.0f;
+		buildBarracksIncentives[*c] = max(0.0f, 1.0f - barracksNumber/4.0f);
 
 		float incentive = 1.0f - barracksNumber/4.0f;
 
@@ -598,7 +604,8 @@ void ExampleAIModule::updateBuildSupplyDepot(){
 		buildSupplyDepot->setIncentive(0.0f);
 	}
 	else{
-		buildSupplyDepot->setIncentive(max(0.0f,1.0f - (dif/10.0f)));
+		//buildSupplyDepot->setIncentive(max(0.0f,1.0f - (dif/10.0f)));
+		buildSupplyDepot->setIncentive(max(0.0, pow(EULER,-dif)));
 	}
 	//allTasks[BuildSupplyDepot]->at(0).setIncentive(1.0f - (dif/10.0f));
 	//buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
@@ -702,7 +709,7 @@ void ExampleAIModule::_drawStats(){
 	Broodwar->drawTextScreen(250, 0,  "FPS: %d", Broodwar->getFPS() );
 	Broodwar->drawTextScreen(250, 15, "Average FPS: %f", Broodwar->getAverageFPS() );
 	Broodwar->drawTextScreen(250, 30, "Frame count: %d", Broodwar->getFrameCount() );
-
+	Broodwar->drawTextScreen(250, 45, "Seconds ~ %.0f", Broodwar->getFrameCount() / Broodwar->getAverageFPS() );
 	_drawExploredStats();
 
 	// display some debug info...

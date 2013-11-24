@@ -39,6 +39,7 @@ public:
 	Position pointNearNewBase(Unitset theMinerals, Unitset commandCenters);
 	void createSupply();
 	void createBarrackNearCommandCenter(Position commandCenterPos);
+	bool isBuildingExpansion();
 	State state;
 	
 
