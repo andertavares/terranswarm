@@ -389,7 +389,7 @@ void ExampleAIModule::updateAttack(){
 	for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
 
 		if(Broodwar->isVisible(task->getPosition().x / TILE_SIZE , task->getPosition().y / TILE_SIZE)){
-			Unitset inRange = Broodwar->getUnitsInRadius(task->getPosition(), marineType.sightRange(), Filter::IsEnemy);
+			Unitset inRange = Broodwar->getUnitsInRadius(task->getPosition(),  marineType.groundWeapon().maxRange(), Filter::IsEnemy);
 			//Broodwar->sendText("%d in range of attack task.", inRange.size());
 			
 			// Check if the unit can be reached by the marines
@@ -441,16 +441,17 @@ void ExampleAIModule::updateAttack(){
 		//tests if unit is already included in the area of another 'attack' task
 		for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
 			//task->
-
+			//foeUnit->getType().groundWeapon().maxRange();
 			//PositionTask* atk = static_cast<PositionTask* >( &(*task)) ; 
-			if(foeUnit->getDistance(task->getPosition()) < marineType.sightRange()){
+			if(foeUnit->getDistance(task->getPosition()) < marineType.groundWeapon().maxRange()){
 				inRange = true;
 				break;
 			}
 		}
 
 		// Hector : extra validation to ignore unreachable targets
-		if(! inRange && !foeUnit->isCloaked() && !foeUnit->isBurrowed() & !foeUnit->isInvincible()){
+		//TODO: test is reachable and is walkable
+		if(! inRange && !foeUnit->isCloaked() && !foeUnit->isBurrowed() && !foeUnit->isInvincible()){
 			Task* atk = new Task(Attack, .8f, foeUnit->getPosition());
 			allTasks[Attack]->push_back(*atk);
 			//Broodwar->sendText("Attack task added, pos=%d,%d // %d,%d ", unit->getPosition().x, unit->getPosition().y, atk->getPosition().x, atk->getPosition().y);
@@ -490,8 +491,14 @@ void ExampleAIModule::updateAttack(){
 }
 
 void ExampleAIModule::updateTrainMarine(){
-	//tries to make a 12 marines per base (attempts to save some money to expansions
-	trainMarine->setIncentive(max(0.0f, 1.0f - (marines.size() / ( 12.0f * commandCenters.size()))));
+	//tries to make a 12 marines per base (attempts to save some money to expansions)
+	if (Broodwar->self()->minerals() < 500){
+		trainMarine->setIncentive(max(0.0f, 1.0f - (marines.size() / ( 12.0f * commandCenters.size()))));
+	}
+	else {
+		//if i have money, produce more
+		trainMarine->setIncentive(.8f);
+	}
 }
 
 void ExampleAIModule::updateTrainSCV(){
@@ -556,7 +563,7 @@ void ExampleAIModule::updateBuildBarracks(){
 		builtBarracks[*c] = barracksNumber;
 		buildBarracksIncentives[*c] = max(0.0f, 1.0f - barracksNumber/4.0f);
 
-		float incentive = 1.0f - barracksNumber/4.0f;
+		float incentive =  max(0.0f, 1.0f - barracksNumber/4.0f);
 
 		//sets incentive to ZERO if we have not enough minerals
 		if(Broodwar->self()->minerals() < UnitTypes::Terran_Barracks.mineralPrice()){
@@ -796,7 +803,7 @@ void ExampleAIModule::_drawStats(){
 
 	//draws circles around Attack targets
 	for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
-		Broodwar->drawCircleMap(task->getPosition(), UnitTypes::Terran_Marine.sightRange(), Color(Colors::Red));
+		Broodwar->drawCircleMap(task->getPosition(), UnitTypes::Terran_Marine.groundWeapon().maxRange(), Color(Colors::Red));
 	}
 }
 
