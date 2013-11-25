@@ -14,6 +14,10 @@
 
 using namespace std;
 using namespace BWAPI;
+
+class SCVAgent; //forward decl. to prevent compile error
+
+
 // Remember not to use "Broodwar" in any global class constructor!
 
 class ExampleAIModule : public BWAPI::AIModule {
@@ -96,5 +100,6 @@ public:
 	void updateExplore();
 	int calculateBarracksFromCommandCenter(BWAPI::Unit cmdCenter);
 	void createBarrackNearCommandCenter(BWAPI::Unit cmdCenter);
+	unordered_map<int, SCVAgent*>& getSCVMap();
 
 };
