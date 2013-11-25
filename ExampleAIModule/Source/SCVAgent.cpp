@@ -13,6 +13,7 @@
 #include "util.h"
 #include "ExampleAIModule.h"
 #include "TaskAssociation.h"
+#include <set>
 
 using namespace BWAPI;
 using namespace Filter;
@@ -24,6 +25,7 @@ SCVAgent::SCVAgent(Unit scv, ExampleAIModule* aiModule) : _aiModule(aiModule), r
 	srand ( time(NULL) );
 	gameUnit = scv;
 	unitId = gameUnit->getID();
+	originPosition = Position(0,0);
 	lastPosition = Position(0,0);
 	lastFrameCount = Broodwar->getFrameCount();
 	state = NO_TASK;
@@ -43,8 +45,12 @@ Unit SCVAgent::getUnit(){
 	return gameUnit;
 }
 
-void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters, unordered_map<int, SCVAgent*> scvMap){
-	
+void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters, unordered_map<int, SCVAgent*> scvMap){	
+	// Get our starting location
+	if (originPosition.x == 0 && originPosition.y == 0) {
+		originPosition = gameUnit->getPosition();
+	}
+
 	Broodwar->drawTextMap(gameUnit->getPosition(),"\n\n%d-%d-%d-%d", state, gameUnit->isGatheringMinerals(), gameUnit->isConstructing(), gameUnit->getOrder());
 	//Broodwar->drawCircleMap(gameUnit->getPosition(),gameUnit->getType().sightRange(),Color(Colors::Blue));
 	if(!gameUnit->isCompleted()){
@@ -53,10 +59,21 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 	}
 
 	if(state == EXPLORING){
-		Broodwar->drawTextMap(gameUnit->getPosition(),"\nExploring");
-		if(goScout()) return;
-		else {
-			state == NO_TASK;
+		// Check if are enemies near by and RUN!
+		Unitset foes = Broodwar->getUnitsInRadius(gameUnit->getPosition(), TILE_SIZE * 4, Filter::IsEnemy);
+		if(foes.size() > 1){
+			gameUnit->move(getPositionToScout());
+			state = NO_TASK;
+		}
+		else{
+			if(goScout()){
+				Broodwar->drawTextMap(gameUnit->getPosition(),"\nExploring");
+				return;
+			}
+			else {
+				gameUnit->move(originPosition);
+				state == NO_TASK;
+			}
 		}
 	}
 
@@ -77,19 +94,21 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 		return;
 	}
 
-	if(gameUnit->isGatheringMinerals()){
+	if(gameUnit->isGatheringMinerals() && !gameUnit->isIdle()){
 		if(gameUnit->getOrder() == Orders::MiningMinerals){
 			Broodwar->drawTextMap(gameUnit->getPosition(),"\nGathering");
 			return;
 		}
 	}
 
-	
-
 	// Validate actions and status
-	if(gameUnit->isConstructing() || gameUnit->isMoving()){
-		Broodwar->drawTextMap(gameUnit->getPosition(),"\nConstructing or moving");
+	if(gameUnit->isConstructing() ){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nConstructing");
 		return;
+	}
+	if(gameUnit->isMoving()){
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nMoving");
+		return;	
 	}
 
 	// Simple approach to local incentives
@@ -245,15 +264,14 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 
 					if(taskA.tValue() > rNumber){
 
-						bool isOtherExpanding = false;
+						int isOtherExpanding = 0;
 						for(auto agent = scvMap.begin(); agent != scvMap.end(); agent++){
 							if(agent->second->unitId != unitId && agent->second->isBuildingExpansion()){
-								isOtherExpanding = true;
-								break;
+								isOtherExpanding++;
 							}
 						}
 
-						if(!isOtherExpanding){
+						if(isOtherExpanding  <= 0){
 							Broodwar << "Agent [" << unitId << "] Task command " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
 							lastChecked = Broodwar->getFrameCount();
 							buildCommandCenter(theMinerals, commandCenters);
@@ -292,27 +310,27 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 				}
 			}
 		}
-
-		// Default action
-		if ( gameUnit->isIdle() ) {
-			lastChecked = Broodwar->getFrameCount();
-			//Broodwar->drawTextMap(gameUnit->getPosition(),"\nIdle");
-			// Order workers carrying a resource to return them to the center,
-			// otherwise find a mineral patch to harvest.
-			if ( gameUnit->isCarryingGas() || gameUnit->isCarryingMinerals() ) {
-				gameUnit->returnCargo();
-			}
-			else if ( !gameUnit->getPowerUp() ) { 
-					// The worker cannot harvest anything if it
-					// is carrying a powerup such as a flag
-					// Harvest from the nearest mineral patch or gas refinery
-				if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
-					// If the call fails, then print the last error message
-					Broodwar << Broodwar->getLastError() << std::endl;
-				}
-			} // closure: has no powerup
-		} // closure: if idle
 	}
+
+	// Default action
+	if ( gameUnit->isIdle() && !isBuildingExpansion()) {
+		//lastChecked = Broodwar->getFrameCount();
+		//Broodwar->drawTextMap(gameUnit->getPosition(),"\nIdle");
+		// Order workers carrying a resource to return them to the center,
+		// otherwise find a mineral patch to harvest.
+		if ( gameUnit->isCarryingGas() || gameUnit->isCarryingMinerals() ) {
+				gameUnit->returnCargo();
+		}
+		else if ( !gameUnit->getPowerUp() ) { 
+			// The worker cannot harvest anything if it
+			// is carrying a powerup such as a flag
+			// Harvest from the nearest mineral patch or gas refinery
+			if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
+				// If the call fails, then print the last error message
+				Broodwar << Broodwar->getLastError() << std::endl;
+			}
+		} // closure: has no powerup
+	} // closure: if idle
 	
 }
 
@@ -418,6 +436,14 @@ bool SCVAgent::isRepairing(){
 void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 	//Unitset uncoveredMinerals;
 	
+	Position pos = gameUnit->getPosition();
+			Broodwar->registerEvent([pos](Game*)
+			{
+				Broodwar->drawCircleMap(pos,20,Color(Colors::Red));
+			},
+				nullptr,  // condition
+			100 );  // frames to run
+
 	if (state == MOVING_TO_NEW_BASE) {
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nMoving to base");
 		Broodwar->drawLineMap(gameUnit->getPosition(),nearBaseArea,Color(Colors::Green));
@@ -494,7 +520,7 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 		nearBaseArea = pointNearNewBase(theMinerals, commandCenters);
 		//checks consistency of new assigned point
 		if(nearBaseArea.x != -1 && nearBaseArea.y != -1) {
-			//Broodwar->sendText("Tgt point inconsistent");
+			Broodwar->sendText("Tgt point inconsistent");
 			Broodwar->drawTextMap(gameUnit->getPosition(),"\n\ninconsistent tgt");
 			state = MOVING_TO_NEW_BASE;
 		}
@@ -548,28 +574,43 @@ bool SCVAgent::goScout(){
 
 	Position myPos = gameUnit->getPosition();
 	Broodwar->drawLineMap(myPos, lastPosition, Colors::Blue);
+	int currentFrameCount = Broodwar->getFrameCount();
 
 	double square_dist = pow((lastPosition.x- myPos.x), 2.0) + pow((lastPosition.y - myPos.y), 2.0);
 	if (lastPosition.x != 0 && lastPosition.y != 0 && square_dist >= pow(3*TILE_SIZE, 2.0)){
-		gameUnit->move(lastPosition);
-		return false;
+		//Broodwar << "Agent [" << unitId << "] SCOUT " <<  currentFrameCount - (lastFrameCount + (35 * 24)) << std::endl;
+
+		// If the unit is stuck or takes too long to reach targets (1 min aprox.) return false	
+		if(!gameUnit->isStuck() && currentFrameCount < lastFrameCount + (65 * 24)){
+			gameUnit->move(lastPosition);
+			return true;
+		}
+		else{
+			gameUnit->move(originPosition);
+			Broodwar << "Agent [" << unitId << "] Takes too long to scout, removing this task" << std::endl;
+			state = NO_TASK;
+			return false;
+		}
 	}
 
-	int currentFrameCount = Broodwar->getFrameCount();
 	if ( currentFrameCount >= lastFrameCount + 20){
 		lastFrameCount = currentFrameCount;
-		Position pos = getPositionToScout();
-		//Broodwar << "Agent [" << unitId << "] Scouting to :" << pos << std::endl;
+		// If this SCV is close to enemies, go to the closest barrack
+		
+		//else{
+			Position pos = getPositionToScout();
+			//Broodwar << "Agent [" << unitId << "] Scouting to :" << pos << std::endl;
+			gameUnit->move(pos);
+			return true;
+		//}
 
-		gameUnit->move(pos);
-		return true;
 	}
 
 	return false;
 }
 
 Position SCVAgent::getPositionToScout(){
-	Position returnPosition;
+	Position returnPosition = originPosition;
 	Unit unit = ((Unit) gameUnit);
 
 	int radiousInPixels = 120*TILE_SIZE;
