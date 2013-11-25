@@ -34,6 +34,7 @@ public:
 	Unit gameUnit;
 	Unit repairTarget;
 	Position atkTarget;
+	Position originPosition;
 	Unit toAttack;
 
 	//void onTask(unordered_map<TaskType, vector<Task>*> taskMap);

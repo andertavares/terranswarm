@@ -523,7 +523,12 @@ void ExampleAIModule::updateAttack(){
 void ExampleAIModule::updateTrainMarine(){
 	//tries to make a 12 marines per base (attempts to save some money to expansions)
 	if (Broodwar->self()->minerals() < 500){
-		trainMarine->setIncentive(max(0.0f, 1.0f - (marines.size() / ( 12.0f * commandCenters.size()))));
+		if(commandCenters.size() < 2){
+			trainMarine->setIncentive(max(0.0f,  (0.1f/max(1.0f, marines.size() * 1.0f))));
+		}
+		else{
+			trainMarine->setIncentive(max(0.0f, 1.0f - (marines.size() / max(30.0f, ( 300.0f * (5 - commandCenters.size()))))));
+		}
 	}
 	else {
 		//if i have money, produce more
@@ -738,10 +743,10 @@ void ExampleAIModule::createBarrackNearCommandCenter(Unit u) {
 
 void ExampleAIModule::_drawStats(){
 	// Display the game frame rate as text in the upper left area of the screen
-	Broodwar->drawTextScreen(250, 0,  "FPS: %d", Broodwar->getFPS() );
-	Broodwar->drawTextScreen(250, 15, "Average FPS: %f", Broodwar->getAverageFPS() );
-	Broodwar->drawTextScreen(250, 30, "Frame count: %d", Broodwar->getFrameCount() );
-	Broodwar->drawTextScreen(250, 45, "Seconds ~ %.0f", Broodwar->getFrameCount() / Broodwar->getAverageFPS() );
+	Broodwar->drawTextScreen(290, 0,  "FPS: %d", Broodwar->getFPS() );
+	Broodwar->drawTextScreen(290, 15, "Average FPS: %f", Broodwar->getAverageFPS() );
+	Broodwar->drawTextScreen(290, 30, "Frame count: %d", Broodwar->getFrameCount() );
+	Broodwar->drawTextScreen(290, 45, "Seconds ~ %.0f", Broodwar->getFrameCount() / Broodwar->getAverageFPS() );
 	_drawExploredStats();
 
 	// display some debug info...

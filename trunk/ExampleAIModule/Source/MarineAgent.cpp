@@ -157,7 +157,7 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 	Broodwar->drawTextMap(gameUnit->getPosition(),"\nPCK sz:%d; meetRadius:%d", packSize, colleaguesAround);
 
 	//if pack size is enough or has not enough colleagues around to pack, attacks
-	if(packSize >= 6 || colleaguesAround == packSize) {
+	if(packSize >= 8 || colleaguesAround == packSize) {
 		state = ATTACKING;
 	}
 	else{ //tries to pack-up with near colleagues
