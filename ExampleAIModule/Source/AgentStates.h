@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 
 enum State { //7,4,2
 	NO_TASK,
@@ -13,6 +14,8 @@ enum State { //7,4,2
 	PACKING,
 	ATTACKING
 };
+
+//std::map<State, std::string> stateNames; //do not use, initialization is not working =/
 
 
 	//NOT_BUILDING_BASE,

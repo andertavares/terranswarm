@@ -12,19 +12,21 @@
 #include <iostream>
 #include "Task.h"
 #include "AgentStates.h"
+#include "ExampleAIModule.h"
 
 using namespace std;
 
 #define EULER 2.71828182845904523536
 
-//map<State, std::string> stateNames;
+class ExampleAIModule; //forward decl. to prevent compile error
 
 class SCVAgent {
 	
 	Position nearBaseArea; //will build a base near this position
+	ExampleAIModule* _aiModule;
 	
 public:
-	SCVAgent(BWAPI::Unit scv);
+	SCVAgent(BWAPI::Unit scv, ExampleAIModule* aiModule);
 	~SCVAgent(void);
 	
 	int unitId;

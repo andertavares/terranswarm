@@ -200,8 +200,10 @@ void ExampleAIModule::onFrame() {
 	/*Broodwar->drawTextScreen(20, 90 + yOffset, "Number of SCV in map [%d]", 
 		Text::White, scvMap->size()
 	);*/
-	
+}
 
+unordered_map<int, SCVAgent*>& ExampleAIModule::getSCVMap(){
+	return scvMap;
 }
 
 void ExampleAIModule::onSendText(std::string text)
@@ -252,7 +254,7 @@ void ExampleAIModule::onUnitDiscover(Unit unit){
 	}
 	else if(unit->getPlayer() == Broodwar->self() && unit->getType() == UnitTypes::Terran_SCV){
 		// Add SCV to map
-		SCVAgent *agent = new SCVAgent(unit);
+		SCVAgent *agent = new SCVAgent(unit, this);
 		scvMap[unit->getID()] = agent;
 		//(*scvMap)[unit->getID()] = agent; When SCVmap is a pointer
 	}
@@ -388,10 +390,11 @@ void ExampleAIModule::updateRepair(){
 		if ( hpRate < .6f){ //starts repairing when HP is less than 60%
 			float incentive = 1.0f - hpRate;
 
-			//incentive drops a third for each scv that decided to repair the damaged unit
+			//incentive is zero if target is being repaired
 			for(auto scv = scvMap.begin(); scv != scvMap.end(); scv++){
 				if(scv->second->repairTarget == *bldg){
-					incentive *= .66f;
+					incentive = 0;
+					break;
 				}
 			}
 

@@ -20,7 +20,7 @@ using namespace std;
 
 //SCVAgent::stateNames[NO_TASK] = NO_TASK;
 
-SCVAgent::SCVAgent(Unit scv) : repairTarget(NULL), atkTarget(NULL), toAttack(NULL){
+SCVAgent::SCVAgent(Unit scv, ExampleAIModule* aiModule) : _aiModule(aiModule), repairTarget(NULL), atkTarget(NULL), toAttack(NULL){
 	srand ( time(NULL) );
 	gameUnit = scv;
 	unitId = gameUnit->getID();
@@ -365,29 +365,50 @@ void SCVAgent::goRepair(Position dmgUnitPos){
 }
 
 void SCVAgent::goRepair(){
-	state = REPAIRING;
-	Broodwar->drawLineMap(gameUnit->getPosition(),repairTarget->getPosition(), Color(Colors::Blue));
 	
-	//counts the repairers around the target
-	int repairers = 0;
-	Unitset scvsAround = Broodwar->getUnitsInRadius(repairTarget->getPosition(), gameUnit->getType().sightRange(), IsWorker && IsOwned);
+	
+	//checks if other SCV assumed the task
+	/*Unitset scvsAround = Broodwar->getUnitsInRadius(repairTarget->getPosition(), gameUnit->getType().sightRange(), IsWorker && IsOwned);
 	for(auto other = scvsAround.begin(); other != scvsAround.end(); other++){
 		if(other->isRepairing()){
 			repairers++;
 		}
+	}*/
+
+	unordered_map<int, SCVAgent*>& scvMap = _aiModule->getSCVMap();
+
+	bool anotherRepairer = false;
+	for(auto scv = scvMap.begin(); scv != scvMap.end(); scv++){
+		if(scv->second == this) continue;
+
+		if(scv->second->isRepairing() && scv->second->repairTarget == repairTarget){
+			anotherRepairer = true;
+			Broodwar->drawTextMap(gameUnit->getPosition(),  "\n\n\nanother repairing");
+			break;
+		}
+		
 	}
+
 	
-	//if target has more than 80% of energy or cannot repair, returns to no_task state
-	if(repairTarget->getHitPoints() >= .8f * repairTarget->getType().maxHitPoints() ||  repairers > 1 || !gameUnit->repair(repairTarget)) {
+	//if target has more than 80% of energy or another SCV is reparing target or cannot repair, returns to no_task state
+	if(repairTarget->getHitPoints() >= .8f * repairTarget->getType().maxHitPoints() ||  anotherRepairer){// || !gameUnit->repair(repairTarget)) {
 		state = NO_TASK;
 		repairTarget = NULL;
+		gameUnit->stop();
+		Broodwar->drawTextMap(gameUnit->getPosition(),  "\n\n\nWILL NOT REPAIR");
+	}
+	else {
+		state = REPAIRING;
+		gameUnit->repair(repairTarget);
+		Broodwar->drawTextMap(gameUnit->getPosition(),  "\n\n\nI AM repairing");
+		Broodwar->drawLineMap(gameUnit->getPosition(),repairTarget->getPosition(), Color(Colors::Blue));
 	}
 
 	
 }
 
 bool SCVAgent::isRepairing(){
-	return state == REPAIRING && repairTarget != NULL;
+	return (gameUnit->isRepairing() || state == REPAIRING) && repairTarget != NULL;
 }
 /**
   * Implements the decision of building a new command center (cmd).
