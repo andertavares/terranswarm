@@ -71,7 +71,7 @@ void ExampleAIModule::onStart() {
 		commandCenters.clear();
 
 		//clears the list of discovered minerals
-		discoveredMinerals.clear();
+		discoveredMineralPositions.clear();
 		
 		//initializes the map of task lists
 		//tasks are grouped by taskType
@@ -177,7 +177,7 @@ void ExampleAIModule::onFrame() {
 		SCVAgent* agent = iter->second;
 		Unit u = agent->getUnit();
 
-		agent->onFrame(&allTasks, discoveredMinerals, commandCenters, scvMap);
+		agent->onFrame(&allTasks, discoveredMineralPositions, commandCenters, scvMap);
 
 		/*if(unitId == 4){
 			agent->goScout();
@@ -282,7 +282,7 @@ void ExampleAIModule::onUnitDiscover(Unit unit){
 	//new mineral discovered, is it at the range of a command center?
 	//framecount test prevents checking on unacessible minerals at game begin
 	if(Broodwar->getFrameCount() != 0 && unit->getType() == UnitTypes::Resource_Mineral_Field){
-		discoveredMinerals.insert(unit);
+		discoveredMineralPositions.push_back(unit->getPosition());
 	}
 	
 }
@@ -584,10 +584,10 @@ void ExampleAIModule::updateBuildCommandCenter(){
 
 
 	//for every discovered mineral, check if it is in range of a command center
-	for(Unitset::iterator mineral = discoveredMinerals.begin(); mineral != discoveredMinerals.end(); ++mineral){
+	for(auto mPos = discoveredMineralPositions.begin(); mPos != discoveredMineralPositions.end(); ++mPos){
 		bool reachable = false;
 		for(Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
-			if (cmd->getDistance(mineral->getPosition()) < BASE_RADIUS){
+			if (cmd->getPosition().getApproxDistance(*mPos) < BASE_RADIUS){
 				reachable = true;
 				break;
 			}
