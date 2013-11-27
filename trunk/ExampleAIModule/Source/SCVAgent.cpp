@@ -45,7 +45,7 @@ Unit SCVAgent::getUnit(){
 	return gameUnit;
 }
 
-void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters, unordered_map<int, SCVAgent*> scvMap){	
+void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters, SCVMap scvMap){	
 	// Get our starting location
 	if (originPosition.x == 0 && originPosition.y == 0) {
 		originPosition = gameUnit->getPosition();
@@ -72,7 +72,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 			}
 			else {
 				gameUnit->move(originPosition);
-				state == NO_TASK;
+				state = NO_TASK;
 			}
 		}
 	}
@@ -149,7 +149,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 					int dist = gameUnit->getPosition().getApproxDistance(repair->getPosition());
 					float diff = 1.0f - gameUnit->getPosition().getApproxDistance(repair->getPosition()) / float(maxDistance);
 					TaskAssociation taskA = TaskAssociation(&(*repair), diff);// pow(float(EULER),-dist));
-					Broodwar->sendText("Rpr: s:%.3f, T:%.3f, k:%.3f", repair->getIncentive(), taskA.tValue(), diff);// pow(float(EULER),-diff));
+					//Broodwar->sendText("Rpr: s:%.3f, T:%.3f, k:%.3f", repair->getIncentive(), taskA.tValue(), diff);// pow(float(EULER),-diff));
 					if(rNumber < taskA.tValue()){
 						lastChecked = Broodwar->getFrameCount();
 						//counts the number of repairers
@@ -189,12 +189,12 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 				//for (auto task = taskList->begin(); task != taskList->end(); task++){		
 					auto task = it;
 					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-					TaskAssociation taskA = TaskAssociation(&(*task), 0.5f);
+					TaskAssociation taskA = TaskAssociation(&(*task), 0.3f);
 					
 					if(taskA.tValue() > rNumber){
-						Broodwar << "Agent [" << unitId << "] Task suppy dep " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
+						Broodwar << "Agent [" << unitId << "] Task supply dep " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
 						// Check if other SCV near by are constructing the same thing
-						Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 20 * TILE_SIZE, Filter::IsWorker);
+						/*Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 20 * TILE_SIZE, Filter::IsWorker);
 						int scvNearConstructingSCV = 0;
 						for(Unitset::iterator scvIt = scvAround.begin(); scvIt != scvAround.end(); ++scvIt){
 							if(scvIt->isConstructing() ){
@@ -203,14 +203,14 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 								scvNearConstructingSCV++;
 							}
 						}
-					
-						if(scvNearConstructingSCV <= 1){
+						*/
+						//if(scvNearConstructingSCV <= 1){
 							Broodwar->drawTextMap(gameUnit->getPosition(),"\nSupply Depot");
 							lastChecked = Broodwar->getFrameCount();
 							createSupply();
 							it = taskList->erase(it);
 							return;
-						}
+						//}
 					}
 				}
 			}
@@ -350,8 +350,8 @@ void SCVAgent::attack(){
 
 		if(!closestFoe) return; //sanity check
 		
-		//discards task if foe is far
-		if(gameUnit->getPosition().getApproxDistance(closestFoe->getPosition()) > gameUnit->getType().sightRange()){
+		//discards task if foe is far or is flying unit
+		if(gameUnit->getPosition().getApproxDistance(closestFoe->getPosition()) > gameUnit->getType().sightRange() || closestFoe->getType().isFlyer()){
 			state = NO_TASK;
 			toAttack = NULL;
 			Broodwar->drawTextMap(gameUnit->getPosition(),"\n\nNO_TGT");
@@ -393,37 +393,62 @@ void SCVAgent::goRepair(){
 		}
 	}*/
 
-	unordered_map<int, SCVAgent*>& scvMap = _aiModule->getSCVMap();
-
-	bool anotherRepairer = false;
-	for(auto scv = scvMap.begin(); scv != scvMap.end(); scv++){
-		if(scv->second == this) continue;
-
-		if(scv->second->isRepairing() && scv->second->repairTarget == repairTarget){
-			anotherRepairer = true;
-			Broodwar->drawTextMap(gameUnit->getPosition(),  "\n\n\nanother repairing");
-			break;
-		}
-		
-	}
+	
 
 	
 	//if target has more than 80% of energy or another SCV is reparing target or cannot repair, returns to no_task state
-	if(repairTarget->getHitPoints() >= .8f * repairTarget->getType().maxHitPoints() ||  anotherRepairer){// || !gameUnit->repair(repairTarget)) {
+	if(  shouldBeRepaired(repairTarget) ){// || !gameUnit->repair(repairTarget)) {
+		state = REPAIRING;
+		
+		//if(!repairTarget->isBeingConstructed() && !repairTarget->isCompleted()) {
+			//gameUnit->repair(repairTarget);
+		gameUnit->rightClick(repairTarget);
+			//gameUnit->
+		//}
+
+		Broodwar->drawTextMap(gameUnit->getPosition(),  "\n\n\nI AM repairing");
+		Broodwar->drawLineMap(gameUnit->getPosition(),repairTarget->getPosition(), Color(Colors::Cyan));
+	}
+	else {
 		state = NO_TASK;
 		repairTarget = NULL;
 		gameUnit->stop();
 		Broodwar->drawTextMap(gameUnit->getPosition(),  "\n\n\nWILL NOT REPAIR");
 	}
-	else {
-		state = REPAIRING;
-		gameUnit->repair(repairTarget);
-		Broodwar->drawTextMap(gameUnit->getPosition(),  "\n\n\nI AM repairing");
-		Broodwar->drawLineMap(gameUnit->getPosition(),repairTarget->getPosition(), Color(Colors::Blue));
-	}
 
 	
 }
+
+/**
+  * Returns whether the target should be repaired
+  * True when target is less than 80% healthy or construction is halted and no other SCV is repairing it
+  */
+bool SCVAgent::shouldBeRepaired(Unit target){
+	if (!target->exists()) return false;
+
+	unordered_map<int, SCVAgent*>& scvMap = _aiModule->getSCVMap();
+
+	bool anotherRepairer = false;
+	for(auto scv = scvMap.begin(); scv != scvMap.end(); scv++){
+		if(scv->second->gameUnit->getID() == this->gameUnit->getID()) continue;
+
+		if(scv->second->isRepairing() && scv->second->repairTarget == repairTarget){
+			anotherRepairer = true;
+			//Broodwar->drawTextMap(gameUnit->getPosition(),  "\n\n\nanother repairing");
+			//Broodwar << "another repairing, me? ";
+			break;
+		}
+		
+	}
+	
+	if(!anotherRepairer && (!repairTarget->isCompleted() || repairTarget->getHitPoints() < .8f * repairTarget->getType().maxHitPoints() ) ){
+		//Broodwar <<  "should repair" << endl;
+		return true;
+	}
+	//Broodwar <<  "should NOT repair" << endl;
+	return false;
+}
+
 
 bool SCVAgent::isRepairing(){
 	return (gameUnit->isRepairing() || state == REPAIRING) && repairTarget != NULL;
@@ -455,7 +480,8 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 		//Broodwar->drawTextMap(gameUnit->getPosition(),"\nmyReg: %d, tgtReg: %d, d:%d", myReg->getID(), targetReg->getID(), gameUnit->getDistance(nearBaseArea));
 
 		//sometimes regions are buggy, so we test if we are very close to the target point
-		if(myReg->getID() == targetReg->getID() || (gameUnit->getDistance(nearBaseArea)/TILE_SIZE) <= 2){
+		if(((myReg && targetReg) && myReg->getID() == targetReg->getID()) || (gameUnit->getPosition().getApproxDistance(nearBaseArea)/TILE_SIZE) <= 2){
+			Broodwar << myReg << targetReg << endl;
 		//}
 
 		//if destination is in sight
@@ -551,15 +577,13 @@ Position SCVAgent::pointNearNewBase(Unitset theMinerals, Unitset commandCenters)
 		}
 		if (!reachable){
 			//allReachable = false;
-			if (gameUnit->getDistance(*mineral) < minDistance){
-				minDistance = gameUnit->getDistance(*mineral);
+			if (gameUnit->getPosition().getApproxDistance((*mineral)->getPosition()) < minDistance){
+				minDistance = gameUnit->getPosition().getApproxDistance((*mineral)->getPosition());
 				closestMineral = *mineral;
 			}
 		}
 	}
-	/*if(allReachable) {
-		return Position(0,0);//returns dummy position if all minerals are in range...
-	}*/
+
 	if (closestMineral == NULL){
 		//Broodwar->sendText("Dummy position returned");
 		return Position(-1,-1);//returns dummy position if all minerals are in range...
@@ -698,6 +722,17 @@ Position SCVAgent::getPositionToScout(){
 }
 
 void SCVAgent::createSupply(){
+	SCVMap colleagues = _aiModule->getSCVMap();
+
+	//checks if someone else already decided to build the depot
+	for(auto scv = colleagues.begin(); scv != colleagues.end(); scv++){
+		if(scv->second->state == BUILDING_SUPPLY_DEPOT){
+			state = NO_TASK;
+			gameUnit->stop(); //become idle
+			return;
+		}
+	}
+
 	state = BUILDING_SUPPLY_DEPOT;
 	UnitType supplyProviderType = gameUnit->getType().getRace().getSupplyProvider();
 	if ( supplyProviderType.isBuilding() ){
@@ -730,11 +765,16 @@ void SCVAgent::createSupply(){
 
 void SCVAgent::createBarrackNearCommandCenter(Position commandCenterPos) {
 	UnitType barrackType = UnitTypes::Terran_Barracks;
-	state = BUILDING_BARRACKS;
+	
 	TilePosition cmdTilePos = TilePosition(commandCenterPos.x / TILE_SIZE, commandCenterPos.y / TILE_SIZE);
 	//tries to place barrack near the command center
 	TilePosition targetBuildLocation = Broodwar->getBuildLocation(barrackType, cmdTilePos);//gameUnit->getTilePosition());
+
+
+
+
 	if ( targetBuildLocation ){
+		state = BUILDING_BARRACKS;
 		Broodwar->drawLineMap(gameUnit->getPosition(), Position(commandCenterPos.x, commandCenterPos.y), Color(Colors::Green));
 		// Register an event that draws the target build location
 		Broodwar->registerEvent([targetBuildLocation,barrackType](Game*)

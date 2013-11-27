@@ -25,6 +25,7 @@ class SCVAgent {
 	Position nearBaseArea; //will build a base near this position
 	ExampleAIModule* _aiModule;
 	
+	
 public:
 	SCVAgent(BWAPI::Unit scv, ExampleAIModule* aiModule);
 	~SCVAgent(void);
@@ -55,6 +56,7 @@ public:
 	void createBarrackNearCommandCenter(Position commandCenterPos);
 	bool isBuildingExpansion();
 	bool isRepairing();
+	bool shouldBeRepaired(Unit target);
 	State state;
 	
 

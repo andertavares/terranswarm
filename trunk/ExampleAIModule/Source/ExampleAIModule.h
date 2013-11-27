@@ -17,6 +17,8 @@ using namespace BWAPI;
 
 class SCVAgent; //forward decl. to prevent compile error
 
+typedef unordered_map<int, SCVAgent*> SCVMap;
+typedef unordered_map<int, MarineAgent*> MarineMap;
 
 // Remember not to use "Broodwar" in any global class constructor!
 
@@ -55,8 +57,8 @@ class ExampleAIModule : public BWAPI::AIModule {
 	unordered_map<Unit, float> buildBarracksIncentives;
 
 	// Map of SVCs agents
-	unordered_map<int, SCVAgent*> scvMap;
-	unordered_map<int, MarineAgent*> marines; //stores the marines owned
+	SCVMap scvMap;
+	MarineMap marines; //stores the marines owned
 
 	//is a supply depot scheduled to be built?
 	bool scheduledSupplyDepots;

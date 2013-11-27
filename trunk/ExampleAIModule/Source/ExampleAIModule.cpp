@@ -110,6 +110,7 @@ void ExampleAIModule::onEnd(bool isWinner) {
 }
 
 void ExampleAIModule::onFrame() {
+	//TODO: set rally point of barracks to the nearest command center
 	// Called once every game frame
 	// Return if the game is a replay or is paused
 	if ( Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self() )
@@ -333,6 +334,9 @@ void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit){
 		else if(unit->getType() == UnitTypes::Terran_Marine){
 			marines.erase(unit->getID());
 		}
+		else if (unit->getType() == UnitTypes::Terran_Command_Center){
+			commandCenters.erase(unit);
+		}
 	}
 	else {
 		Broodwar->sendText("%s shot down.", unit->getType().getName().c_str());
@@ -387,7 +391,7 @@ void ExampleAIModule::updateRepair(){
 			continue;
 		}
 		float hpRate = bldg->getHitPoints() / float(bldg->getType().maxHitPoints());
-		if ( hpRate < .6f){ //starts repairing when HP is less than 60%
+		if ( hpRate < .6f || !bldg->isBeingConstructed()){ //starts repairing when HP is less than 60% or its construction halted somehow
 			float incentive = 1.0f - hpRate;
 
 			//incentive is zero if target is being repaired
@@ -839,6 +843,26 @@ void ExampleAIModule::_drawStats(){
 	//draws circles around Attack targets
 	for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
 		Broodwar->drawCircleMap(task->getPosition(), UnitTypes::Terran_Marine.groundWeapon().maxRange(), Color(Colors::Red));
+	}
+
+	//draws info under the buildings
+	Unitset all = Broodwar->self()->getUnits();
+	for(auto bldg = all.begin(); bldg != all.end(); bldg++){
+		if( ! bldg->getType().isBuilding()){
+			continue;
+		}
+		string stat = "";
+		if (bldg->isCompleted()){
+			stat = "completed";
+		}
+		else if(bldg->isBeingConstructed()){
+			stat = "Men at work";
+		}
+		else {
+			stat = "HALTED!";
+		}
+
+		Broodwar->drawTextMap(bldg->getPosition(), stat.c_str());
 	}
 }
 
