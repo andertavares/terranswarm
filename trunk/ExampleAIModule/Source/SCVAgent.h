@@ -37,6 +37,7 @@ public:
 	Position atkTarget;
 	Position originPosition;
 	Unit toAttack;
+	TilePosition newBuildingLocation;
 
 	//void onTask(unordered_map<TaskType, vector<Task>*> taskMap);
 	void onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters, unordered_map<int, SCVAgent*> scvMap);
