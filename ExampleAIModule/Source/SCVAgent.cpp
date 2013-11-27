@@ -21,7 +21,9 @@ using namespace std;
 
 //SCVAgent::stateNames[NO_TASK] = NO_TASK;
 
-SCVAgent::SCVAgent(Unit scv, ExampleAIModule* aiModule) : _aiModule(aiModule), repairTarget(NULL), atkTarget(NULL), toAttack(NULL){
+SCVAgent::SCVAgent(Unit scv, ExampleAIModule* aiModule) : _aiModule(aiModule), repairTarget(NULL), 
+atkTarget(NULL), toAttack(NULL), newBuildingLocation(NULL)
+{
 	srand ( time(NULL) );
 	gameUnit = scv;
 	unitId = gameUnit->getID();
@@ -45,6 +47,8 @@ Unit SCVAgent::getUnit(){
 	return gameUnit;
 }
 
+
+//TODO: SCV is building cmd center in invalid position!
 void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters, SCVMap scvMap){	
 	// Get our starting location
 	if (originPosition.x == 0 && originPosition.y == 0) {
@@ -103,7 +107,8 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 
 	// Validate actions and status
 	if(gameUnit->isConstructing() ){
-		Broodwar->drawTextMap(gameUnit->getPosition(),"\nConstructing");
+		UnitType what = gameUnit->getBuildUnit()->getType();
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nConstructing %s", what.getName().c_str());
 		return;
 	}
 	if(gameUnit->isMoving()){
@@ -222,19 +227,20 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 
 				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 					auto task = it;
-					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-					//distfactor ranges [0:0.5]: when it is 10, agent capability to build cmd center is minimum
+					float rNumber = rand() / float(RAND_MAX);
+					//distfactor ranges [0:0.5]: when it is .5, agent capability to build cmd center is minimum
 					float distFactor = .5f * (gameUnit->getPosition().getApproxDistance(task->getPosition()) / float(maxDistance));
 
-					//divides distfactor
+					//agent capability decreases exponentially with the distance to the task
 					TaskAssociation taskA = TaskAssociation(&(*task), pow(float(EULER),-distFactor));
 					
-					if(taskA.tValue() > rNumber){
+					if(rNumber < taskA.tValue()){
 						Broodwar << "Agent [" << unitId << "] Task barrack " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
 						// Check if other SCV near by are constructing the same thing
+						/*
 						Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 20 * TILE_SIZE, Filter::IsWorker);
 						int scvNearConstructingSCV = 0;
-						/*
+						
 						for(Unitset::iterator scvIt = scvAround.begin(); scvIt != scvAround.end(); ++scvIt){
 							if(scvIt->isConstructing() ){
 								scvNearConstructingSCV++;
@@ -249,7 +255,10 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 							return;
 						}
 						*/
+						//it = taskList->erase(it); <<this does not prevent more then one SCV trying to build in the same place
+						//it->setIncentive(0); <<this does not prevent more then one SCV trying to build in the same place
 						createBarrackNearCommandCenter(it->getPosition());
+						return;
 					}
 				}
 			}
@@ -497,18 +506,21 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 		//must find suitable location to build base
 		Broodwar->drawCircleMap(gameUnit->getPosition(), gameUnit->getType().sightRange(),Color(Colors::Cyan));
 		UnitType centerType = gameUnit->getType().getRace().getCenter();
-		TilePosition targetBuildLocation = Broodwar->getBuildLocation(centerType, gameUnit->getTilePosition() );
+		
+		newBuildingLocation = Broodwar->getBuildLocation(centerType, gameUnit->getTilePosition() );
+		
 
 		//TilePosition targetBuildLocation = Broodwar->getBuildLocation(supplyProviderType, supplyBuilder->getTilePosition());
 		//TODO: insist in case of "something is in the way" error
-		if (targetBuildLocation){
+		if (newBuildingLocation){
 
 			// Register an event that draws the target build location
+			TilePosition targetBuildLocation = newBuildingLocation;
 			Broodwar->registerEvent([targetBuildLocation,centerType](Game*)
 			{
 				Broodwar->drawBoxMap( Position(targetBuildLocation),
 					Position(targetBuildLocation + centerType.tileSize()),
-					Colors::Blue);
+					Colors::Orange);
 			},
 			nullptr,  // condition
 			centerType.buildTime() + 100 );  // frames to run
@@ -516,7 +528,7 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 			//if ( targetBuildLocation ){
 
 				// Order the builder to construct the supply structure
-				gameUnit->build(centerType, targetBuildLocation);
+				gameUnit->build(centerType, newBuildingLocation);
 				state = BUILDING_BASE;
 			//}
 		} else {
@@ -736,8 +748,9 @@ void SCVAgent::createSupply(){
 	state = BUILDING_SUPPLY_DEPOT;
 	UnitType supplyProviderType = gameUnit->getType().getRace().getSupplyProvider();
 	if ( supplyProviderType.isBuilding() ){
-		TilePosition targetBuildLocation = Broodwar->getBuildLocation(supplyProviderType, gameUnit->getTilePosition());
-		if ( targetBuildLocation ){
+		newBuildingLocation = Broodwar->getBuildLocation(supplyProviderType, gameUnit->getTilePosition());
+		TilePosition targetBuildLocation = newBuildingLocation;
+		if ( newBuildingLocation ){
 			// Register an event that draws the target build location
 			Broodwar->registerEvent([targetBuildLocation,supplyProviderType](Game*){
 					Broodwar->drawBoxMap( Position(targetBuildLocation), Position(targetBuildLocation + supplyProviderType.tileSize()),	Colors::Yellow);
@@ -768,26 +781,46 @@ void SCVAgent::createBarrackNearCommandCenter(Position commandCenterPos) {
 	
 	TilePosition cmdTilePos = TilePosition(commandCenterPos.x / TILE_SIZE, commandCenterPos.y / TILE_SIZE);
 	//tries to place barrack near the command center
-	TilePosition targetBuildLocation = Broodwar->getBuildLocation(barrackType, cmdTilePos);//gameUnit->getTilePosition());
+	newBuildingLocation = Broodwar->getBuildLocation(barrackType, cmdTilePos);//gameUnit->getTilePosition());
 
-
-
-
-	if ( targetBuildLocation ){
+	if ( newBuildingLocation ){
 		state = BUILDING_BARRACKS;
 		Broodwar->drawLineMap(gameUnit->getPosition(), Position(commandCenterPos.x, commandCenterPos.y), Color(Colors::Green));
+		
+		//checks if other scvs are planning to construct a barrack in my area
+		SCVMap map = _aiModule->getSCVMap();
+		for(auto scv = map.begin(); scv != map.end(); scv++){
+			if(scv->second->newBuildingLocation == newBuildingLocation){
+				newBuildingLocation = NULL;
+				state = NO_TASK;
+				gameUnit->stop();
+				return;
+			}
+		}
+
+		// Order the builder to construct the structure, if it fails, print some info and return
+		if(!gameUnit->build( barrackType, newBuildingLocation )) {
+			Broodwar << Broodwar->getLastError().c_str() << std::endl;
+			state = NO_TASK;
+			newBuildingLocation = NULL;
+			gameUnit->stop();
+			return;
+		}
+
 		// Register an event that draws the target build location
+		TilePosition targetBuildLocation = newBuildingLocation;
 		Broodwar->registerEvent([targetBuildLocation,barrackType](Game*)
 			{
 				Broodwar->drawBoxMap( Position(targetBuildLocation),
 					Position(targetBuildLocation + barrackType.tileSize()),
 					Colors::Blue);
 			},
-				nullptr,  // condition
-			barrackType.buildTime() + 100 );  // frames to run
+			nullptr,  // condition
+			barrackType.buildTime() + 100 // frames to run
+		);  
 
-		// Order the builder to construct the supply structure
-		gameUnit->build( barrackType, targetBuildLocation );
+		
+		
 	}
 	else {
 		Position txtPlace =  gameUnit->getPosition();
@@ -798,7 +831,10 @@ void SCVAgent::createBarrackNearCommandCenter(Position commandCenterPos) {
 		},
 		nullptr,  // condition
 		barrackType.buildTime() + 100 );
-		Broodwar << Broodwar->getLastError() << std::endl;
+		Broodwar << Broodwar->getLastError().c_str() << std::endl;
+		state = NO_TASK;
+		gameUnit->stop();
+		return;
 	}
 }
 
@@ -808,7 +844,7 @@ void SCVAgent::createBarrackNearCommandCenter(Position commandCenterPos) {
 		return;
 	}*/
 
-	vector<TaskAssociation> taskAssociations;
+	//vector<TaskAssociation> taskAssociations;
 	//feasibleTasks.clear(); //initializes the task vector
 	//vector<Task>::iterator fit = feasibleTasks.begin();
 	

@@ -335,7 +335,9 @@ void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit){
 			marines.erase(unit->getID());
 		}
 		else if (unit->getType() == UnitTypes::Terran_Command_Center){
+			//Broodwar->sendText("cmdSize before: %d",commandCenters.size());
 			commandCenters.erase(unit);
+			//Broodwar->sendText("cmdSize AFTER: %d",commandCenters.size());
 		}
 	}
 	else {
@@ -391,7 +393,7 @@ void ExampleAIModule::updateRepair(){
 			continue;
 		}
 		float hpRate = bldg->getHitPoints() / float(bldg->getType().maxHitPoints());
-		if ( hpRate < .6f || !bldg->isBeingConstructed()){ //starts repairing when HP is less than 60% or its construction halted somehow
+		if ( hpRate < .6f || !bldg->isCompleted()){ //starts repairing when HP is less than 60% or its construction halted somehow
 			float incentive = 1.0f - hpRate;
 
 			//incentive is zero if target is being repaired
@@ -603,8 +605,8 @@ void ExampleAIModule::updateBuildBarracks(){
 		}
 
 		//updates the number of barracks around all command centers
-		builtBarracks[*c] = barracksNumber;
-		buildBarracksIncentives[*c] = incentive;
+		//builtBarracks[*c] = barracksNumber;
+		//buildBarracksIncentives[*c] = incentive;
 
 		newBarracksNeeded->push_back(Task(BuildBarracks, incentive, c->getPosition()));
 	}
@@ -685,6 +687,9 @@ void ExampleAIModule::updateExplore(){
     //int minutes = seconds/60;
 }
 
+/**
+  * Counts the barracks constructed or under construction around a command center
+  */
 int ExampleAIModule::calculateBarracksFromCommandCenter(Unit cmdCenter) {
 	//if(!u->getType().isResourceDepot()){
 	//	return 0;
@@ -698,7 +703,10 @@ int ExampleAIModule::calculateBarracksFromCommandCenter(Unit cmdCenter) {
 	for ( Unitset::iterator u = units.begin(); u != units.end(); ++u ) {
 		if ( u->getType() == UnitTypes::Terran_Barracks ) {
 			counter++;
-		} 
+		}
+		/*else if ( u->getType() == UnitTypes::Terran_SCV && scvMap[u->getID()]->state == BUILDING_BARRACKS){ 
+			counter++;
+		}*/
 	}
 
 	return counter;
@@ -852,13 +860,10 @@ void ExampleAIModule::_drawStats(){
 			continue;
 		}
 		string stat = "";
-		if (bldg->isCompleted()){
-			stat = "completed";
-		}
-		else if(bldg->isBeingConstructed()){
+		if(bldg->isBeingConstructed()){
 			stat = "Men at work";
 		}
-		else {
+		else if (!bldg->isCompleted()) {
 			stat = "HALTED!";
 		}
 
