@@ -119,21 +119,21 @@ void ExampleAIModule::onFrame() {
 	_drawStats();
 
 	// Draw bullets
-	Bulletset bullets = Broodwar->getBullets();
+	/*Bulletset bullets = Broodwar->getBullets();
 	for(Bulletset::iterator i = bullets.begin(); i != bullets.end(); ++i){
 		Position p = i->getPosition();
 		double velocityX = i->getVelocityX();
 		double velocityY = i->getVelocityY();
 		Broodwar->drawLineMap(p, p + Position((int)velocityX, (int)velocityY), i->getPlayer() == Broodwar->self() ? Colors::Green : Colors::Red);
 		//Broodwar->drawTextMap(p, "%c%s", i->getPlayer() == Broodwar->self() ? Text::Green : Text::Red, i->getType().c_str());
-	}
+	}*/
 
 	// Prevent spamming by only running our onFrame once every number of latency frames.
 	// Latency frames are the number of frames before commands are processed.
 	if ( Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0 )
 		return;
 
-	// Reinsert supply depot task
+	// reinsert tasks to prevent errors
 	if(allTasks[BuildCommandCenter]->size() <= 0){
 		allTasks[BuildCommandCenter]->push_back(Task(BuildCommandCenter, 0));
 		buildCommandCenter = &allTasks[BuildCommandCenter]->at(0);
@@ -147,6 +147,19 @@ void ExampleAIModule::onFrame() {
 		explore = &allTasks[Explore]->at(0);
 	}
 	
+	//sets all rally points of barracks to the nearest command center
+	for(auto c = commandCenters.begin(); c != commandCenters.end(); c++){
+		Unitset brk = c->getUnitsInRadius(BASE_RADIUS, Filter::IsOwned);
+
+		for (auto b = brk.begin(); b != brk.end(); b++){
+			if(b->getType() != UnitTypes::Terran_Barracks || !b->isCompleted()){
+				continue;
+			}
+			b->setRallyPoint(*c);
+		}
+
+	}
+
 
 	updateTasks();
 
@@ -691,25 +704,30 @@ void ExampleAIModule::updateExplore(){
   * Counts the barracks constructed or under construction around a command center
   */
 int ExampleAIModule::calculateBarracksFromCommandCenter(Unit cmdCenter) {
-	//if(!u->getType().isResourceDepot()){
-	//	return 0;
-	//}
 
+	//first: count built barracks around the command center
 	Position commandCenterPos = cmdCenter->getPosition();
+	
 	Unitset units = Broodwar->getUnitsInRadius(commandCenterPos, BASE_RADIUS);
-	//Broodwar->drawCircleMap(commandCenterPos, 20*TILE_SIZE, Color(Colors::Blue));
-	//Unitset units = u->getUnitsInRadius(200);
-	int counter = 0;
+	int builtBarracks = 0;
 	for ( Unitset::iterator u = units.begin(); u != units.end(); ++u ) {
-		if ( u->getType() == UnitTypes::Terran_Barracks ) {
-			counter++;
+		if ( u->getType() == UnitTypes::Terran_Barracks && u->isCompleted()) {
+			builtBarracks++;
 		}
-		/*else if ( u->getType() == UnitTypes::Terran_SCV && scvMap[u->getID()]->state == BUILDING_BARRACKS){ 
-			counter++;
-		}*/
 	}
-
-	return counter;
+	
+	//second: count the SCVs constructing around the command center
+	int scheduledForConstruction = 0;
+	for(auto scv = scvMap.begin(); scv != scvMap.end(); scv++){
+		//if SCV is not constructing the barracks but is moving towards it...
+		if(scv->second->state == BUILDING_BARRACKS && Position(scv->second->newBuildingLocation).getApproxDistance(commandCenterPos) < BASE_RADIUS ){
+			
+			Broodwar->drawCircleMap(scv->second->gameUnit->getPosition(),20,Color(Colors::Cyan));
+			scheduledForConstruction++;
+		}
+	}
+	//Broodwar->sendText("%d - %d",builtBarracks,scheduledForConstruction);
+	return builtBarracks + scheduledForConstruction;
 }
 
 void ExampleAIModule::createBarrackNearCommandCenter(Unit u) {
