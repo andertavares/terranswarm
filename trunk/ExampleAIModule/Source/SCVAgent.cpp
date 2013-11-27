@@ -49,6 +49,7 @@ Unit SCVAgent::getUnit(){
 
 
 //TODO: SCV is building cmd center in invalid position!
+//TODO: scvs to build barracks in new cmd center is locking up
 void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters, SCVMap scvMap){	
 	// Get our starting location
 	if (originPosition.x == 0 && originPosition.y == 0) {
@@ -105,12 +106,26 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 		}
 	}
 
-	// Validate actions and status
 	if(gameUnit->isConstructing() ){
-		UnitType what = gameUnit->getBuildUnit()->getType();
+		UnitType what = gameUnit->getBuildType();//gameUnit->getBuildUnit()->getType();
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nConstructing %s", what.getName().c_str());
 		return;
+	} 
+	else if(state == BUILDING_BARRACKS){ //if unit should be building barracks but it isn't, either the job is finished or location is obstructed
+		//Broodwar << "could not build barracks" << endl;
+		Position pos = gameUnit->getPosition();
+		Broodwar->registerEvent(
+			[pos](Game*) {
+				Broodwar->drawCircleMap(pos,20,Color(Colors::Orange));
+			},
+			nullptr,  // condition
+			50 // frames to run
+		);  
+		state = NO_TASK;
+		newBuildingLocation = NULL;
 	}
+
+
 	if(gameUnit->isMoving()){
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nMoving");
 		return;	
@@ -235,7 +250,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 					TaskAssociation taskA = TaskAssociation(&(*task), pow(float(EULER),-distFactor));
 					
 					if(rNumber < taskA.tValue()){
-						Broodwar << "Agent [" << unitId << "] Task barrack " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
+						//Broodwar << "Agent [" << unitId << "] Task barrack " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
 						// Check if other SCV near by are constructing the same thing
 						/*
 						Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 20 * TILE_SIZE, Filter::IsWorker);
@@ -258,6 +273,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 						//it = taskList->erase(it); <<this does not prevent more then one SCV trying to build in the same place
 						//it->setIncentive(0); <<this does not prevent more then one SCV trying to build in the same place
 						createBarrackNearCommandCenter(it->getPosition());
+						taskList->erase(it);
 						return;
 					}
 				}
@@ -393,18 +409,6 @@ void SCVAgent::goRepair(Position dmgUnitPos){
 
 void SCVAgent::goRepair(){
 	
-	
-	//checks if other SCV assumed the task
-	/*Unitset scvsAround = Broodwar->getUnitsInRadius(repairTarget->getPosition(), gameUnit->getType().sightRange(), IsWorker && IsOwned);
-	for(auto other = scvsAround.begin(); other != scvsAround.end(); other++){
-		if(other->isRepairing()){
-			repairers++;
-		}
-	}*/
-
-	
-
-	
 	//if target has more than 80% of energy or another SCV is reparing target or cannot repair, returns to no_task state
 	if(  shouldBeRepaired(repairTarget) ){// || !gameUnit->repair(repairTarget)) {
 		state = REPAIRING;
@@ -471,16 +475,24 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 	//Unitset uncoveredMinerals;
 	
 	Position pos = gameUnit->getPosition();
-			Broodwar->registerEvent([pos](Game*)
-			{
-				Broodwar->drawCircleMap(pos,20,Color(Colors::Red));
-			},
-				nullptr,  // condition
-			100 );  // frames to run
+	Broodwar->registerEvent(
+		[pos](Game*) {
+			Broodwar->drawCircleMap(pos,20,Color(Colors::Red));
+		},
+		nullptr,  // condition
+		70 // frames to run
+	);  
 
 	if (state == MOVING_TO_NEW_BASE) {
+		//checks if destination is valid
+		if(!nearBaseArea.isValid()){
+			state = NO_TASK;
+			gameUnit->stop();
+			return;
+			Broodwar << "Invalid base target" << endl;
+		}
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nMoving to base");
-		Broodwar->drawLineMap(gameUnit->getPosition(),nearBaseArea,Color(Colors::Green));
+		Broodwar->drawLineMap(gameUnit->getPosition(),nearBaseArea,Color(Colors::Orange));
 		gameUnit->move(nearBaseArea);
 
 		Region targetReg = Broodwar->getRegionAt(nearBaseArea);
@@ -557,11 +569,20 @@ void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nelse");
 		nearBaseArea = pointNearNewBase(theMinerals, commandCenters);
 		//checks consistency of new assigned point
-		if(nearBaseArea.x != -1 && nearBaseArea.y != -1) {
-			Broodwar->sendText("Tgt point inconsistent");
-			Broodwar->drawTextMap(gameUnit->getPosition(),"\n\ninconsistent tgt");
+		if(nearBaseArea.x != -1 && nearBaseArea.y != -1 && nearBaseArea.isValid()) {
+			Broodwar->sendText("Tgt point consistent");
+			Broodwar->drawTextMap(gameUnit->getPosition(),"\n\nconsistent tgt");
 			state = MOVING_TO_NEW_BASE;
 		}
+		else {
+			//Broodwar->sendText("Tgt point INconsistent");
+			Broodwar->drawTextMap(gameUnit->getPosition(),"\n\nINconsistent tgt");
+			Broodwar << "Invalid base target" << endl;
+			state = NO_TASK;
+			gameUnit->stop();
+			return;
+		}
+
 	}
 }
 
@@ -782,6 +803,7 @@ void SCVAgent::createBarrackNearCommandCenter(Position commandCenterPos) {
 	TilePosition cmdTilePos = TilePosition(commandCenterPos.x / TILE_SIZE, commandCenterPos.y / TILE_SIZE);
 	//tries to place barrack near the command center
 	newBuildingLocation = Broodwar->getBuildLocation(barrackType, cmdTilePos);//gameUnit->getTilePosition());
+	//Broodwar->getb
 
 	if ( newBuildingLocation ){
 		state = BUILDING_BARRACKS;
@@ -790,7 +812,8 @@ void SCVAgent::createBarrackNearCommandCenter(Position commandCenterPos) {
 		//checks if other scvs are planning to construct a barrack in my area
 		SCVMap map = _aiModule->getSCVMap();
 		for(auto scv = map.begin(); scv != map.end(); scv++){
-			if(scv->second->newBuildingLocation == newBuildingLocation){
+			if(scv->second->gameUnit->getID() != gameUnit->getID() &&  scv->second->newBuildingLocation == newBuildingLocation){
+				Broodwar << "someone will build there already" << endl;
 				newBuildingLocation = NULL;
 				state = NO_TASK;
 				gameUnit->stop();
@@ -800,10 +823,29 @@ void SCVAgent::createBarrackNearCommandCenter(Position commandCenterPos) {
 
 		// Order the builder to construct the structure, if it fails, print some info and return
 		if(!gameUnit->build( barrackType, newBuildingLocation )) {
-			Broodwar << Broodwar->getLastError().c_str() << std::endl;
+			
+
+			if(Broodwar->getLastError().getID() == Errors::Unbuildable_Location){
+				Broodwar << "Not buildable!" << std::endl;
+				gameUnit->move(Position(newBuildingLocation));
+				//this error seems to happen when place is unexplored
+
+				/*
+				Position myPos = gameUnit->getPosition();
+				Position target = Position(newBuildingLocation);
+				Broodwar->registerEvent(
+					[target,myPos](Game*){
+						Broodwar->drawLineMap( myPos, target,	Colors::Yellow);
+					},
+					nullptr,  // condition
+					1000 
+				);  // frames to run
+				*/
+			}
+
 			state = NO_TASK;
 			newBuildingLocation = NULL;
-			gameUnit->stop();
+			//gameUnit->stop();
 			return;
 		}
 
@@ -824,14 +866,16 @@ void SCVAgent::createBarrackNearCommandCenter(Position commandCenterPos) {
 	}
 	else {
 		Position txtPlace =  gameUnit->getPosition();
-		Broodwar->registerEvent([txtPlace,barrackType](Game*)
+		/*Broodwar->registerEvent([txtPlace,barrackType](Game*)
 		{
 			Broodwar->drawTextMap( txtPlace,
 					Broodwar->getLastError().c_str());
 		},
 		nullptr,  // condition
-		barrackType.buildTime() + 100 );
+		barrackType.buildTime() + 100 );*/
 		Broodwar << Broodwar->getLastError().c_str() << std::endl;
+
+		
 		state = NO_TASK;
 		gameUnit->stop();
 		return;

@@ -16,7 +16,7 @@
 using namespace BWAPI;
 using namespace std;
 
-MarineAgent::MarineAgent(Unit u) : gameUnit(u), state(NO_TASK), latencyFrames(5){
+MarineAgent::MarineAgent(Unit u) : gameUnit(u), state(NO_TASK), latencyFrames(10){
 	lastPosition = Position(0,0);
 	lastFrameCount = Broodwar->getFrameCount();
 }
@@ -25,13 +25,12 @@ MarineAgent::~MarineAgent(void){
 }
 
 void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unordered_map<int, MarineAgent*> colleagues){
-	//if is already engaged in task, does nothing
-	
+	//if is already engaged in task, continues it
 	if(! gameUnit->isIdle() || !gameUnit->isCompleted() || Broodwar->getFrameCount() % latencyFrames != 0) {
 		return;
 	}
 
-
+	//else, pick something to do
 	state = NO_TASK;
 	vector<TaskAssociation> taskAssociations;
 
