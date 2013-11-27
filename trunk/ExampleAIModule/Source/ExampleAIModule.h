@@ -39,7 +39,7 @@ class ExampleAIModule : public BWAPI::AIModule {
 	Unitset commandCenters;
 
 	//set of minerals that were discovered
-	Unitset discoveredMinerals;
+	vector<Position> discoveredMineralPositions;
 
 	//map: taskType to list<task> for tasks that may have multiple instances with variable incentives
 	unordered_map<TaskType, vector<Task>*> allTasks;

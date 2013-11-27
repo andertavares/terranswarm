@@ -40,7 +40,7 @@ public:
 	TilePosition newBuildingLocation;
 
 	//void onTask(unordered_map<TaskType, vector<Task>*> taskMap);
-	void onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters, unordered_map<int, SCVAgent*> scvMap);
+	void onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<Position> mineralPositions, Unitset commandCenters, unordered_map<int, SCVAgent*> scvMap);
 	bool evaluateIncentive();
 	BWAPI::Unit SCVAgent::getUnit();
 	BWAPI::Position getPositionToScout();
@@ -51,8 +51,8 @@ public:
 	bool goScout();
 	void goRepair(Position dmgUnitPos);
 	void goRepair();
-	void buildCommandCenter(Unitset theMinerals, Unitset commandCenters);
-	Position pointNearNewBase(Unitset theMinerals, Unitset commandCenters);
+	void buildCommandCenter(vector<Position> theMinerals, Unitset commandCenters);
+	Position pointNearNewBase(vector<Position> theMinerals, Unitset commandCenters);
 	void createSupply();
 	void createBarrackNearCommandCenter(Position commandCenterPos);
 	bool isBuildingExpansion();

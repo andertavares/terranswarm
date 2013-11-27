@@ -50,7 +50,7 @@ Unit SCVAgent::getUnit(){
 
 //TODO: SCV is building cmd center in invalid position!
 //TODO: scvs to build barracks in new cmd center is locking up
-void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset theMinerals, Unitset commandCenters, SCVMap scvMap){	
+void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<Position> mineralPositions, Unitset commandCenters, SCVMap scvMap){	
 	// Get our starting location
 	if (originPosition.x == 0 && originPosition.y == 0) {
 		originPosition = gameUnit->getPosition();
@@ -89,7 +89,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 	}
 
 	if(isBuildingExpansion()){
-		buildCommandCenter(theMinerals, commandCenters);
+		buildCommandCenter(mineralPositions, commandCenters);
 		return;
 	}
 
@@ -299,7 +299,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, Unitset 
 						if(isOtherExpanding  <= 0){
 							Broodwar << "Agent [" << unitId << "] Task command " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
 							lastChecked = Broodwar->getFrameCount();
-							buildCommandCenter(theMinerals, commandCenters);
+							buildCommandCenter(mineralPositions, commandCenters);
 							it = taskList->erase(it);
 							return;
 						}
@@ -471,7 +471,7 @@ bool SCVAgent::isRepairing(){
   * The SCV chooses a location (near mineral field) to build the cmd, moves towards it and
   * places the new cmd close to the location
   */
-void SCVAgent::buildCommandCenter(Unitset theMinerals, Unitset commandCenters){
+void SCVAgent::buildCommandCenter(vector<Position> theMinerals, Unitset commandCenters){
 	//Unitset uncoveredMinerals;
 	
 	Position pos = gameUnit->getPosition();
@@ -590,38 +590,49 @@ bool SCVAgent::isBuildingExpansion(){
 	return state == MOVING_TO_NEW_BASE || state == IN_BASE_AREA || state == BUILDING_BASE;
 }
 
-Position SCVAgent::pointNearNewBase(Unitset theMinerals, Unitset commandCenters){
+//TODO: check if mineral field is under one attack task...
+Position SCVAgent::pointNearNewBase(vector<Position> theMinerals, Unitset commandCenters){
 
-	Unit closestMineral = NULL; //mineral to which the base will be built
+	Position closestMineral = Position(1,1); //mineral to which the base will be built
 	//closestMineralPosition = new Position(0,0);
 
 	int minDistance = INT_MAX;
+	/*
+	Unitset staticMinerals = Broodwar->getStaticMinerals();
+	for(auto m = staticMinerals.begin(); m != staticMinerals.end(); m++){
+		if(! m->getPosition().isValid()){
+			Broodwar->sendText("INVALID pos: %d,%d", m->getPosition().x, m->getPosition().y);
+			return;
+		}
+	}
+	*/
 
 	//finds out which mineral is closest to the scv
-	Unitset::iterator mineral;
+	//Unitset::iterator mineral;
 	//bool allReachable = true;
-	for (mineral = theMinerals.begin(); mineral != theMinerals.end(); ++mineral){
+	for (auto mineral = theMinerals.begin(); mineral != theMinerals.end(); ++mineral){
 		bool reachable = false;
 		for(Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
-			if (cmd->getDistance(mineral->getPosition()) < BASE_RADIUS){
+			if (cmd->getPosition().getApproxDistance(*mineral) < BASE_RADIUS){
 				reachable = true;
 				break;
 			}
 		}
 		if (!reachable){
+			//Broodwar->sendText("Unreachable pos: %d,%d", (*mineral).x, (*mineral).y);
 			//allReachable = false;
-			if (gameUnit->getPosition().getApproxDistance((*mineral)->getPosition()) < minDistance){
-				minDistance = gameUnit->getPosition().getApproxDistance((*mineral)->getPosition());
+			if (gameUnit->getPosition().getApproxDistance((*mineral)) < minDistance){
+				minDistance = gameUnit->getPosition().getApproxDistance((*mineral));
 				closestMineral = *mineral;
 			}
 		}
 	}
 
-	if (closestMineral == NULL){
-		//Broodwar->sendText("Dummy position returned");
+	if (! closestMineral.isValid()){
+		Broodwar << "Dummy position returned";
 		return Position(-1,-1);//returns dummy position if all minerals are in range...
 	}
-	return closestMineral->getPosition();
+	return closestMineral;
 
 }
 
