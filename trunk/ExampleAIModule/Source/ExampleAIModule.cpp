@@ -160,6 +160,16 @@ void ExampleAIModule::onFrame() {
 
 	}
 
+	//gives up the construction of buildings about to be destroyed
+	Unitset all = Broodwar->self()->getUnits();
+	for(auto b = all.begin(); b != all.end(); b++){
+		//cancels construction if building is incomplete, is under attack and its hit points are low
+		if (b->getType().isBuilding() && !b->isCompleted() && b->isUnderAttack() && b->getHitPoints() < .15f * b->getType().maxHitPoints()){
+			b->cancelConstruction();
+			//Broodwar << "construction canceled" << endl;
+		}
+	}
+
 
 	updateTasks();
 
