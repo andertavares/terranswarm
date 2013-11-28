@@ -22,7 +22,7 @@ using namespace std;
 //SCVAgent::stateNames[NO_TASK] = NO_TASK;
 
 SCVAgent::SCVAgent(Unit scv, ExampleAIModule* aiModule) : _aiModule(aiModule), repairTarget(NULL), 
-atkTarget(NULL), toAttack(NULL), newBuildingLocation(NULL)
+	atkTarget(NULL), toAttack(NULL), newBuildingLocation(NULL), latencyFrames(10)
 {
 	srand ( time(NULL) );
 	gameUnit = scv;
@@ -56,6 +56,10 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 		originPosition = gameUnit->getPosition();
 	}
 
+	if(Broodwar->getFrameCount() % latencyFrames != 0){
+		return;
+	}
+
 	Broodwar->drawTextMap(gameUnit->getPosition(),"\n\n%d-%d-%d-%d", state, gameUnit->isGatheringMinerals(), gameUnit->isConstructing(), gameUnit->getOrder());
 	//Broodwar->drawCircleMap(gameUnit->getPosition(),gameUnit->getType().sightRange(),Color(Colors::Blue));
 	if(!gameUnit->isCompleted()){
@@ -64,7 +68,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 	}
 
 	if(state == EXPLORING){
-		// Check if are enemies near by and RUN!
+		// Check if are enemies nearby and RUN!
 		Unitset foes = Broodwar->getUnitsInRadius(gameUnit->getPosition(), TILE_SIZE * 4, Filter::IsEnemy);
 		if(foes.size() > 1){
 			gameUnit->move(getPositionToScout());
@@ -466,6 +470,23 @@ bool SCVAgent::shouldBeRepaired(Unit target){
 bool SCVAgent::isRepairing(){
 	return (gameUnit->isRepairing() || state == REPAIRING) && repairTarget != NULL;
 }
+
+
+bool SCVAgent::isDangerous(Position pos){
+	vector<Task>* atkTasks = _aiModule->getTasks()[Attack];
+
+	bool inAttackArea = false;
+	for(auto task = atkTasks->begin(); task != atkTasks->end(); task++) {
+		if(task->getPosition().getApproxDistance(pos) < 10 * TILE_SIZE){
+			inAttackArea = true;
+			break;
+		}
+	}
+
+	return inAttackArea;
+
+}
+
 /**
   * Implements the decision of building a new command center (cmd).
   * The SCV chooses a location (near mineral field) to build the cmd, moves towards it and
@@ -485,13 +506,13 @@ void SCVAgent::buildCommandCenter(vector<Position> theMinerals, Unitset commandC
 
 	if (state == MOVING_TO_NEW_BASE) {
 		//checks if destination is valid
-		if(!nearBaseArea.isValid()){
+		if(!nearBaseArea.isValid() || isDangerous(nearBaseArea)){
 			state = NO_TASK;
 			gameUnit->stop();
 			return;
-			Broodwar << "Invalid base target" << endl;
+			Broodwar << "Invalid or dangerous base target" << endl;
 		}
-		Broodwar->drawTextMap(gameUnit->getPosition(),"\nMoving to base");
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nMoving to base: %d %d", nearBaseArea.x, nearBaseArea.y);
 		Broodwar->drawLineMap(gameUnit->getPosition(),nearBaseArea,Color(Colors::Orange));
 		gameUnit->move(nearBaseArea);
 
@@ -571,12 +592,16 @@ void SCVAgent::buildCommandCenter(vector<Position> theMinerals, Unitset commandC
 		//checks consistency of new assigned point
 		if(nearBaseArea.x != -1 && nearBaseArea.y != -1 && nearBaseArea.isValid()) {
 			Broodwar->sendText("Tgt point consistent");
+			Broodwar->sendText("Tgt point consistent");
+			Broodwar->sendText("Tgt point consistent");
 			Broodwar->drawTextMap(gameUnit->getPosition(),"\n\nconsistent tgt");
 			state = MOVING_TO_NEW_BASE;
 		}
 		else {
 			//Broodwar->sendText("Tgt point INconsistent");
 			Broodwar->drawTextMap(gameUnit->getPosition(),"\n\nINconsistent tgt");
+			Broodwar << "Invalid base target" << endl;
+			Broodwar << "Invalid base target" << endl;
 			Broodwar << "Invalid base target" << endl;
 			state = NO_TASK;
 			gameUnit->stop();
@@ -593,7 +618,7 @@ bool SCVAgent::isBuildingExpansion(){
 //TODO: check if mineral field is under one attack task...
 Position SCVAgent::pointNearNewBase(vector<Position> theMinerals, Unitset commandCenters){
 
-	Position closestMineral = Position(1,1); //mineral to which the base will be built
+	Position closestMineral = Positions::Invalid;//NULL;//Position(1,1); //mineral to which the base will be built
 	//closestMineralPosition = new Position(0,0);
 
 	int minDistance = INT_MAX;
@@ -611,14 +636,18 @@ Position SCVAgent::pointNearNewBase(vector<Position> theMinerals, Unitset comman
 	//Unitset::iterator mineral;
 	//bool allReachable = true;
 	for (auto mineral = theMinerals.begin(); mineral != theMinerals.end(); ++mineral){
-		bool reachable = false;
+		bool covered = false;
 		for(Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){
 			if (cmd->getPosition().getApproxDistance(*mineral) < BASE_RADIUS){
-				reachable = true;
+				covered = true;
 				break;
 			}
 		}
-		if (!reachable){
+
+		//tests if point is close to attack area (dangerous, should not go there)
+		//bool inAttackArea = 
+
+		if (!covered && !isDangerous(*mineral)){
 			//Broodwar->sendText("Unreachable pos: %d,%d", (*mineral).x, (*mineral).y);
 			//allReachable = false;
 			if (gameUnit->getPosition().getApproxDistance((*mineral)) < minDistance){
@@ -628,10 +657,10 @@ Position SCVAgent::pointNearNewBase(vector<Position> theMinerals, Unitset comman
 		}
 	}
 
-	if (! closestMineral.isValid()){
+	/*if (! closestMineral.isValid()){
 		Broodwar << "Dummy position returned";
-		return Position(-1,-1);//returns dummy position if all minerals are in range...
-	}
+		return Positions::Invalid;// (-1,-1);//returns dummy position if all minerals are in range...
+	}*/
 	return closestMineral;
 
 }

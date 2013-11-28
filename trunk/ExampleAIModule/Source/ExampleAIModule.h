@@ -103,5 +103,6 @@ public:
 	int calculateBarracksFromCommandCenter(BWAPI::Unit cmdCenter);
 	void createBarrackNearCommandCenter(BWAPI::Unit cmdCenter);
 	unordered_map<int, SCVAgent*>& getSCVMap();
+	unordered_map<TaskType, vector<Task>*>& getTasks();
 
 };
