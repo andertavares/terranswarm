@@ -121,7 +121,7 @@ void ExampleAIModule::onEnd(bool isWinner) {
 	//file layout is: Map Duration Win? Units Structure Resources EnemyRace Units Structure Resources (enemy)
 	ofstream resultFile;
 	Broodwar->enableFlag(Flag::CompleteMapInformation);
-	resultFile.open ("bwapi-data\AI\results.txt", std::ios_base::app);
+	resultFile.open ("results.txt", std::ios_base::app);
 	resultFile <<  Broodwar->mapName() << " " << Broodwar->elapsedTime() << " " << (isWinner ? "win" : "loss") << " ";
 	resultFile << me->getUnitScore() << " " << me->getBuildingScore() << " " << me->gatheredMinerals() + me->gatheredGas() << " ";
 	resultFile << enemy->getRace().getName() << " " << enemy->getUnitScore() << " " << enemy->getBuildingScore() << " " << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
