@@ -24,6 +24,8 @@ class SCVAgent {
 	
 	Position nearBaseArea; //will build a base near this position
 	ExampleAIModule* _aiModule;
+	int latencyFrames; //I should not act every frame
+	
 	
 	
 public:
@@ -42,6 +44,7 @@ public:
 	//void onTask(unordered_map<TaskType, vector<Task>*> taskMap);
 	void onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<Position> mineralPositions, Unitset commandCenters, unordered_map<int, SCVAgent*> scvMap);
 	bool evaluateIncentive();
+	bool isDangerous(Position pos);
 	BWAPI::Unit SCVAgent::getUnit();
 	BWAPI::Position getPositionToScout();
 

@@ -226,6 +226,10 @@ void ExampleAIModule::onFrame() {
 	);*/
 }
 
+unordered_map<TaskType, vector<Task>*>& ExampleAIModule::getTasks(){
+	return allTasks;
+}
+
 unordered_map<int, SCVAgent*>& ExampleAIModule::getSCVMap(){
 	return scvMap;
 }
