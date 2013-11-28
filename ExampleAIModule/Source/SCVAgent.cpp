@@ -644,9 +644,7 @@ Position SCVAgent::pointNearNewBase(vector<Position> theMinerals, Unitset comman
 			}
 		}
 
-		//tests if point is close to attack area (dangerous, should not go there)
-		//bool inAttackArea = 
-
+		//also tests if point is close to attack area (dangerous, should not go there)
 		if (!covered && !isDangerous(*mineral)){
 			//Broodwar->sendText("Unreachable pos: %d,%d", (*mineral).x, (*mineral).y);
 			//allReachable = false;
