@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include "ExampleAIModule.h"
 #include "Task.h"
@@ -60,7 +61,9 @@ void ExampleAIModule::onStart() {
   
 		//Broodwar->sendText("show me the money");
 		//Broodwar->sendText("operation cwal");
-		Broodwar->sendText("/speed 0");
+		//Broodwar->sendText("/speed 0");
+		Broodwar->setGUI(false); //disables gui drawing (better performance?)
+		Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
 		// If you wish to deal with multiple enemies then you must use enemies().
@@ -104,9 +107,26 @@ void ExampleAIModule::onStart() {
 
 void ExampleAIModule::onEnd(bool isWinner) {
 	// Called when the game ends
-	if (!Broodwar->isReplay() && isWinner )  {
+	if (Broodwar->isReplay()){
+		return;
+	}
+	if (isWinner)  {
 		Broodwar->sendText("POWER OVERWHELMING!");
 	}
+
+	Player me = Broodwar->self();
+	Player enemy = Broodwar->enemy();
+	//Broodwar->
+	//opens a file and writes the results
+	//file layout is: Map Duration Win? Units Structure Resources EnemyRace Units Structure Resources (enemy)
+	ofstream resultFile;
+	Broodwar->enableFlag(Flag::CompleteMapInformation);
+	resultFile.open ("bwapi-data\AI\results.txt", std::ios_base::app);
+	resultFile <<  Broodwar->mapName() << " " << Broodwar->elapsedTime() << " " << (isWinner ? "win" : "loss") << " ";
+	resultFile << me->getUnitScore() << " " << me->getBuildingScore() << " " << me->gatheredMinerals() + me->gatheredGas() << " ";
+	resultFile << enemy->getRace().getName() << " " << enemy->getUnitScore() << " " << enemy->getBuildingScore() << " " << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
+	resultFile.close();
+	Broodwar << "Results written" << endl;
 }
 
 void ExampleAIModule::onFrame() {
@@ -188,14 +208,6 @@ void ExampleAIModule::onFrame() {
 		Unit u = agent->getUnit();
 
 		agent->onFrame(&allTasks, discoveredMineralPositions, commandCenters, scvMap);
-
-		/*if(unitId == 4){
-			agent->goScout();
-		}*/
-
-		/*if(unitId == 3){
-			agent->buildCommandCenter(discoveredMinerals, commandCenters);
-		}*/
 
 		//Broodwar->drawTextMap(u->getPosition().x, u->getPosition().y, "agentId[%d]", unitId);
 
@@ -790,7 +802,7 @@ void ExampleAIModule::_drawStats(){
 	Broodwar->drawTextScreen(290, 0,  "FPS: %d", Broodwar->getFPS() );
 	Broodwar->drawTextScreen(290, 15, "Average FPS: %f", Broodwar->getAverageFPS() );
 	Broodwar->drawTextScreen(290, 30, "Frame count: %d", Broodwar->getFrameCount() );
-	Broodwar->drawTextScreen(290, 45, "Seconds ~ %.0f", Broodwar->getFrameCount() / Broodwar->getAverageFPS() );
+	Broodwar->drawTextScreen(290, 45, "Time: ~ %dh%dm%ds", Broodwar->elapsedTime() / 3600, Broodwar->elapsedTime() / 60, Broodwar->elapsedTime() % 60);
 	_drawExploredStats();
 
 	// display some debug info...
