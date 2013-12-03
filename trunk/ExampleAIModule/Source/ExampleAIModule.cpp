@@ -136,6 +136,7 @@ void ExampleAIModule::onFrame() {
 	if ( Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self() )
 		return;
 
+
 	_drawStats();
 
 	// Draw bullets
