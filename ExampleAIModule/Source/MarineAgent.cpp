@@ -36,71 +36,19 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 
 	int maxDistance = Position(0,0).getApproxDistance(Position(Broodwar->mapWidth() * TILE_SIZE, Broodwar->mapHeight() * TILE_SIZE));
 	Task* toPerform = NULL;
+
+	//builds a list with all the tasks
+	vector<Task*> all;
 	for(auto taskIter = taskMap.begin(); taskIter != taskMap.end(); ++taskIter){
-		
-		if (toPerform != NULL) break; //gets out if i have chosen a task
-		//if( == 
-		float capability = 0;
-
-		switch(taskIter->first){
-		
-		case Attack:
-			//inserts an TaskAssociation for each Attack task; capability is proportional to distance to the task
-
-			for (auto atk = taskIter->second->begin(); atk != taskIter->second->end(); atk++){
-				capability = 1.0f - (gameUnit->getPosition().getApproxDistance(atk->getPosition()) / float(maxDistance));
-
-				if( (rand() / RAND_MAX) < TaskAssociation(&(*atk), capability).tValue()){
-					toPerform = &(*atk);
-					//state = ATTACKING;
-				}
-				
-				//taskAssociations.push_back(TaskAssociation(&(*atk), capability));
-			}
-			break;
-
-		case Explore:
-			capability = 0.3f;
-			Task* exp = &(taskIter->second->at(0));
-			if( (rand() / RAND_MAX) < TaskAssociation(exp, capability).tValue()){
-				toPerform = exp;
-				state = EXPLORING;
-			}
-			//taskAssociations.push_back(TaskAssociation(&(taskIter->second->at(0)), capability));
-			break;
-
-		} //closure: switch
-
-		if (capability == 0){
-			continue; //agent is not able to perform tasks of this type, go to next
+		for (auto task = taskIter->second->begin(); task != taskIter->second->end(); task++){
+			all.push_back(&(*task));
 		}
-		
 	}
-	/*if(gameUnit->getID() == 1){
-		int offset = 0;
-		//Broodwar->drawTextScreen(200,115,"%d items", feasibleTasks.size());
-		for (auto ta = taskAssociations.begin(); ta != taskAssociations.end(); ta++){
-			Broodwar->drawTextScreen(200,115+offset,"%d - %d", ta->task()->getTaskType(), ta->task()->getIncentive());
-			offset += 15;
-		}
-		
-	}*/
-	//Broodwar->sendText("TA sz: %d", taskAssociations.size());
-	/*
-	if (gameUnit->getID() == 85){
-		std::string tsk = "";
-		int offset = 40;
-		//Broodwar->drawTextMap(gameUnit->getPosition(),"\n\n\nTA:");
-		for(auto ta = taskAssociations.begin(); ta != taskAssociations.end(); ++ta){
-			//std::string fmt = "%d - %.2f";
-			Broodwar->drawTextMap(gameUnit->getPosition().x, gameUnit->getPosition().y+offset,"%d-%.2f - %.2f - %d-%d",ta->task()->getTaskType(), ta->task()->getIncentive(), ta->tValue(), gameUnit->getDistance(ta->task()->getPosition()), maxDistance);
-			offset += 10;
-		}
-		
-		
 
-	}
-	*/
+	int index = randomInRange(0, all.size());
+	toPerform = all[index];
+
+		
 	//Task* toPerform = weightedSelection(taskAssociations);
 	//Broodwar->drawTextMap(gameUnit->getPosition(),"\n\nTAsz: %d", taskAssociations.size());
 	if (toPerform == NULL){
@@ -121,8 +69,6 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 	else if(toPerform->getTaskType() == Attack){
 		//state = ATTACKING;
 		attack(toPerform->getPosition(), colleagues);
-		//gameUnit->attack(toPerform->getPosition());
-		
 	}
 }
 

@@ -12,7 +12,7 @@
 #include <iostream>
 #include "Task.h"
 #include "AgentStates.h"
-#include "ExampleAIModule.h"
+#include "RandomAIModule.h"
 
 using namespace std;
 
@@ -50,6 +50,7 @@ public:
 
 	void attack(Position theTarget);
 	void attack();
+	void deleteTaskAt(unordered_map<TaskType, vector<Task>*> *taskMap, int index);
 
 	bool goScout();
 	void goRepair(Position dmgUnitPos);

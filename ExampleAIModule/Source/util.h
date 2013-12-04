@@ -6,6 +6,7 @@
 using namespace BWAPI;
 
 Task* weightedSelection(std::vector<TaskAssociation>& theTasks);
+int randomInRange(int min, int max);
 
 Position getPositionToScout();
 void goScout();
