@@ -11,7 +11,7 @@
 #include <iostream>
 #include "SCVAgent.h"
 #include "util.h"
-#include "ExampleAIModule.h"
+#include "RandomAIModule.h"
 #include "TaskAssociation.h"
 #include <set>
 
@@ -135,209 +135,112 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 		return;	
 	}
 
+
+	//builds a list with all the tasks
+	Task* toPerform;
+	vector<Task*> all;
+	for(auto taskIter = taskMap->begin(); taskIter != taskMap->end(); ++taskIter){
+		for (auto task = taskIter->second->begin(); task != taskIter->second->end(); task++){
+			all.push_back(&(*task));
+		}
+	}
+
+	int index = randomInRange(0, all.size());
+	toPerform = all[index];
+	//sanity check, does not perform tasks that cannot/should not be done
+	if (toPerform->getIncentive() <= 0) {
+		return;
+	}
+
 	// Simple approach to local incentives
-	if ( lastChecked + 75 < Broodwar->getFrameCount() || lastChecked == 0) {
-		for(unordered_map<TaskType, vector<Task>*>::iterator iter = taskMap->begin(); iter != taskMap->end(); ++iter){
-			TaskType taskType =  iter->first;
-			vector<Task>* taskList = iter->second;
-
-			if(taskType == GatherMinerals){
-				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
-					auto task = it;
-					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-					TaskAssociation taskA = TaskAssociation(&(*task), 0.7f);
-
-					if(taskA.tValue() > rNumber){
-						state = GATHERING_MINERALS;
-						Broodwar->drawTextMap(gameUnit->getPosition(),"\nGathering");
-						lastChecked = Broodwar->getFrameCount();
+	if(toPerform->getTaskType() == GatherMinerals){
+		state = GATHERING_MINERALS;
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nGathering");
+		lastChecked = Broodwar->getFrameCount();
 						
-						if ( gameUnit->isCarryingGas() || gameUnit->isCarryingMinerals() ) {
-							gameUnit->returnCargo();
-						}
-						else if ( !gameUnit->getPowerUp() ) { 
-							if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
-								Broodwar << Broodwar->getLastError() << std::endl;
-							}
-						}
-						return;
-					}
-				}
+		if ( gameUnit->isCarryingGas() || gameUnit->isCarryingMinerals() ) {
+			gameUnit->returnCargo();
+		}
+		else if ( !gameUnit->getPowerUp() ) { 
+			if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
+				Broodwar << Broodwar->getLastError() << std::endl;
 			}
-
-			else if(taskType == Repair){
-				int maxDistance = Position(0,0).getDistance(Position(Broodwar->mapWidth() * TILE_SIZE, Broodwar->mapHeight() * TILE_SIZE));
-
-				for(auto repair = taskList->begin(); repair != taskList->end(); repair++){
-					float rNumber = rand() / float(RAND_MAX);
-					int dist = gameUnit->getPosition().getApproxDistance(repair->getPosition());
-					float diff = 1.0f - gameUnit->getPosition().getApproxDistance(repair->getPosition()) / float(maxDistance);
-					TaskAssociation taskA = TaskAssociation(&(*repair), diff);// pow(float(EULER),-dist));
-					//Broodwar->sendText("Rpr: s:%.3f, T:%.3f, k:%.3f", repair->getIncentive(), taskA.tValue(), diff);// pow(float(EULER),-diff));
-					if(rNumber < taskA.tValue()){
-						lastChecked = Broodwar->getFrameCount();
-						//counts the number of repairers
-						
-						Broodwar->sendText("Will repair");
-						goRepair(repair->getPosition());
-						taskList->erase(repair);
-						return;
-					}
-				}
-			}
-
-			else if (taskType == Attack){
-				int maxDistance = Position(0,0).getApproxDistance(Position(Broodwar->mapWidth() * TILE_SIZE, Broodwar->mapHeight() * TILE_SIZE));
-				for (auto atk = taskList->begin(); atk != taskList->end(); atk++){
-					//will not attack outside my view range
-					if(atk->getPosition().getApproxDistance(gameUnit->getPosition()) > gameUnit->getType().sightRange()){
-						continue; 
-					}
-
-					float capability = 1.0f - (gameUnit->getPosition().getApproxDistance(atk->getPosition()) / float(maxDistance));
-
-					if( (rand() / RAND_MAX) < TaskAssociation(&(*atk), capability).tValue()){
-						attack(atk->getPosition());
-						lastChecked = Broodwar->getFrameCount();
-						return;
-						//state = ATTACKING;
-					}
+		}
+		return;
+	}
 				
-					//taskAssociations.push_back(TaskAssociation(&(*atk), capability));
-				}
-			}
+			
 
-			else if(taskType == BuildSupplyDepot){
+	else if(toPerform->getTaskType() == Repair){
+		Broodwar->sendText("Will repair");
+		goRepair(toPerform->getPosition());
+		deleteTaskAt(taskMap, index); //taskList->erase(repair);
+		return;
+			
+		
+	}
+
+	else if (toPerform->getTaskType() == Attack){
+		if(toPerform->getPosition().getApproxDistance(gameUnit->getPosition()) > gameUnit->getType().sightRange()){
+			return; 
+		}
+
+		attack(toPerform->getPosition());
+		lastChecked = Broodwar->getFrameCount();
+		return;
+	}
+
+	else if(toPerform->getTaskType() == BuildSupplyDepot){
 				
-				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
-				//for (auto task = taskList->begin(); task != taskList->end(); task++){		
-					auto task = it;
-					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-					TaskAssociation taskA = TaskAssociation(&(*task), 0.3f);
-					
-					if(taskA.tValue() > rNumber){
-						Broodwar << "Agent [" << unitId << "] Task supply dep " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
-						// Check if other SCV near by are constructing the same thing
-						/*Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 20 * TILE_SIZE, Filter::IsWorker);
-						int scvNearConstructingSCV = 0;
-						for(Unitset::iterator scvIt = scvAround.begin(); scvIt != scvAround.end(); ++scvIt){
-							if(scvIt->isConstructing() ){
-								//&& scvIt->getBuildUnit() !=NULL
-								//&& scvIt->getBuildUnit()->getType() == UnitTypes::Terran_Supply_Depot){
-								scvNearConstructingSCV++;
-							}
-						}
-						*/
-						//if(scvNearConstructingSCV <= 1){
-							Broodwar->drawTextMap(gameUnit->getPosition(),"\nSupply Depot");
-							lastChecked = Broodwar->getFrameCount();
-							createSupply();
-							it = taskList->erase(it);
-							return;
-						//}
-					}
-				}
+		Broodwar << "Agent [" << unitId << "] Task supply dep " << std::endl;
+		Broodwar->drawTextMap(gameUnit->getPosition(),"\nSupply Depot");
+		lastChecked = Broodwar->getFrameCount();
+		createSupply();
+		deleteTaskAt(taskMap, index); //it = taskList->erase(it);
+		return;
+	}
+	else if(toPerform->getTaskType() == BuildBarracks){
+		
+		createBarrackNearCommandCenter(toPerform->getPosition());
+		deleteTaskAt(taskMap, index); //taskList->erase(it);
+		return;
+
+	}
+	else if(toPerform->getTaskType() == BuildCommandCenter){
+
+		int isOtherExpanding = 0;
+		for(auto agent = scvMap.begin(); agent != scvMap.end(); agent++){
+			if(agent->second->unitId != unitId && agent->second->isBuildingExpansion()){
+				isOtherExpanding++;
 			}
-			else if(taskType == BuildBarracks){
-				// evaluate incentive
-				//TODO: build barracks around new bases
-				//calculates max map distance
-				int maxDistance = Position(0,0).getApproxDistance(Position(Broodwar->mapWidth() * TILE_SIZE, Broodwar->mapHeight() * TILE_SIZE));
+		}
 
-				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
-					auto task = it;
-					float rNumber = rand() / float(RAND_MAX);
-					//distfactor ranges [0:0.5]: when it is .5, agent capability to build cmd center is minimum
-					float distFactor = .5f * (gameUnit->getPosition().getApproxDistance(task->getPosition()) / float(maxDistance));
-
-					//agent capability decreases exponentially with the distance to the task
-					TaskAssociation taskA = TaskAssociation(&(*task), pow(float(EULER),-distFactor));
-					
-					if(rNumber < taskA.tValue()){
-						//Broodwar << "Agent [" << unitId << "] Task barrack " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
-						// Check if other SCV near by are constructing the same thing
-						/*
-						Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 20 * TILE_SIZE, Filter::IsWorker);
-						int scvNearConstructingSCV = 0;
+		if(isOtherExpanding  <= 0){
+			Broodwar << "Agent [" << unitId << "] Task command " << std::endl;
+			lastChecked = Broodwar->getFrameCount();
+			buildCommandCenter(mineralPositions, commandCenters);
+			deleteTaskAt(taskMap, index); //it = taskList->erase(it);
+			return;
+		}
+	}
+	else if(toPerform->getTaskType() == Explore){
 						
-						for(Unitset::iterator scvIt = scvAround.begin(); scvIt != scvAround.end(); ++scvIt){
-							if(scvIt->isConstructing() ){
-								scvNearConstructingSCV++;
-							}
-						}
-						
-						if(scvNearConstructingSCV <= 1){
-							Broodwar->drawTextMap(gameUnit->getPosition(),"\nBarrack");
-							lastChecked = Broodwar->getFrameCount();
-							createBarrackNearCommandCenter(it->getPosition());
-							it = taskList->erase(it);
-							return;
-						}
-						*/
-						//it = taskList->erase(it); <<this does not prevent more then one SCV trying to build in the same place
-						//it->setIncentive(0); <<this does not prevent more then one SCV trying to build in the same place
-						createBarrackNearCommandCenter(it->getPosition());
-						taskList->erase(it);
-						return;
-					}
-				}
+		bool isOthersScouting = false;
+		for(auto agent = scvMap.begin(); agent != scvMap.end(); agent++){
+			if(agent->second->unitId != unitId && agent->second->state == EXPLORING){
+				isOthersScouting = true;
+				break;
 			}
-			else if(taskType == BuildCommandCenter){
-				// Calculate how far is the new command center
-				// Calculate how many minerals are near the command center
-				// evaluate incentive
-				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
-					auto task = it;
-					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-					TaskAssociation taskA = TaskAssociation(&(*task), 1.0f);
+		}
 
-					if(taskA.tValue() > rNumber){
-
-						int isOtherExpanding = 0;
-						for(auto agent = scvMap.begin(); agent != scvMap.end(); agent++){
-							if(agent->second->unitId != unitId && agent->second->isBuildingExpansion()){
-								isOtherExpanding++;
-							}
-						}
-
-						if(isOtherExpanding  <= 0){
-							Broodwar << "Agent [" << unitId << "] Task command " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
-							lastChecked = Broodwar->getFrameCount();
-							buildCommandCenter(mineralPositions, commandCenters);
-							it = taskList->erase(it);
-							return;
-						}
-					}
-				}
-			}
-			else if(taskType == Explore){
-				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
-					auto task = it;
-					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-					TaskAssociation taskA = TaskAssociation(&(*task), 0.0f);
-
-					if(taskA.tValue() > rNumber){
-						
-						bool isOthersScouting = false;
-						for(auto agent = scvMap.begin(); agent != scvMap.end(); agent++){
-							if(agent->second->unitId != unitId && agent->second->state == EXPLORING){
-								isOthersScouting = true;
-								break;
-							}
-						}
-
-						if(!isOthersScouting){
-							Broodwar << "Agent [" << unitId << "] Task explore " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
-							state = EXPLORING;
-							Broodwar->drawTextMap(gameUnit->getPosition(),"\nExplore");
-							lastChecked = Broodwar->getFrameCount();
-							goScout();
-							it = taskList->erase(it);
-							return;
-						}
-					}
-				}
-			}
+		if(!isOthersScouting){
+			Broodwar << "Agent [" << unitId << "] Task explore " << std::endl;
+			state = EXPLORING;
+			Broodwar->drawTextMap(gameUnit->getPosition(),"\nExplore");
+			lastChecked = Broodwar->getFrameCount();
+			goScout();
+			//it = taskList->erase(it);
+			return;
 		}
 	}
 
@@ -361,6 +264,27 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 		} // closure: has no powerup
 	} // closure: if idle
 	
+}
+
+void SCVAgent::deleteTaskAt(unordered_map<TaskType, vector<Task>*> *taskMap, int index){
+	vector<Task*> all;
+	int curr = 0;
+	for(auto taskIter = taskMap->begin(); taskIter != taskMap->end(); ++taskIter){
+		if (curr + taskIter->second->size() < index){
+			curr += taskIter->second->size();
+			continue;
+		}
+		//else: task is from current type, find it and delete it
+		for (auto task = taskIter->second->begin(); task != taskIter->second->end(); task++){
+			if(curr == index){
+				taskIter->second->erase(task);
+				return;
+			}
+			else{
+				curr++;
+			}
+		}
+	}
 }
 
 void SCVAgent::attack(Position theTarget){

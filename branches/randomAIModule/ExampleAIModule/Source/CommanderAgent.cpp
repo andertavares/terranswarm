@@ -5,6 +5,7 @@
 #include <vector>
 #include "Task.h"
 #include "TaskAssociation.h"
+#include "util.h"
 #include <random>
 #include <iostream>
 
@@ -22,17 +23,6 @@ CommanderAgent::~CommanderAgent(){
 }
 
 void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, unordered_map<Unit, float> trainSCVIncentives) {
-
-	//debug info
-	for(unordered_map<Unit, float>::iterator iter = trainSCVIncentives.begin(); iter != trainSCVIncentives.end(); ++iter){
-		Unit u =  iter->first;
-		float incentive = iter->second;
-		//double uniformOn01 = dis(gen);
-		Task scv = Task(TrainWorker, iter->second);//&tasklist[TrainWorker]->at(0);
-		TaskAssociation trainSCV = TaskAssociation(&scv, .7f);
-		//Broodwar->drawTextMap(u->getPosition(),"SCV inc: %.3f, T: %.3f", trainSCV.task()->getIncentive(), trainSCV.tValue());
-	}
-
 	//only acts every 'X' frames (X = latencyFrames)
 	if (Broodwar->getFrameCount() % latencyFrames != 0){
 		return;
@@ -42,54 +32,75 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 	int supplyDiff = max(0, (Broodwar->self()->supplyTotal() - Broodwar->self()->supplyUsed())/2);
 	if (supplyDiff == 0 || Broodwar->self()->minerals() < 50) return;
 
-	
-	std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0, 1);
-
-
-
+	//builds a list with all the tasks
+	Task* toPerform;
+	vector<Task*> all;
+	for(auto taskIter = tasklist.begin(); taskIter != tasklist.end(); ++taskIter){
+		for (auto task = taskIter->second->begin(); task != taskIter->second->end(); task++){
+			all.push_back(&(*task));
+		}
+	}
 	for(unordered_map<Unit, float>::iterator iter = trainSCVIncentives.begin(); iter != trainSCVIncentives.end(); ++iter){
 		Unit u =  iter->first;
 		float incentive = iter->second;
 		//double uniformOn01 = dis(gen);
-		Task scv = Task(TrainWorker, iter->second);//&tasklist[TrainWorker]->at(0);
-		TaskAssociation trainSCV = TaskAssociation(&scv, .7f);
-
-		//Broodwar->drawTextMap(u->getPosition(),"SCV inc: %.3f, T: %.3f", trainSCV.task()->getIncentive(), trainSCV.tValue());
-
-		if( (rand() / float(RAND_MAX)) < trainSCV.tValue()){
-
-		//if(uniformOn01 <= incentive){
-			if ( u->getType().isResourceDepot() ) {
-				// Order the depot to construct more workers! But only when it is idle.
-				if ( u->isIdle() && !u->train(u->getType().getRace().getWorker()) ) {
-					Error lastErr = Broodwar->getLastError();
-					if(lastErr == Errors::Insufficient_Supply){
-						//Broodwar->sendText("SVC can't be created - %s", lastErr.toString().c_str());	
-						//CommanderAgent::createSupply(Broodwar->getUnit(u->getID()));
-					}
-				} // closure: failed to train idle unit
-			}
+		Task* scv = new Task(TrainWorker, iter->second, iter->first->getPosition());//&tasklist[TrainWorker]->at(0);
+		if(scv->getIncentive() > 0) {
+			all.push_back(scv);
 		}
 	}
 
-	//iterates through the barracks
-	TaskAssociation trainMarine = TaskAssociation(&tasklist[TrainMarine]->at(0), .7f);
-	Unitset myUnits = Broodwar->self()->getUnits();
-	for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u ) {
-		
-		
-		if ( u->getType() == UnitTypes::Terran_Barracks ) {
-			
-			if ((rand() / float(RAND_MAX)) < trainMarine.tValue() && u->isIdle() && !u->train(UnitTypes::Terran_Marine)) {
+	int index = randomInRange(0, all.size());
+	toPerform = all[index];
+	//sanity check, does not perform tasks that cannot/should not be done
+	if (toPerform->getIncentive() <= 0) {
+		return;
+	}
+
+	
+
+	
+	if(toPerform->getTaskType() == TrainWorker){
+		Unitset providers = Broodwar->getUnitsOnTile(TilePosition(toPerform->getPosition()), Filter::IsResourceDepot);
+
+		if(providers.size() <= 0){
+			Broodwar << "Error, no CMD center in task position" << endl;
+		}
+
+		Unit u = providers[0];
+
+		//if(uniformOn01 <= incentive){
+		if ( u->getType().isResourceDepot() ) {
+			// Order the depot to construct more workers! But only when it is idle.
+			if ( u->isIdle() && !u->train(u->getType().getRace().getWorker()) ) {
 				Error lastErr = Broodwar->getLastError();
 				if(lastErr == Errors::Insufficient_Supply){
-					//Broodwar->sendText("Marine can't be created - %s", lastErr.toString().c_str());	
+					//Broodwar->sendText("SVC can't be created - %s", lastErr.toString().c_str());	
 					//CommanderAgent::createSupply(Broodwar->getUnit(u->getID()));
-				}			
-			}
-		} //closure
+				}
+			} // closure: failed to train idle unit
+		}
+	}
+
+
+	if(toPerform->getTaskType() == TrainMarine){
+	//iterates through the barracks, finds one idle and trains the marine in it
+		Unitset myUnits = Broodwar->self()->getUnits();
+		for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u ) {
+			if ( u->getType() == UnitTypes::Terran_Barracks ) {
+			
+				if (u->isIdle()){
+					if( !u->train(UnitTypes::Terran_Marine)) {
+						Error lastErr = Broodwar->getLastError();
+						if(lastErr == Errors::Insufficient_Supply){
+							//Broodwar->sendText("Marine can't be created - %s", lastErr.toString().c_str());	
+							//CommanderAgent::createSupply(Broodwar->getUnit(u->getID()));
+						}
+					}
+					return;
+				}
+			} //closure
+		}
 	}
 }
 
