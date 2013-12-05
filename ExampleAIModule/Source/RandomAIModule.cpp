@@ -122,7 +122,7 @@ void ExampleAIModule::onEnd(bool isWinner) {
 	ofstream resultFile;
 	Broodwar->enableFlag(Flag::CompleteMapInformation);
 	resultFile.open ("results.txt", std::ios_base::app);
-	resultFile <<  Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << (isWinner ? "win" : "loss") << ",";
+	resultFile << "Rand," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << (isWinner ? "win" : "loss") << ",";
 	resultFile << me->getUnitScore() << "," << me->getBuildingScore() << "," << me->gatheredMinerals() + me->gatheredGas() << ",";
 	resultFile << enemy->getRace().getName() << "," << enemy->getUnitScore() << "," << enemy->getBuildingScore() << "," << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
 	resultFile.close();
