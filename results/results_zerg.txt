@@ -1,0 +1,30 @@
+Road War,1825,loss,9200,1375,10966,Zerg,0,0,0
+Circuit Breakers 1.0,1273,loss,6550,975,9994,Zerg,0,0,0
+| iCCup | Fighting Spirit 1.3,2280,win,28700,4350,37154,Zerg,0,0,0
+Jade 1.0,3601,loss,66100,6475,95866,Zerg,0,0,0
+Python 1.1,2327,loss,25650,3350,31554,Zerg,0,0,0
+Road War,1461,loss,4000,2125,13586,Zerg,0,0,0
+Circuit Breakers 1.0,1387,loss,10350,2225,13738,Zerg,0,0,0
+| iCCup | Fighting Spirit 1.3,1548,loss,10550,2650,14098,Zerg,0,0,0
+Jade 1.0,1922,loss,18550,3925,24102,Zerg,0,0,0
+Python 1.1,1352,loss,9200,1950,11810,Zerg,0,0,0
+Road War,571,loss,1350,750,1882,Zerg,0,0,0
+Circuit Breakers 1.0,1474,loss,11150,3400,16250,Zerg,0,0,0
+| iCCup | Fighting Spirit 1.3,1416,loss,9300,1850,12466,Zerg,0,0,0
+Jade 1.0,449,loss,1050,675,1498,Zerg,0,0,0
+Python 1.1,1741,loss,13850,3725,20190,Zerg,0,0,0
+Road War,1369,loss,6050,2025,11658,Zerg,0,0,0
+Circuit Breakers 1.0,2807,loss,31950,6875,42102,Zerg,0,0,0
+| iCCup | Fighting Spirit 1.3,1864,loss,17850,2650,21374,Zerg,0,0,0
+Jade 1.0,2084,loss,19800,5325,30594,Zerg,0,0,0
+Python 1.1,1935,loss,17100,4775,23850,Zerg,0,0,0
+Road War,1643,loss,8350,2525,20314,Zerg,0,0,0
+Circuit Breakers 1.0,1817,loss,16850,4575,23406,Zerg,0,0,0
+| iCCup | Fighting Spirit 1.3,552,loss,1450,750,1994,Zerg,0,0,0
+Jade 1.0,1273,loss,9050,2275,11946,Zerg,0,0,0
+Python 1.1,1486,win,16050,3150,20734,Zerg,0,0,0
+Road War,1796,loss,10800,1850,13166,Zerg,0,0,0
+Circuit Breakers 1.0,1778,loss,16200,4600,22198,Zerg,0,0,0
+| iCCup | Fighting Spirit 1.3,1302,loss,9500,2375,12618,Zerg,0,0,0
+Jade 1.0,2110,loss,22150,5100,29250,Zerg,0,0,0
+Python 1.1,1255,loss,8600,1925,11426,Zerg,0,0,0
