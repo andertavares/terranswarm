@@ -198,11 +198,13 @@ void ExampleAIModule::onFrame() {
 
 	updateTasks();
 
-	_commanderAgent->onFrame(allTasks, trainSCVIncentives);
+	_commanderAgent->onFrame(allTasks, trainSCVIncentives, commandCenters);
 
 	//iterates through all marines
 	for(auto marine = marines.begin(); marine != marines.end(); marine++){
-		marine->second->onFrame(allTasks, marines);
+		if(marine->second){
+			marine->second->onFrame(allTasks, marines);
+		}
 	}
 
 	// Iterate through all the SCV on the map

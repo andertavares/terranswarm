@@ -5,6 +5,7 @@
 #include <vector>
 #include "Task.h"
 #include "TaskAssociation.h"
+#include "RandomAIModule.h"
 #include "util.h"
 #include <random>
 #include <iostream>
@@ -22,7 +23,7 @@ CommanderAgent::~CommanderAgent(){
 
 }
 
-void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, unordered_map<Unit, float> trainSCVIncentives) {
+void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, unordered_map<Unit, float> trainSCVIncentives, Unitset commandCenters) {
 	//only acts every 'X' frames (X = latencyFrames)
 	if (Broodwar->getFrameCount() % latencyFrames != 0){
 		return;
@@ -36,30 +37,48 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 	Task* toPerform;
 	vector<Task*> all;
 	for(auto taskIter = tasklist.begin(); taskIter != tasklist.end(); ++taskIter){
-		for (auto task = taskIter->second->begin(); task != taskIter->second->end(); task++){
-			all.push_back(&(*task));
-		}
-	}
-	for(unordered_map<Unit, float>::iterator iter = trainSCVIncentives.begin(); iter != trainSCVIncentives.end(); ++iter){
-		Unit u =  iter->first;
-		float incentive = iter->second;
-		//double uniformOn01 = dis(gen);
-		Task* scv = new Task(TrainWorker, iter->second, iter->first->getPosition());//&tasklist[TrainWorker]->at(0);
-		if(scv->getIncentive() > 0) {
-			all.push_back(scv);
+		if (taskIter->first == TrainMarine || taskIter->first == TrainWorker){
+			for (auto task = taskIter->second->begin(); task != taskIter->second->end(); task++){
+				all.push_back(&(*task));
+			}
 		}
 	}
 
+
+	for(Unitset::iterator cmd = commandCenters.begin(); cmd != commandCenters.end(); ++cmd){	
+		
+		Unitset mineralsAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsMineralField);
+		Unitset scvAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsWorker && Filter::IsOwned);
+
+		float incentive = max(0.0f, 1.0f - (scvAround.size() / (2.5f * mineralsAround.size())));
+		
+		if(incentive > 0) {
+			all.push_back(new Task(TrainWorker, incentive, cmd->getPosition()));
+		}
+
+	}
+
+	/*
+	for(unordered_map<Unit, float>::iterator iter = trainSCVIncentives.begin(); iter != trainSCVIncentives.end(); ++iter){
+		Unit u =  iter->first;
+		
+		if(!u || !u->exists()) continue;
+		//Broodwar << u << endl;
+		u->getPosition();
+
+		float incentive = iter->second;
+		//double uniformOn01 = dis(gen);
+		
+	}
+	*/
 	int index = randomInRange(0, all.size());
 	toPerform = all[index];
+	all.clear();
 	//sanity check, does not perform tasks that cannot/should not be done
 	if (toPerform->getIncentive() <= 0) {
 		return;
 	}
 
-	
-
-	
 	if(toPerform->getTaskType() == TrainWorker){
 		Unitset providers = Broodwar->getUnitsOnTile(TilePosition(toPerform->getPosition()), Filter::IsResourceDepot);
 
