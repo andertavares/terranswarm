@@ -122,9 +122,9 @@ void ExampleAIModule::onEnd(bool isWinner) {
 	ofstream resultFile;
 	Broodwar->enableFlag(Flag::CompleteMapInformation);
 	resultFile.open ("results.txt", std::ios_base::app);
-	resultFile <<  "SwGAP," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << (isWinner ? "win" : "loss") << ",";
-	resultFile << me->getUnitScore() << "," << me->getBuildingScore() << "," << me->gatheredMinerals() + me->gatheredGas() << ",";
-	resultFile << enemy->getRace().getName() << "," << enemy->getUnitScore() << "," << enemy->getBuildingScore() << "," << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
+	resultFile <<  Broodwar->mapName() << " " << Broodwar->elapsedTime() << " " << (isWinner ? "win" : "loss") << " ";
+	resultFile << me->getUnitScore() << " " << me->getBuildingScore() << " " << me->gatheredMinerals() + me->gatheredGas() << " ";
+	resultFile << enemy->getRace().getName() << " " << enemy->getUnitScore() << " " << enemy->getBuildingScore() << " " << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
 	resultFile.close();
 	Broodwar << "Results written" << endl;
 }
@@ -135,7 +135,6 @@ void ExampleAIModule::onFrame() {
 	// Return if the game is a replay or is paused
 	if ( Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self() )
 		return;
-
 
 	_drawStats();
 
