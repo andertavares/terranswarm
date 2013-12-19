@@ -8,6 +8,7 @@
 #include "CommanderAgent.h"
 #include "MarineAgent.h"
 #include "SCVAgent.h"
+#include "MedicAgent.h"
 
 
 #define BASE_RADIUS 20 * TILE_SIZE
@@ -19,6 +20,7 @@ class SCVAgent; //forward decl. to prevent compile error
 
 typedef unordered_map<int, SCVAgent*> SCVMap;
 typedef unordered_map<int, MarineAgent*> MarineMap;
+typedef unordered_map<int, MedicAgent*> MedicMap;
 
 // Remember not to use "Broodwar" in any global class constructor!
 
@@ -30,6 +32,9 @@ class ExampleAIModule : public BWAPI::AIModule {
 	Task* buildSupplyDepot;
 	Task* explore;
 	Task* buildCommandCenter;
+	Task* buildVespeneGas;
+	Task* buildAcademy;
+	Task* trainMedic;
 	CommanderAgent* _commanderAgent;
 
 	//number of minerals found out of base range
@@ -59,6 +64,7 @@ class ExampleAIModule : public BWAPI::AIModule {
 	// Map of SVCs agents
 	SCVMap scvMap;
 	MarineMap marines; //stores the marines owned
+	MedicMap medics;
 
 	//is a supply depot scheduled to be built?
 	bool scheduledSupplyDepots;
@@ -105,4 +111,8 @@ public:
 	unordered_map<int, SCVAgent*>& getSCVMap();
 	unordered_map<TaskType, vector<Task>*>& getTasks();
 
+	// Vespene gas
+	void updateBuildVespeneGas();
+	void updateBuildAcademy();
+	void updateTrainMedic();
 };

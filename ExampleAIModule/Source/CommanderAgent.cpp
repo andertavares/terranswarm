@@ -76,13 +76,21 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 
 	//iterates through the barracks
 	TaskAssociation trainMarine = TaskAssociation(&tasklist[TrainMarine]->at(0), .7f);
+	TaskAssociation trainMedic = TaskAssociation(&tasklist[TrainMedic]->at(0), .4f);
 	Unitset myUnits = Broodwar->self()->getUnits();
 	for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u ) {
 		
 		
 		if ( u->getType() == UnitTypes::Terran_Barracks ) {
 			
-			if ((rand() / float(RAND_MAX)) < trainMarine.tValue() && u->isIdle() && !u->train(UnitTypes::Terran_Marine)) {
+			if ((rand() / float(RAND_MAX)) < trainMedic.tValue() && u->isIdle() && !u->train(UnitTypes::Terran_Medic)) {
+				Error lastErr = Broodwar->getLastError();
+				if(lastErr == Errors::Insufficient_Supply){
+					//Broodwar->sendText("Marine can't be created - %s", lastErr.toString().c_str());	
+					//CommanderAgent::createSupply(Broodwar->getUnit(u->getID()));
+				}			
+			}
+			else if ((rand() / float(RAND_MAX)) < trainMarine.tValue() && u->isIdle() && !u->train(UnitTypes::Terran_Marine)) {
 				Error lastErr = Broodwar->getLastError();
 				if(lastErr == Errors::Insufficient_Supply){
 					//Broodwar->sendText("Marine can't be created - %s", lastErr.toString().c_str());	

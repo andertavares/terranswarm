@@ -13,7 +13,10 @@ enum TaskType{
 	GatherMinerals,
 	Explore,
 	Attack,
-	GuardBase
+	GuardBase,
+	BuildVespeneGas,
+	BuildAcademy,
+	TrainMedic
 };
 
 
