@@ -92,6 +92,7 @@
     <ClCompile Include="Source\Dll.cpp" />
     <ClCompile Include="Source\ExampleAIModule.cpp" />
     <ClCompile Include="Source\MarineAgent.cpp" />
+    <ClCompile Include="Source\MedicAgent.cpp" />
     <ClCompile Include="Source\SCVAgent.cpp" />
     <ClCompile Include="Source\Task.cpp" />
     <ClCompile Include="Source\TaskAssociation.cpp" />
@@ -102,6 +103,7 @@
     <ClInclude Include="Source\CommanderAgent.h" />
     <ClInclude Include="Source\ExampleAIModule.h" />
     <ClInclude Include="Source\MarineAgent.h" />
+    <ClInclude Include="Source\MedicAgent.h" />
     <ClInclude Include="Source\SCVAgent.h" />
     <ClInclude Include="Source\Task.h" />
     <ClInclude Include="Source\TaskAssociation.h" />

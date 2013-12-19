@@ -156,12 +156,137 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 							gameUnit->returnCargo();
 						}
 						else if ( !gameUnit->getPowerUp() ) { 
-							if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
-								Broodwar << Broodwar->getLastError() << std::endl;
+							Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 8 * TILE_SIZE, Filter::IsWorker);
+							int scvNearGatheringGas = 0;
+							for(Unitset::iterator scvIt = scvAround.begin(); scvIt != scvAround.end(); ++scvIt){
+								if(scvIt->isGatheringGas() ){
+									scvNearGatheringGas++;
+								}
 							}
+							// Check if there is another ones gathering gas
+							// If there is <3 gathering gas then get the closest mineral or gas
+							// Else get only closest mineral
+							if(scvNearGatheringGas < 2){
+								if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
+									// If the call fails, then print the last error message
+									Broodwar << Broodwar->getLastError() << std::endl;
+								}
+							}
+							else{
+								if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField)) ) {
+									// If the call fails, then print the last error message
+									Broodwar << Broodwar->getLastError() << std::endl;
+								}
+							}
+							
+							/*if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
+								Broodwar << Broodwar->getLastError() << std::endl;
+							}*/
 						}
 						return;
 					}
+				}
+			}
+
+			else if(taskType == BuildVespeneGas){
+				
+				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+				//for (auto task = taskList->begin(); task != taskList->end(); task++){		
+					auto task = it;
+					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					TaskAssociation taskA = TaskAssociation(&(*task), 0.3f);
+					
+					if(taskA.tValue() > rNumber){
+						Broodwar << "Agent [" << unitId << "] Task GAS " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
+						for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); c++){
+							Unitset units = Broodwar->getUnitsInRadius(c->getPosition(), BASE_RADIUS, Filter::IsResourceContainer);
+							for (auto unit = units.begin(); unit != units.end(); unit++){
+								if(!unit->getType().isRefinery()){
+									UnitType supplyProviderType = gameUnit->getType().getRace().getRefinery();
+									if ( supplyProviderType.isBuilding() ){
+										newBuildingLocation = Broodwar->getBuildLocation(supplyProviderType, unit->getTilePosition());
+										TilePosition targetBuildLocation = newBuildingLocation;
+										if ( newBuildingLocation ){
+											// Register an event that draws the target build location
+											Broodwar->registerEvent([targetBuildLocation,supplyProviderType](Game*){
+													Broodwar->drawBoxMap( Position(targetBuildLocation), Position(targetBuildLocation + supplyProviderType.tileSize()),	Colors::Yellow);
+												},
+												nullptr,  // condition
+												supplyProviderType.buildTime() + 100 
+											);  // frames to run
+
+											// Order the builder to construct the supply structure
+											gameUnit->build( supplyProviderType, targetBuildLocation );
+										}
+										else {
+											Position txtPlace =  gameUnit->getPosition();
+											Broodwar->registerEvent([txtPlace,supplyProviderType](Game*)
+											{
+												Broodwar->drawTextMap( txtPlace,
+													 Broodwar->getLastError().c_str());
+											},
+											nullptr,  // condition
+											supplyProviderType.buildTime() + 100 );
+											//Broodwar << Broodwar->getLastError() << std::endl;
+										}
+									}
+
+									Broodwar->drawTextMap(gameUnit->getPosition(),"\nRefinery");
+									lastChecked = Broodwar->getFrameCount();
+									it = taskList->erase(it);
+									return;
+								}
+							}
+
+						}
+					}
+				}
+			}
+
+			else if(taskType == BuildAcademy){
+				
+				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+					auto task = it;
+					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					TaskAssociation taskA = TaskAssociation(&(*task), 0.3f);
+					
+					if(taskA.tValue() > rNumber){
+						Broodwar << "Agent [" << unitId << "] Task Academy " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
+						
+						UnitType supplyProviderType = UnitTypes::Terran_Academy;
+						if ( supplyProviderType.isBuilding() ){
+							newBuildingLocation = Broodwar->getBuildLocation(supplyProviderType, gameUnit->getTilePosition());
+							TilePosition targetBuildLocation = newBuildingLocation;
+							if ( newBuildingLocation ){
+								// Register an event that draws the target build location
+								Broodwar->registerEvent([targetBuildLocation,supplyProviderType](Game*){
+										Broodwar->drawBoxMap( Position(targetBuildLocation), Position(targetBuildLocation + supplyProviderType.tileSize()),	Colors::Yellow);
+									},
+									nullptr,  // condition
+									supplyProviderType.buildTime() + 100 
+								);  // frames to run
+
+								// Order the builder to construct the supply structure
+								gameUnit->build( supplyProviderType, targetBuildLocation );
+							}
+							else {
+								Position txtPlace =  gameUnit->getPosition();
+								Broodwar->registerEvent([txtPlace,supplyProviderType](Game*)
+								{
+									Broodwar->drawTextMap( txtPlace,
+											Broodwar->getLastError().c_str());
+									},
+								nullptr,  // condition
+								supplyProviderType.buildTime() + 100 );
+								//Broodwar << Broodwar->getLastError() << std::endl;
+							}
+						}
+
+						Broodwar->drawTextMap(gameUnit->getPosition(),"\nAcademy");
+						lastChecked = Broodwar->getFrameCount();
+						it = taskList->erase(it);
+						return;
+					}	
 				}
 			}
 
@@ -354,9 +479,27 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 			// The worker cannot harvest anything if it
 			// is carrying a powerup such as a flag
 			// Harvest from the nearest mineral patch or gas refinery
-			if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
-				// If the call fails, then print the last error message
-				Broodwar << Broodwar->getLastError() << std::endl;
+			Unitset scvAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 8 * TILE_SIZE, Filter::IsWorker);
+			int scvNearGatheringGas = 0;
+			for(Unitset::iterator scvIt = scvAround.begin(); scvIt != scvAround.end(); ++scvIt){
+				if(scvIt->isGatheringGas() ){
+					scvNearGatheringGas++;
+				}
+			}
+			// Check if there is another ones gathering gas
+			// If there is <3 gathering gas then get the closest mineral or gas
+			// Else get only closest mineral
+			if(scvNearGatheringGas < 3){
+				if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
+					// If the call fails, then print the last error message
+					Broodwar << Broodwar->getLastError() << std::endl;
+				}
+			}
+			else{
+				if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField)) ) {
+					// If the call fails, then print the last error message
+					Broodwar << Broodwar->getLastError() << std::endl;
+				}
 			}
 		} // closure: has no powerup
 	} // closure: if idle
