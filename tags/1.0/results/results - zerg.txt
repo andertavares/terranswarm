@@ -1,0 +1,30 @@
+Road War 54252 draw 28200 1600 30042 Zerg 0 0 0
+Jade 1.0 1435 win 15350 2575 20282 Zerg 0 0 0
+Road War 2265 loss 13250 1600 15050 Zerg 0 0 0
+| iCCup | Fighting Spirit 1.3 2859 win 44500 9675 94034 Zerg 0 0 0
+Jade 1.0 1949 win 29450 5225 40710 Zerg 0 0 0
+Python 1.1 2075 win 32900 6725 58182 Zerg 0 0 0
+| iCCup | Fighting Spirit 1.3 5852 loss 62750 9625 133497 Zerg 0 0 0
+Jade 1.0 841 win 4450 1525 6842 Zerg 0 0 0
+Circuit Breakers 1.0 2590 win 34550 9150 88882 Zerg 0 0 0
+| iCCup | Fighting Spirit 1.3 1922 win 26100 3325 32550 Zerg 0 0 0
+Jade 1.0 1633 win 21500 4725 30334 Zerg 0 0 0
+Circuit Breakers 1.0 1875 win 29900 6025 47998 Zerg 0 0 0
+| iCCup | Fighting Spirit 1.3 2689 win 39950 3200 44310 Zerg 0 0 0
+Circuit Breakers 1.0 1951 win 31550 6250 47774 Zerg 0 0 0
+Jade 1.0 1831 win 28300 5200 37366 Zerg 0 0 0
+Road War 2338 loss 14300 1600 16170 Zerg 0 0 0
+| iCCup | Fighting Spirit 1.3 2338 win 32500 3175 37414 Zerg 0 0 0
+Jade 1.0 3034 loss 21600 2075 24394 Zerg 0 0 0
+Python 1.1 2292 win 36900 6450 61014 Zerg 0 0 0
+Python 1.1 951 win 7000 1775 10234 Zerg 0 0 0
+| iCCup | Fighting Spirit 1.3 1530 loss 12900 3025 16634 Zerg 0 0 0
+Road War 2466 loss 13650 1650 15570 Zerg 0 0 0
+Jade 1.0 1418 win 15950 2625 20746 Zerg 0 0 0
+Circuit Breakers 1.0 3208 win 49800 6825 66070 Zerg 0 0 0
+Jade 1.0 1335 win 13100 3400 20198 Zerg 0 0 0
+| iCCup | Fighting Spirit 1.3 1920 win 28650 6275 40642 Zerg 0 0 0
+Python 1.1 1652 win 22300 4800 32310 Zerg 0 0 0
+| iCCup | Fighting Spirit 1.3 1672 win 21900 3375 26930 Zerg 0 0 0
+Road War 2394 win 20100 2850 24498 Zerg 0 0 0
+| iCCup | Fighting Spirit 1.3 2441 win 23500 1950 26170 Zerg 0 0 0
