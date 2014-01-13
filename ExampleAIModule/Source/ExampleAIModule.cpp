@@ -62,7 +62,7 @@ void ExampleAIModule::onStart() {
 		//Broodwar->sendText("show me the money");
 		//Broodwar->sendText("operation cwal");
 		//Broodwar->sendText("/speed 0");
-		//Broodwar->setGUI(false); //disables gui drawing (better performance?)
+		Broodwar->setGUI(false); //disables gui drawing (better performance?)
 		Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
@@ -136,7 +136,7 @@ void ExampleAIModule::onEnd(bool isWinner) {
 	ofstream resultFile;
 	Broodwar->enableFlag(Flag::CompleteMapInformation);
 	resultFile.open ("results.txt", std::ios_base::app);
-	resultFile <<  Broodwar->mapName() << " " << Broodwar->elapsedTime() << " " << (isWinner ? "win" : "loss") << " ";
+	resultFile << "MD," << Broodwar->mapName() << " " << Broodwar->elapsedTime() << " " << (isWinner ? "win" : "loss") << " ";
 	resultFile << me->getUnitScore() << " " << me->getBuildingScore() << " " << me->gatheredMinerals() + me->gatheredGas() << " ";
 	resultFile << enemy->getRace().getName() << " " << enemy->getUnitScore() << " " << enemy->getBuildingScore() << " " << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
 	resultFile.close();
