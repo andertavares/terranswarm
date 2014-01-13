@@ -1,0 +1,294 @@
+Rand,Road War,1077,loss,4950,1375,6402,Terran,0,0,0
+MD,Road War 1079 win 5800 2325 10514 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1709,loss,13250,3225,17598,Terran,0,0,0
+MD,Circuit Breakers 1.0 1710 win 15125 5150 36450 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,2602,loss,26600,5650,41758,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 2604 win 24750 6250 43130 Terran 0 0 0
+Rand,Jade 1.0,1960,loss,15450,3925,21378,Terran,0,0,0
+MD,Jade 1.0 1962 win 15925 5775 39306 Terran 0 0 0
+Rand,Python 1.1,1426,loss,9550,3075,13386,Terran,0,0,0
+MD,Python 1.1 1428 win 11025 3250 19114 Terran 0 0 0
+MD,Road War 870 loss 2350 1250 3954 Terran 0 0 0
+Rand,Road War,872,win,3600,2000,7298,Terran,0,0,0
+MD,Circuit Breakers 1.0 748 loss 2950 1325 4682 Terran 0 0 0
+Rand,Circuit Breakers 1.0,749,win,4000,1500,6058,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1257 loss 6675 1475 9554 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,1259,win,9750,3125,17234,Terran,0,0,0
+Rand,Jade 1.0,1641,loss,13500,3350,21606,Terran,0,0,0
+MD,Jade 1.0 1643 win 15800 4775 32018 Terran 0 0 0
+Rand,Python 1.1,1709,loss,10450,3425,15482,Terran,0,0,0
+MD,Python 1.1 1710 win 13875 5150 34254 Terran 0 0 0
+Rand,Road War,1707,loss,11650,2125,14390,Terran,0,0,0
+MD,Road War 1709 win 15050 3650 23054 Terran 0 0 0
+MD,Circuit Breakers 1.0 1036 loss 4450 1025 6090 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1038,win,6000,3100,14274,Terran,0,0,0
+Rand,| iCCup | Fighting Spirit 1.3,1191,loss,7300,1700,11122,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1193 win 10075 2875 15186 Terran 0 0 0
+Rand,Jade 1.0,1707,loss,11950,3375,17458,Terran,0,0,0
+MD,Jade 1.0 1709 win 13850 4850 32818 Terran 0 0 0
+MD,Python 1.1 730 loss 2200 825 4426 Terran 0 0 0
+Rand,Python 1.1,732,win,2500,1375,5242,Terran,0,0,0
+Rand,Road War,1166,loss,4900,1750,9850,Terran,0,0,0
+MD,Road War 1168 win 7325 2475 11442 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1850,loss,13000,3750,23902,Terran,0,0,0
+MD,Circuit Breakers 1.0 1852 win 14875 4250 26694 Terran 0 0 0
+MD,| iCCup | Fighting Spirit 1.3 808 loss 2950 825 5146 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,810,win,3300,1425,5722,Terran,0,0,0
+Rand,Jade 1.0,1147,loss,6800,1600,9722,Terran,0,0,0
+MD,Jade 1.0 1149 win 8825 3075 17186 Terran 0 0 0
+MD,Python 1.1 1050 loss 3675 1050 5594 Terran 0 0 0
+Rand,Python 1.1,1052,win,4900,2450,10850,Terran,0,0,0
+MD,Road War 908 loss 3200 1225 4626 Terran 0 0 0
+Rand,Road War,910,win,3050,825,6338,Terran,0,0,0
+MD,Circuit Breakers 1.0 2520 loss 16625 2350 21926 Terran 0 0 0
+Rand,Circuit Breakers 1.0,2522,win,28200,8325,85542,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 891 loss 4000 1325 6658 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,893,win,4150,1925,8554,Terran,0,0,0
+Rand,Jade 1.0,1362,loss,9950,2200,14646,Terran,0,0,0
+MD,Jade 1.0 1364 win 11800 4050 22538 Terran 0 0 0
+Rand,Python 1.1,1327,loss,9100,2350,13922,Terran,0,0,0
+MD,Python 1.1 1329 win 10750 2775 16418 Terran 0 0 0
+MD,Road War 959 loss 3400 775 5922 Terran 0 0 0
+Rand,Road War,961,win,4500,1550,7890,Terran,0,0,0
+Rand,Circuit Breakers 1.0,1402,loss,10250,2600,16506,Terran,0,0,0
+MD,Circuit Breakers 1.0 1404 win 12350 3875 23534 Terran 0 0 0
+MD,| iCCup | Fighting Spirit 1.3 963 loss 4650 1325 7354 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,965,win,5350,2075,10074,Terran,0,0,0
+Rand,Jade 1.0,1267,loss,7650,2175,11754,Terran,0,0,0
+MD,Jade 1.0 1269 win 9125 3450 19890 Terran 0 0 0
+Rand,Python 1.1,1656,loss,12350,3650,19262,Terran,0,0,0
+MD,Python 1.1 1658 win 15400 4800 26478 Terran 0 0 0
+Rand,Road War,1085,loss,4350,1350,7418,Terran,0,0,0
+MD,Road War 1087 win 6050 2425 10482 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1048,loss,4100,1225,5850,Terran,0,0,0
+MD,Circuit Breakers 1.0 1050 win 7250 2775 14490 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,2534,loss,25700,3300,32754,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 2536 win 28050 9100 68830 Terran 0 0 0
+Rand,Jade 1.0,1120,loss,4400,1175,6786,Terran,0,0,0
+MD,Jade 1.0 1121 win 7825 2975 14194 Terran 0 0 0
+Rand,Python 1.1,1362,loss,8700,2600,18114,Terran,0,0,0
+MD,Python 1.1 1364 win 10625 3800 20074 Terran 0 0 0
+Rand,Road War,1554,loss,8100,2850,11858,Terran,0,0,0
+MD,Road War 1555 win 11025 3200 16354 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1612,loss,14900,3250,21178,Terran,0,0,0
+MD,Circuit Breakers 1.0 1614 win 17600 5625 36410 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,2201,loss,21000,3975,26766,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 2203 win 20625 6875 50813 Terran 0 0 0
+Rand,Jade 1.0,1348,loss,9900,2525,13858,Terran,0,0,0
+MD,Jade 1.0 1350 win 10125 3300 19058 Terran 0 0 0
+Rand,Python 1.1,1046,loss,5550,1475,9042,Terran,0,0,0
+MD,Python 1.1 1048 win 6950 2100 11634 Terran 0 0 0
+Rand,Road War,937,loss,3900,1275,5530,Terran,0,0,0
+MD,Road War 939 win 5500 2375 9370 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1426,loss,9900,2000,15906,Terran,0,0,0
+MD,Circuit Breakers 1.0 1428 win 12400 4425 26314 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,2117,loss,19150,3400,24230,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 2119 win 19275 8150 54486 Terran 0 0 0
+Rand,Jade 1.0,2257,loss,15800,4175,30990,Terran,0,0,0
+MD,Jade 1.0 2259 win 14550 6325 52462 Terran 0 0 0
+MD,Python 1.1 1123 loss 4600 1275 6058 Terran 0 0 0
+Rand,Python 1.1,1125,win,4550,1500,13442,Terran,0,0,0
+MD,Road War 749 loss 2500 1100 3746 Terran 0 0 0
+Rand,Road War,751,win,3650,1400,5538,Terran,0,0,0
+MD,Circuit Breakers 1.0 1156 loss 5425 1950 8378 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1158,win,6800,3125,16378,Terran,0,0,0
+Rand,| iCCup | Fighting Spirit 1.3,1058,loss,4900,1675,6770,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1059 win 8500 3125 14274 Terran 0 0 0
+Rand,Jade 1.0,2786,loss,23200,3900,30594,Terran,0,0,0
+MD,Jade 1.0 2788 win 26925 7000 78258 Terran 0 0 0
+Rand,Python 1.1,1176,loss,7350,2050,11778,Terran,0,0,0
+MD,Python 1.1 1178 win 8075 2850 14898 Terran 0 0 0
+MD,Road War 1577 loss 9450 2350 12938 Terran 0 0 0
+Rand,Road War,1579,win,11300,3625,19758,Terran,0,0,0
+Rand,Circuit Breakers 1.0,1346,loss,8600,2450,15154,Terran,0,0,0
+MD,Circuit Breakers 1.0 1348 win 10250 3475 20722 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,1557,loss,13000,3650,19326,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1559 win 14525 4800 24886 Terran 0 0 0
+Rand,Jade 1.0,2208,loss,14900,3375,21098,Terran,0,0,0
+MD,Jade 1.0 2210 win 16300 6175 61570 Terran 0 0 0
+Rand,Python 1.1,2249,loss,23450,3975,35846,Terran,0,0,0
+MD,Python 1.1 2251 win 21400 5850 41598 Terran 0 0 0
+Rand,Road War,866,loss,2250,675,2834,Terran,0,0,0
+MD,Road War 868 win 4150 2200 7226 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1133,loss,6300,2050,10170,Terran,0,0,0
+MD,Circuit Breakers 1.0 1135 win 8225 2825 16426 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,1449,loss,7450,2450,10506,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1451 win 10275 3400 22926 Terran 0 0 0
+Rand,Jade 1.0,1127,loss,6250,1475,8794,Terran,0,0,0
+MD,Jade 1.0 1129 win 8325 3000 15386 Terran 0 0 0
+MD,Python 1.1 703 loss 2500 825 4106 Terran 0 0 0
+Rand,Python 1.1,705,win,3100,1400,5778,Terran,0,0,0
+MD,Road War 1420 loss 4400 1525 6842 Terran 0 0 0
+Rand,Road War,1422,win,7550,4050,15426,Terran,0,0,0
+MD,Circuit Breakers 1.0 1180 loss 5550 1275 8770 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1182,win,7200,3250,18090,Terran,0,0,0
+Rand,| iCCup | Fighting Spirit 1.3,1823,loss,13650,3750,21290,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1825 win 15475 4200 36875 Terran 0 0 0
+Rand,Jade 1.0,1833,loss,13750,3400,21638,Terran,0,0,0
+MD,Jade 1.0 1834 win 17000 5650 40158 Terran 0 0 0
+Rand,Python 1.1,1077,loss,4350,875,5626,Terran,0,0,0
+MD,Python 1.1 1079 win 8275 2975 14434 Terran 0 0 0
+Rand,Road War,1170,loss,5400,1750,9258,Terran,0,0,0
+MD,Road War 1172 win 6450 2375 11362 Terran 0 0 0
+Rand,Circuit Breakers 1.0,2144,loss,15700,5825,28926,Terran,0,0,0
+MD,Circuit Breakers 1.0 2146 win 18150 5825 38782 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,1482,loss,10150,2350,13658,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1484 win 12250 4050 23730 Terran 0 0 0
+Rand,Jade 1.0,1356,loss,8650,2675,12962,Terran,0,0,0
+MD,Jade 1.0 1358 win 11000 3450 20246 Terran 0 0 0
+MD,Python 1.1 918 loss 3050 1175 4466 Terran 0 0 0
+Rand,Python 1.1,920,win,5450,1700,8946,Terran,0,0,0
+MD,Road War 924 loss 3350 1275 5346 Terran 0 0 0
+Rand,Road War,926,win,4700,1600,7906,Terran,0,0,0
+Rand,Circuit Breakers 1.0,1007,loss,3600,1325,6866,Terran,0,0,0
+MD,Circuit Breakers 1.0 1009 win 5400 2850 11578 Terran 0 0 0
+MD,| iCCup | Fighting Spirit 1.3 831 loss 3550 1325 6058 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,833,win,4400,2000,7538,Terran,0,0,0
+Rand,Jade 1.0,2197,loss,19750,3850,28538,Terran,0,0,0
+MD,Jade 1.0 2199 win 19900 7400 61730 Terran 0 0 0
+Rand,Python 1.1,1249,loss,5650,925,10458,Terran,0,0,0
+MD,Python 1.1 1251 win 9850 3150 16994 Terran 0 0 0
+MD,Road War 817 loss 2425 1300 4426 Terran 0 0 0
+Rand,Road War,819,win,3950,1550,6290,Terran,0,0,0
+Rand,Circuit Breakers 1.0,2265,loss,18050,4975,27790,Terran,0,0,0
+MD,Circuit Breakers 1.0 2267 win 18450 6000 46750 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,3601,loss,27500,2750,32450,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 3601 win 35925 11825 111750 Terran 0 0 0
+Rand,Jade 1.0,1158,loss,7350,1500,10042,Terran,0,0,0
+MD,Jade 1.0 1160 win 9050 3225 16266 Terran 0 0 0
+Rand,Python 1.1,1480,loss,11050,2775,19366,Terran,0,0,0
+MD,Python 1.1 1482 win 13575 3875 23682 Terran 0 0 0
+MD,Road War 860 loss 2250 1275 3586 Terran 0 0 0
+Rand,Road War,862,win,4400,1125,6402,Terran,0,0,0
+Rand,Circuit Breakers 1.0,889,loss,3350,725,5594,Terran,0,0,0
+MD,Circuit Breakers 1.0 891 win 5250 2125 9930 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,1712,loss,11700,3525,18454,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1714 win 14275 4950 25378 Terran 0 0 0
+MD,Jade 1.0 1034 loss 5875 1450 8858 Terran 0 0 0
+Rand,Jade 1.0,1036,win,6600,2175,11858,Terran,0,0,0
+Rand,Python 1.1,1275,loss,7450,1550,13138,Terran,0,0,0
+MD,Python 1.1 1276 win 10925 3800 21506 Terran 0 0 0
+MD,Road War 802 loss 2400 725 3570 Terran 0 0 0
+Rand,Road War,804,win,3550,1500,6146,Terran,0,0,0
+Rand,Circuit Breakers 1.0,1433,loss,9750,2150,14866,Terran,0,0,0
+MD,Circuit Breakers 1.0 1435 win 10725 3500 18106 Terran 0 0 0
+MD,| iCCup | Fighting Spirit 1.3 928 loss 3925 925 5178 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,930,win,4750,2250,9050,Terran,0,0,0
+Rand,Jade 1.0,1282,loss,9100,2250,14570,Terran,0,0,0
+MD,Jade 1.0 1284 win 10125 3775 21522 Terran 0 0 0
+Rand,Python 1.1,1608,loss,8000,1625,12450,Terran,0,0,0
+MD,Python 1.1 1610 win 12850 3950 22614 Terran 0 0 0
+MD,Road War 1069 loss 4050 1375 6922 Terran 0 0 0
+Rand,Road War,1071,win,4800,2625,9282,Terran,0,0,0
+MD,Circuit Breakers 1.0 932 loss 5225 1500 8266 Terran 0 0 0
+Rand,Circuit Breakers 1.0,934,win,6100,2100,9354,Terran,0,0,0
+Rand,| iCCup | Fighting Spirit 1.3,782,loss,2750,775,3666,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 784 win 3950 1625 8282 Terran 0 0 0
+MD,Jade 1.0 786 loss 2800 900 4634 Terran 0 0 0
+Rand,Jade 1.0,788,win,3800,1500,5914,Terran,0,0,0
+Rand,Python 1.1,1497,loss,10150,2150,16726,Terran,0,0,0
+MD,Python 1.1 1499 win 10525 2775 18962 Terran 0 0 0
+Rand,Road War,1071,loss,3750,825,6562,Terran,0,0,0
+MD,Road War 1073 win 6475 1750 9258 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1042,loss,4400,2225,8082,Terran,0,0,0
+MD,Circuit Breakers 1.0 1044 win 7625 2925 13530 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,2042,loss,15650,3250,22942,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 2044 win 18850 8225 54654 Terran 0 0 0
+Rand,Jade 1.0,1662,loss,12150,3825,20190,Terran,0,0,0
+MD,Jade 1.0 1664 win 12850 4275 25902 Terran 0 0 0
+Rand,Python 1.1,1302,loss,8650,2300,13530,Terran,0,0,0
+MD,Python 1.1 1304 win 10075 3200 20642 Terran 0 0 0
+Rand,Road War,1063,loss,4950,1825,6914,Terran,0,0,0
+MD,Road War 1065 win 6475 2475 10698 Terran 0 0 0
+MD,Circuit Breakers 1.0 1170 loss 6850 1500 9010 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1172,win,7700,3025,16474,Terran,0,0,0
+Rand,| iCCup | Fighting Spirit 1.3,1926,loss,12400,4400,19390,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1927 win 13550 6350 29018 Terran 0 0 0
+Rand,Jade 1.0,1581,loss,9900,3350,16722,Terran,0,0,0
+MD,Jade 1.0 1583 win 12975 4125 29422 Terran 0 0 0
+Rand,Python 1.1,1005,loss,4600,825,6914,Terran,0,0,0
+MD,Python 1.1 1007 win 6625 2675 12738 Terran 0 0 0
+MD,Road War 908 loss 3950 1250 5866 Terran 0 0 0
+Rand,Road War,910,win,4500,1550,7690,Terran,0,0,0
+Rand,Circuit Breakers 1.0,1699,loss,10900,3600,16594,Terran,0,0,0
+MD,Circuit Breakers 1.0 1701 win 13625 4650 28942 Terran 0 0 0
+MD,| iCCup | Fighting Spirit 1.3 722 loss 1850 750 3690 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,724,win,2300,775,4066,Terran,0,0,0
+Rand,Jade 1.0,1625,loss,12350,2850,20638,Terran,0,0,0
+MD,Jade 1.0 1627 win 14225 4550 34886 Terran 0 0 0
+Rand,Python 1.1,2234,loss,14950,3675,20266,Terran,0,0,0
+MD,Python 1.1 2236 win 15675 4125 31370 Terran 0 0 0
+MD,Road War 1472 loss 9125 1450 11250 Terran 0 0 0
+Rand,Road War,1474,win,10450,1650,13318,Terran,0,0,0
+MD,Circuit Breakers 1.0 994 loss 4675 1850 7234 Terran 0 0 0
+Rand,Circuit Breakers 1.0,996,win,5650,2400,10754,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1085 loss 6450 1500 10170 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,1087,win,7450,2250,12026,Terran,0,0,0
+MD,Jade 1.0 3210 loss 30150 3750 39926 Terran 0 0 0
+Rand,Jade 1.0,3212,win,39700,7800,77238,Terran,0,0,0
+MD,Python 1.1 839 loss 3375 1000 5498 Terran 0 0 0
+Rand,Python 1.1,841,win,4500,1500,6530,Terran,0,0,0
+Rand,Road War,1567,loss,8050,2700,14694,Terran,0,0,0
+MD,Road War 1569 win 10400 3075 16602 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1197,loss,8000,1975,13922,Terran,0,0,0
+MD,Circuit Breakers 1.0 1199 win 8250 2900 16906 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,1147,loss,6400,1825,9106,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1149 win 8000 2450 13970 Terran 0 0 0
+Rand,Jade 1.0,1464,loss,10700,3025,16474,Terran,0,0,0
+MD,Jade 1.0 1466 win 13850 4625 26846 Terran 0 0 0
+Rand,Python 1.1,1054,loss,4000,1700,6962,Terran,0,0,0
+MD,Python 1.1 1056 win 8200 2900 14058 Terran 0 0 0
+Rand,Road War,1007,loss,2900,1300,6586,Terran,0,0,0
+MD,Road War 1009 win 5800 1850 8930 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1567,loss,11450,3900,20558,Terran,0,0,0
+MD,Circuit Breakers 1.0 1569 win 13175 4375 29810 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,1075,loss,6150,1900,10810,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1077 win 7675 2775 14202 Terran 0 0 0
+Rand,Jade 1.0,1600,loss,11250,3000,26490,Terran,0,0,0
+MD,Jade 1.0 1602 win 14050 3875 26282 Terran 0 0 0
+Rand,Python 1.1,2028,loss,12900,3375,23774,Terran,0,0,0
+MD,Python 1.1 2030 win 17575 5850 36718 Terran 0 0 0
+Rand,Road War,1873,loss,9200,1300,10830,Terran,0,0,0
+MD,Road War 1875 win 13750 3175 18814 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1575,loss,13150,3075,19158,Terran,0,0,0
+MD,Circuit Breakers 1.0 1577 win 11850 2025 20510 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,1426,loss,11350,1625,13758,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 1428 win 15425 4050 24174 Terran 0 0 0
+Rand,Jade 1.0,1697,loss,11050,3175,15082,Terran,0,0,0
+MD,Jade 1.0 1699 win 14025 5275 35158 Terran 0 0 0
+Rand,Python 1.1,1920,loss,16450,5375,26850,Terran,0,0,0
+MD,Python 1.1 1922 win 17525 3675 32542 Terran 0 0 0
+Rand,Road War,1164,loss,6400,1325,11154,Terran,0,0,0
+MD,Road War 1166 win 7750 2525 14082 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1317,loss,9850,2075,15802,Terran,0,0,0
+MD,Circuit Breakers 1.0 1319 win 10675 3575 22066 Terran 0 0 0
+MD,| iCCup | Fighting Spirit 1.3 1092 loss 5875 1375 8866 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,1094,win,7400,2350,13082,Terran,0,0,0
+Rand,Jade 1.0,1286,loss,4750,2225,7090,Terran,0,0,0
+MD,Jade 1.0 1288 win 8375 2400 15282 Terran 0 0 0
+MD,Python 1.1 1455 loss 8750 1900 12154 Terran 0 0 0
+Rand,Python 1.1,1457,win,9250,2875,16362,Terran,0,0,0
+Rand,Road War,1455,loss,8900,2025,11874,Terran,0,0,0
+MD,Road War 1457 win 11275 2575 14894 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1443,loss,8300,3050,14914,Terran,0,0,0
+MD,Circuit Breakers 1.0 1445 win 13175 4675 27434 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,3601,loss,23700,4175,29958,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 3601 win 22600 10425 89242 Terran 0 0 0
+Rand,Jade 1.0,3005,loss,23200,4775,40334,Terran,0,0,0
+MD,Jade 1.0 3007 win 24100 8275 80806 Terran 0 0 0
+Rand,Python 1.1,1455,loss,10500,2725,16026,Terran,0,0,0
+MD,Python 1.1 1457 win 11800 2800 23266 Terran 0 0 0
+Rand,Road War,961,loss,1450,650,4866,Terran,0,0,0
+MD,Road War 963 win 4300 2300 8682 Terran 0 0 0
+Rand,Circuit Breakers 1.0,1147,loss,7300,2000,11370,Terran,0,0,0
+MD,Circuit Breakers 1.0 1149 win 9525 3525 17962 Terran 0 0 0
+Rand,| iCCup | Fighting Spirit 1.3,2024,loss,13500,3250,18562,Terran,0,0,0
+MD,| iCCup | Fighting Spirit 1.3 2026 win 16975 7750 50310 Terran 0 0 0
+Rand,Jade 1.0,1519,loss,11100,3000,18966,Terran,0,0,0
+MD,Jade 1.0 1521 win 11700 3800 22438 Terran 0 0 0
+Rand,Python 1.1,1683,loss,13300,2900,20198,Terran,0,0,0
+MD,Python 1.1 1685 win 16450 5075 32910 Terran 0 0 0
+MD,Road War 2117 loss 9675 2050 12318 Terran 0 0 0
+Rand,Road War,2119,win,17950,4775,33722,Terran,0,0,0
+Rand,Circuit Breakers 1.0,1544,loss,13200,2600,22830,Terran,0,0,0
+MD,Circuit Breakers 1.0 1546 win 14375 4375 30854 Terran 0 0 0
