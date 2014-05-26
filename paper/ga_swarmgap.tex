@@ -118,7 +118,22 @@ Email: chaimo@dcc.ufmg.br}}
 %Telephone: (800) 555--1212, Fax: (888) 555--1212}
 %\IEEEauthorblockA{\IEEEauthorrefmark{4}Tyrell Inc., 123 Replicant Street, Los Angeles, California 90210--4321}}
 
+\newcommand{\agentset}{\mathcal{I}}
+\newcommand{\taskset}{\mathcal{J}}
 
+\newcommand{\agtres}[1]{\ensuremath{r_{#1}}}
+\newcommand{\agtcap}[2]{\ensuremath{k_{#1#2}}}
+\newcommand{\rescspt}[2]{\ensuremath{c_{#1#2}}}
+\newcommand{\egminus}{E-GAP$^-$}
+
+\newcommand{\stimulus}[1]{\ensuremath{s_#1}}
+\newcommand{\respthresh}[2]{\ensuremath{\theta_{#1#2}}}
+\newcommand{\tendency}[2]{\ensuremath{T_{#1#2}}}
+\newcommand{\capability}[2]{\ensuremath{f_{#1#2}}}
+
+\newcommand{\ETS}{\textit{Extreme Teams}}
+\newcommand{\botit}{\textit{bot }}
+\newcommand{\Random}{\textit{Random }}
 
 \maketitle
 
@@ -164,16 +179,69 @@ The remaining of this paper is organized as follows: ...
 \section{Preliminary concepts}
 \label{sec:concepts}
 
+%In this section we present basic concepts in task allocation and how Swarm GAP works.
+
 \subsection{Task allocation}
+\label{sec:ta}
+
+Task allocation is concerned with the assignment of tasks to agents in order to maximize a global metric of performance, usually related to the skills of the agents to perform each task type. In dynamic environments, the task allocation problem can be modeled as an instance of E-GAP (Extended Generalized Assignment Problem) \cite{Scerri+2005}. E-GAP is an generalization of the GAP (Generalized Assignment Problem), which is NP-complete \cite{Shmoys&Tardos1993}. 
+
+The E-GAP can be formalized as follows: let $\taskset$ be the set of tasks and $\agentset$ the set of agents. Each agent $i \in \agentset$ possui $\agtres{i}$ resources to perform tasks. Each task $j \in \taskset$ consumes $\rescspt{i}{j}$ resources of agent $i$, when it performs the task. Each agent $i$ has a capability $\agtcap{i}{j} \in [0:1]$ to perform task $j$. Capability can be regarded as the skill of the agent to perform the task. %A value of $\agtcap{i}{j}$ close to $1$ means that $i$ performs $j$ with high speed or quality.
+
+An allocation matrix $A_{|\agentset| \times |\taskset|}$ has its elements $a_{ij}$ set according to Equation \ref{eq:egap-allocation}:
+
+\begin{equation}
+\label{eq:egap-allocation}
+a_{ij} = 
+\begin{cases}
+  1,& \text{if } j \text{ is performed by } i\\
+  0,& \text{otherwise}
+\end{cases}
+\end{equation}
+
+% A solução ótima é dada pela matriz $A^*$, que maximiza a recompensa do sistema, que considera a aptidão para realização das tarefas pelos agentes. Os limites de recursos dos agentes e a restrição de haver apenas um agente para cada tarefa devem ser respeitados, conforme mostra a Equação \ref{eq:gap-optimal}.
+% 
+% \begin{equation}
+% \label{eq:gap-optimal}
+% \begin{split}
+% A^* = arg\max_{A'}\sum_{i \in \agentset}\sum_{j \in \taskset} \agtcap{i}{j} \times a'_{ij}\\
+% \text{ sujeito a }\\
+% \forall \enspace i \in \agentset, \sum_{j \in \taskset} \rescspt{i}{j} \times a_{ij} \leq \agtres{i}\\
+% \text{ e } \\
+% \forall \enspace j \in \taskset, \sum_{i \in \agentset} a_{ij} \leq 1
+% \end{split}
+% \end{equation}
+In E-GAP, the total reward $W$ is calculated as the sum of the rewards of the agents along $t$ timesteps. In one timestep, the reward is calculated considering the capability of the agents to perform the tasks they were assigned. A delay cost $d_j^t$ is applyed as a penalty for not allocating task $j$ in timestep $t$. The calculation of reward along the timesteps captures the dynamics of the environment. E-GAP also considers task interdependence, but this aspect will not be investigated in this work. 
+
+The goal in E-GAP is to maximize the total reward $W$ given by Eq. \ref{eq:egap-total-reward}. %A Eq. \ref{eq:egap-total-reward} possui semelhança com a Eq. \ref{eq:gap-optimal}, 
+
+\begin{equation}
+\label{eq:egap-total-reward}
+\begin{split}
+W = \sum_t \sum_{i^t \in \agentset^t} \sum_{j^t \in \taskset^t} k_{ij}^t \times a_{ij}^t - 
+\sum_t \sum_{j^t \in \taskset^t}(1 - a_{ij}^t) \times d_j^t\\
+\text{ subject to }\\
+\forall t \forall i^t \in \agentset^t, \sum_{j^t \in \taskset^t} \rescspt{i}{j}^t \times a_{ij}^t \leq \agtres{i}^t \\
+\text{ and }\\
+\forall t \forall j^t \in \taskset^t, \sum_{i^t \in \agentset^t} a_{ij}^t \leq 1
+\end{split}
+\end{equation}
+
+With this model, instead of looking for a single allocation, we seek a sequence of allocations along in each discrete timestep. The allocations are constrained by the limited agent resources and the restriction that only one agent can perform each task.
 
 \subsection{Swarm GAP}
+\label{sec:swarmgap}
 
-\subsection{Genetic algorithm}
+%\subsection{Genetic algorithm}
+%label{sec:ga}
 
 \section{Proposed approach}
 \label{sec:approach}
 
 
+\section{Experiments}
+
+\section{Conclusion}
 
 %models of the division of labor in social insects .
 
