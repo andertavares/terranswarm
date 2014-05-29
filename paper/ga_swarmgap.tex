@@ -4,7 +4,7 @@
 %\usepackage[latin1]{inputenc}  
 
 \ifCLASSINFOpdf
-  % \usepackage[pdftex]{graphicx}
+  \usepackage[pdftex]{graphicx}
   % declare the path(s) where your graphic files are
   % \graphicspath{{../pdf/}{../jpeg/}}
   % and their extensions so you won't have to specify these with
@@ -41,6 +41,7 @@
 % *** PDF, URL AND HYPERLINK PACKAGES ***
 \usepackage{url}
 
+%\usepackage{hyperref}
 
 % correct bad hyphenation here
 %\hyphenation{op-tical net-works semi-conduc-tor}
@@ -110,9 +111,15 @@ Email: chaimo@dcc.ufmg.br}}
 \newcommand{\tendency}[2]{\ensuremath{T_{#1#2}}}
 %\newcommand{\capability}[2]{\ensuremath{f_{#1#2}}}
 
+\newcommand{\pop}[1]{\ensuremath{P^{(#1)}}}
 \newcommand{\fit}[1]{\ensuremath{f_{#1}}}
 \newcommand{\reliab}[1]{\ensuremath{w_{#1}}}
 \newcommand{\simil}[2]{\ensuremath{\rho_{#1#2}}}
+\newcommand{\relthresh}{\ensuremath{\tau}}
+
+\newcommand{\popmax}{\ensuremath{\kappa}}
+\newcommand{\genmax}{\ensuremath{\eta}}
+
 %\newcommand{\Random}{\textit{Random }}
 
 \maketitle
@@ -255,21 +262,39 @@ Although the execution of Swarm-GAP is simple, it is necessary to adjust all par
 %\subsection{Genetic algorithm}
 %label{sec:ga}
 
+\section{Related work}
+\label{sec:related}
 
+\subsection{Task allocation in complex scenarios}
+\label{sec:related_ta}
+
+An approximate and decentralized algorithm for the task allocation problem in complex scenarios is LA-DCOP \cite{Scerri+2005}, where the modeling of the task allocation problem as E-GAP is introduced. In LA-DCOP, agents communicate and achieve coordination through a token-based protocol. Agents perceive tasks on the environment and create a token containing the tasks. The token holder, based in a global threshold, decide which tasks it should engage. The token with the remaining tasks are communicated to other agents. In LA-DCOP, agents must allocate tasks in order to maximize the sum of its capabilities, respecting their resource limitations. This can be reduced to the binary knapsack problem (BKP), which is NP-complete. Therefore, the efficiency and efficacy of LA-DCOP depend on the method that solve the (BKP). Each agent solves several instances of the BKP during the complete process of allocation.
+
+Note that LA-DCOP and Swarm-GAP are very similar regarding the token-based protocol for coordination. The difference in both algorithms lies in the way the agents allocate tasks. In LA-DCOP, the process corresponds to solving an instance of the BKP whereas in Swarm-GAP, agents allocate tasks in a probabilistic fashion inspired by the division of labor in social insects.
+
+The task allocation problem can also be modeled through the formalism of coalition structure generation (CSG)\footnote{A coalition structure is a partition of the set of agents. Each subset of the partition is a coalition}. In this formalism, a coalition structure is determined and coalitions of agents are assigned to tasks. An approach that uses this formalism is presented in \cite{Khan+2011}. The work presents a methodology to model the CSG problem as a Markov Decision Process (MDP). Initially, the generated MDP has a intractable state-action space. The authors present a method for parallel partition of the generated MDP. With this approach, efficient MDP algorithms can be applied. In fact, authors apply this methodology to problems with hundreds of agents and tasks.
+
+
+Branch-and-bound fast-max-sum (BnB FMS) is an anytime algorithm presented in \cite{Macarthur+2011} that advances the state-of-the-art regarding task allocation in large-scale scenarios. BnB FMS searches the coalition structure that maximizes a global utility, that considers the contribution of each agent in its coalition when it performs a set of tasks. The search space explored by the algorithm is pruned through the reduction of the  number of tasks and coalitions that need to be evaluated. The used pruning techniques keep the correctness and robustness of the algorithm when the environment is dynamic. Performed experiments showed that BnB FMS reaches a global utility 23\% higher than previous state-of-the-art algorithms, with 31\% less computing time and 25\% less messages than other algorithms.
+
+%mention starcraft algorithms
 
 \section{Proposed approach}
 \label{sec:approach}
 
 \subsection{Optimizing Swarm-GAP parameters}
 \label{sec:opt_swgap}
-To find good values of Swarm-GAP parameters (stimulus, agent resources, capabilities and task costs) can be very time-consuming for large scenarios if done manually. To address this issue, we employ a genetic algorithm to automatically find a combination of parameters that maximizes a global metric of performance of the agents.
+Finding a good combination of Swarm-GAP parameters can be very time-consuming for large scenarios if done manually. To address this issue, we employ a genetic algorithm to automatically find a combination of parameters that maximizes a global metric of performance of the agents.
 
-Briefly, a genetic algorithm (GA) is a search metaheuristic that mimics the process of natural selection. An initial population is generated, the fitness of its individuals is evaluated, individuals are selected to produce the population of the next generation, genetic operators are applied and the process is repeated until a stop criteria is satisfied. The stop criteria is usually related to the solution convergence or number of generations. Genetic algorithms are usually applied to complex optimization problems \cite{Huapt&Huapt2004}.
+Briefly, a genetic algorithm (GA) is a search metaheuristic that mimics the process of natural selection. An initial population is generated, the fitness of its individuals is evaluated, individuals are selected to produce the population of the next generation, genetic operators are applied and the process is repeated until a stop criteria is satisfied. The stop criteria is usually related to the solution convergence or number of generations. Genetic algorithms are usually applied to complex optimization problems \cite{Haupt&Haupt2004}.
+
+In our approach, an individual is given by a chromosome represented by an array of real numbers where each position (or locus) contains a parameter of Swarm-GAP. %The parameters are the stimuli $\stimulus{j}$ for each task, the resources $\agtres{i}$ that each agent has, as well as the capability $\agtcap{i}{j}$ and task cost $c_{ij}$ for each agent and task. 
+The actual representation is scenario-dependent, as the number of tasks and agent types vary. See Section \ref{sec:experiments} the representation adopted in the scenario studied in this paper.
 
 \subsection{Accelerating the GA}
 In our approach, fitness evaluation can be computationally expensive. This happens because Swarm-GAP is a task allocation algorithm and its performance is the result of a real-world or simulated experiment where agents execute Alg. 1. For this reason, we employ the methods described in \cite{Salami&Hendtlass2003} to accelerate the genetic algorithm. 
 
-Briefly, GA acceleration is obtained by estimating fitness of some individuals instead of actually evaluating it. In this approach, each individual $i$ has associated fitness ($\fit{i}$) and reliability ($\reliab{i} \in [0,1]$) values. A value of $1$ for $\reliab{i}$ means that the actual fitness of individual $i$ was evaluated. Other values mean that the fitness was estimated. Let individuals $a$ and $b$ be the parents of $c$ and $d$. Considering individual $c$, its fitness is estimated via Eq. \ref{eq:fitness} and its reliability is calculated according to Eq. \ref{eq:reliab}. 
+Briefly, GA acceleration is obtained by estimating fitness of some individuals instead of actually evaluating it. In this approach, each individual $i$ has associated fitness ($\fit{i}$) and reliability ($\reliab{i} \in [0,1]$) values. A value of $1$ for $\reliab{i}$ means that the actual fitness of individual $i$ was evaluated. Other values mean that the fitness was estimated. Let individuals $a$ and $b$ be the parents of $c$ and $d$. Considering individual $c$, its fitness is estimated via Eq. \ref{eq:fitness} and its reliability is calculated according to Eq. \ref{eq:reliab} (calculations for individual $d$ are analogous). 
 
 \begin{equation}
 \label{eq:fitness}
@@ -281,45 +306,84 @@ Briefly, GA acceleration is obtained by estimating fitness of some individuals i
 \reliab{c} = \frac{(\reliab{a}\simil{a}{c})^2 + (\reliab{b}\simil{b}{c})^2}{\reliab{a}\simil{a}{c} + \reliab{b}\simil{b}{c}}
 \end{equation}
 
-In Eqs. \ref{eq:fitness} and \ref{eq:reliab}, $\simil{a}{c}$ is the similarity between $a$ and $c$. Let $A$ be the chromosome of individual $a$ and $C$ the chromosome of $c$. Also, let $max_i$ and $min_i$ be the maximum and minimum value of the domain of the variable in locus $i$ of the chromosome. The similarity between $a$ and $c$ is then calculated via Eq. \ref{eq:simil}.
+In Eqs. \ref{eq:fitness} and \ref{eq:reliab}, $\simil{a}{c} \in [0,1]$ is the similarity between $a$ and $c$. Let $A$ be the chromosome of individual $a$ and $C$ the chromosome of $c$. Also, let $max_i$ and $min_i$ be the maximum and minimum value of the domain of the variable in locus $i$ of the chromosome. The similarity between $a$ and $c$ is then calculated via Eq. \ref{eq:simil}.
 
 \begin{equation}
 \label{eq:simil}
-\simil{a}{c} = \frac{1}{|A|} \sum_{i = 1}^{|A|} \frac{abs(A_i - C_i)}{max_i - min_i}
+\simil{a}{c} = 1 - \frac{1}{|A|} \sum_{i = 1}^{|A|} \frac{abs(A[i] - C[i])}{max_i - min_i}
 \end{equation}
 
-%TODO replace A, C by X, Y
+If the estimated fitness of an individual $a$ falls below a given threshold ($\relthresh \in [0,1]$), the actual fitness is evaluated and assigned to $\fit{a}$. Also, the reliability $\reliab{a}$ is set to $1$. Note that, when the fitness of a child is estimated, its fitness lies between the fitness of the parents and its reliability is lower than the highest reliability of the parents. With successive estimations across generations, reliability should drop below the threshold and an actual evaluation must take place.
+
+%TODO use error compensation and random evaluation??
+%TODO use figure to illustrate the process?
+
+A value of reliability threshold ($\relthresh$) close to $1$ results in many actual fitness evaluations, slowing the GA. On the other hand, a value of $\relthresh$ close to $0$ results in many successive fitness estimations which may yield fitness values that differ too  much from the actual fitness of the individuals. Thus, $\relthresh$ is an important parameter of this fitness estimation method and should be carefully adjusted. For a complete description of this fitness estimation method, the reader may refer to \cite{Salami&Hendtlass2003}.
+
+Algorithm 2 formalizes our approach. In this algorithm, $\pop{n}$ is the population in generation $n$, the maximum number of generations is $\genmax$ and $\popmax$ is the population size. Method $select\_parents$ selects two individuals from the population. Method $crossover\_and\_mutation$ receives two individuals, performs crossover according to a crossover probability, mutates the individuals according to the mutation probability and returns the two individuals. Note that selection and crossover methods are not specified and can be chosen according to the situation. For example, in this paper we use tournament selection and one-point crossover (see Section \ref{sec:experiments}).
+
+\begin{figure}[ht]
+\begin{algorithmic}[1]
+\STATE $\pop{0} \gets$ \{initial random population\}
+\FORALL{$p \in \pop{0}$} 
+\STATE $\fit{p} \gets Evaluate(p)$
+\STATE $\reliab{p} \gets 1$
+\ENDFOR
+
+\FOR{$n \in [0.. \genmax ]$}
+\STATE $\pop{n+1} \gets \emptyset$
+\WHILE{$|\pop{n+1}| < \popmax$}
+\STATE $(a,b) \gets select\_parents(\pop{n+1})$
+\STATE $(c,d) = crossover\_and\_mutation(a,b)$
+\STATE $\fit{c} \gets $ fitness estimated via Eq. \ref{eq:fitness} \label{loc:cbegin}
+%\STATE $\fit{d} \gets $ fitness estimated via Eq. \ref{eq:fitness}
+\STATE $\reliab{c} \gets $ reliability calculated via Eq. \ref{eq:reliab}
+%\STATE $\reliab{d} \gets $ reliability estimated via Eq. \ref{eq:reliab}
+\IF{$\reliab{c} < \relthresh$} 
+\STATE $\fit{c} \gets Evaluate(c)$
+\STATE $\reliab{c} \gets 1$ \label{loc:cend}
+\ENDIF
+\STATE /* repeat lines \ref{loc:cbegin}-\ref{loc:cend} for individual $d$ */
+\STATE $\pop{n+1} \gets \pop{n+1} \cup \{c,d\}$
+\ENDWHILE
+\ENDFOR
+\end{algorithmic}
+\caption{Algorithm of GA for Swarm-GAP}
+\end{figure}
+
+\section{Scenario}
+\label{sec:scenario}
+
+In this work, our approach is tested in Starcraft: BroodWar (Starcraft, for short) a real time strategy (RTS) game. This domain presents several challenges that are similar to the real world, because of the characteristics of the environment, enumerated below.
+
+\begin{itemize}
+	\item The environment is continuous in space in time (or at least it is discretized in a reasonably thin granularity);
+	\item Partial observability: a player can only access information within the visual range of his units;
+	\item Dynamicity: due to the actions of several agents, the environment is always changing, thus demanding quick decisions;
+	\item The decision process is sequential, meaning that actions taken now affect which actions could be done in the future.
+\end{itemize}
+
+In RTS games, there is a need to perform hundreds of actions per minute. The actions are divided in several tasks involving resource gathering, creation of new units, construction of buildings and attacks to the enemy \cite{Weber+2011}.
+
+Starcraft has an application programming interface\footnote{https://code.google.com/p/bwapi/}, called BWAPI, for algorithm development, especially algorithms for agent coordination. BWAPI allows to retrieve the same information and send the same commands a human player is allowed in Starcraft. A software-controlled player, as the one developed in the present work, is called a bot. 
+
+In Starcraft, there are three races with different characteristics, according to a gamers' community\footnote{http://wiki.teamliquid.net/starcraft/Portal:Beginners}: Protoss, characterized by powerful units that demand a higher amount of resources to produce, Zerg, characterized by attacking with large amounts of cheap units and Terran, that has units of intermediate power and cost. There are two types of resources to produce units and buildings: mineral and gas. To win a game, a player must destroy all the buildings of his opponent. Figure \ref{fig:scsshot} presents a game screenshot.
+
+%TODO traduzir a figura pro ingles
+\begin{figure}[ht]
+    \centerline{\includegraphics[width=9cm]{img/scsshot.png}}
+    \caption{Starcraft screenshot. The command center receives gathered resources and produces workers, the barracks produces marines and supply depots are needed to expand the number of units that can be created.}
+    \label{fig:scsshot}
+\end{figure}
+
 \section{Experiments}
+\label{sec:experiments}
+
+
+
 
 \section{Conclusion}
-
-%models of the division of labor in social insects .
-
-% An example of a floating figure using the graphicx package.
-% Note that \label must occur AFTER (or within) \caption.
-% For figures, \caption should occur after the \includegraphics.
-% Note that IEEEtran v1.7 and later has special internal code that
-% is designed to preserve the operation of \label within \caption
-% even when the captionsoff option is in effect. However, because
-% of issues like this, it may be the safest practice to put all your
-% \label just after \caption rather than within \caption{}.
-%
-% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class
-% option should be used if it is desired that the figures are to be
-% displayed while in draft mode.
-%
-%\begin{figure}[!t]
-%\centering
-%\includegraphics[width=2.5in]{myfigure}
-% where an .eps filename suffix will be assumed under latex, 
-% and a .pdf suffix will be assumed for pdflatex; or what has been declared
-% via \DeclareGraphicsExtensions.
-%\caption{Simulation Results}
-%\label{fig_sim}
-%\end{figure}
-
-% Note that IEEE typically puts floats only at the top, even when this
-% results in a large percentage of a column being occupied by floats.
+\label{sec:conclusion}
 
 
 % An example of a double column floating figure using two subfigures.
@@ -370,22 +434,9 @@ In Eqs. \ref{eq:fitness} and \ref{eq:reliab}, $\simil{a}{c}$ is the similarity b
 %\end{table}
 
 
-% Note that IEEE does not put floats in the very first column - or typically
-% anywhere on the first page for that matter. Also, in-text middle ("here")
-% positioning is not used. Most IEEE journals/conferences use top floats
-% exclusively. Note that, LaTeX2e, unlike IEEE journals/conferences, places
+%  Note that, LaTeX2e, unlike IEEE journals/conferences, places
 % footnotes above bottom floats. This can be corrected via the \fnbelowfloat
 % command of the stfloats package.
-
-
-
-\section{Conclusion}
-The conclusion goes here.
-
-
-
-
-% conference papers do not normally have an appendix
 
 
 % use section* for acknowledgement
@@ -420,13 +471,16 @@ The authors would like to thank...
 % <OR> manually copy in the resultant .bbl file
 % set second argument of \begin to the number of references
 % (used to reserve space for the reference number labels box)
-\begin{thebibliography}{1}
+\bibliographystyle{IEEEtran}
+\bibliography{references}
 
-\bibitem{IEEEhowto:kopka}
-H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
-  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
-
-\end{thebibliography}
+%\begin{thebibliography}{1}
+%
+%\bibitem{IEEEhowto:kopka}
+%H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
+%  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
+%
+%\end{thebibliography}
 
 
 
