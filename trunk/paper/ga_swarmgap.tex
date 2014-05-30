@@ -222,14 +222,14 @@ With this model, instead of looking for a single allocation, we seek a sequence 
 
 Swarm-GAP is an approximate algorithm for E-GAP, inspired in the division of labor of social insects. In swarms, or colonies of social insects, in general there are hundreds or thousands of members that work without explicit coordination. From the aggregation of individual actions of colony members, complex behaviors emerge. One characteristic of swarms is the ability to respond to changes in the environment, by adjusting the rates of members in each task.
 
-Observations about swarm behaviors are the base of the model presented in \cite{Theraulaz+1998}, where tasks have associated stimulus \footnote{Stimulus intensity may be associated with pheromone concentration, the number of encounters with other individuals performing the task or another characteristic that individuals can measure.} and individuals have response thresholds for each task. Let $\stimulus{j} \in [0,1]$ be the stimulus associated with task $j \in \taskset$ and $\respthresh{i}{j} \in [0,1]$ be the response threshold of individual (agent) $i$ to task $j$. The tendency, or probability, of individual $i$ to engage in task $j$ is given by $\tendency{i}{j} \in [0,1]$, calculated via Eq. \ref{eq:tendency}.
+Observations about swarm behaviors are the base of the model presented in \cite{Theraulaz+1998}, where tasks have associated stimulus\footnote{Stimulus intensity may be associated with pheromone concentration, the number of encounters with other individuals performing the task or another characteristic that individuals can measure.} and individuals have response thresholds for each task. Let $\stimulus{j} \in [0,1]$ be the stimulus associated with task $j \in \taskset$ and $\respthresh{i}{j} \in [0,1]$ be the response threshold of individual (agent) $i$ to task $j$. The tendency, or probability, of individual $i$ to engage in task $j$ is given by $\tendency{i}{j} \in [0,1]$, calculated via Eq. \ref{eq:tendency}.
 
 \begin{equation}
 \label{eq:tendency}
 \tendency{i}{j} = \frac{\stimulus{j}^2}{\stimulus{j}^2 + \respthresh{i}{j}^2}
 \end{equation}
 
-In swarms, due to polymorphism, individuals may be more fit to perform certain kinds of tasks. This characteristic is captured in Eq. \ref{eq:respthresh}, that determines the response threshold of individual $i$ to task $j$ according to its capability ($\agtcap{i}{j} \in [0,1]$) to perform task $j$.
+In swarms, due to polymorphism, individuals may be more able to perform certain kinds of tasks. This characteristic is captured in Eq. \ref{eq:respthresh}, that determines the response threshold of individual $i$ to task $j$ according to its capability ($\agtcap{i}{j} \in [0,1]$) to perform task $j$.
 
 \begin{equation}
 \label{eq:respthresh}
@@ -272,10 +272,12 @@ An approximate and decentralized algorithm for the task allocation problem in co
 
 Note that LA-DCOP and Swarm-GAP are very similar regarding the token-based protocol for coordination. The difference in both algorithms lies in the way the agents allocate tasks. In LA-DCOP, the process corresponds to solving an instance of the BKP whereas in Swarm-GAP, agents allocate tasks in a probabilistic fashion inspired by the division of labor in social insects.
 
-The task allocation problem can also be modeled through the formalism of coalition structure generation (CSG)\footnote{A coalition structure is a partition of the set of agents. Each subset of the partition is a coalition}. In this formalism, a coalition structure is determined and coalitions of agents are assigned to tasks. An approach that uses this formalism is presented in \cite{Khan+2011}. The work presents a methodology to model the CSG problem as a Markov Decision Process (MDP). Initially, the generated MDP has a intractable state-action space. The authors present a method for parallel partition of the generated MDP. With this approach, efficient MDP algorithms can be applied. In fact, authors apply this methodology to problems with hundreds of agents and tasks.
+The task allocation problem can also be modeled through the formalism of coalition structure generation (CSG)\footnote{A coalition structure is a partition of the set of agents. Each subset of the partition is a coalition}. In this formalism, a coalition structure is determined and coalitions of agents are assigned to tasks. An approach that uses this formalism is presented in \cite{Khan+2010}. The work presents a methodology to model the CSG problem as a Markov Decision Process (MDP). Initially, the generated MDP has a intractable state-action space. The authors present a method for parallel partition of the generated MDP. With this approach, efficient MDP algorithms can be applied. In fact, authors apply this methodology to problems with hundreds of agents and tasks.
 
 
 Branch-and-bound fast-max-sum (BnB FMS) is an anytime algorithm presented in \cite{Macarthur+2011} that advances the state-of-the-art regarding task allocation in large-scale scenarios. BnB FMS searches the coalition structure that maximizes a global utility, that considers the contribution of each agent in its coalition when it performs a set of tasks. The search space explored by the algorithm is pruned through the reduction of the  number of tasks and coalitions that need to be evaluated. The used pruning techniques keep the correctness and robustness of the algorithm when the environment is dynamic. Performed experiments showed that BnB FMS reaches a global utility 23\% higher than previous state-of-the-art algorithms, with 31\% less computing time and 25\% less messages than other algorithms.
+
+There are works where evolutionary algorithms are applied to real time strategy games, such as \cite{Lin&Ting2011}, \cite{Rathe&Boe2012} ...
 
 %mention starcraft algorithms
 
