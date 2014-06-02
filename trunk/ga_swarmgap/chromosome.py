@@ -19,12 +19,30 @@ class AbstractDomain(object):
         '''
         raise NotImplementedError("Only Domain subclasses should be instantiated.")
 
+    @abstractmethod
     def random_value(self):
         '''
         Returns a random value from the domain
 
         '''
         raise NotImplementedError("Only Domain subclasses should be instantiated.")
+
+    @abstractmethod
+    def max_value(self):
+        '''
+        Returns the maximum value of this domain
+
+        '''
+        raise NotImplementedError("Only Domain subclasses should be instantiated.")
+
+    @abstractmethod
+    def min_value(self):
+        '''
+        Returns the minimum value of this domain
+
+        '''
+        raise NotImplementedError("Only Domain subclasses should be instantiated.")
+
 
 class DiscreteDomain(AbstractDomain):
     def __init__(self, possible_values):
@@ -35,6 +53,12 @@ class DiscreteDomain(AbstractDomain):
 
     def random_value(self):
         return random.choice(self._possible_values)
+
+    def max_value(self):
+        return max(self._possible_values)
+
+    def min_value(self):
+        return min(self._possible_values)
 
 class Gene(object):
     '''
