@@ -34,8 +34,14 @@ def similarity(child, parent):
     '''
     chr_length = len(child['chromosome'])
 
-    #TODO: resume from here
+    parent_array = parent.to_array()
+    child_array = child.to_array()
 
+    partial = 0.0
+    for i in range(0, chr_length):
+        partial += abs(parent_array[i].value - child_array[i].value) / float(child_array[i].domain.max_value - child_array[i].domain.min_value)
+
+    return 1 - partial / chr_length
 
 def start(cfg_file):
     cfg = configparser.ConfigParser(cfg_file)
@@ -49,7 +55,7 @@ def start(cfg_file):
     #evaluates the 1st generation
     evaluate(old_pop, 1, cfg)
 
-    for i in range(1, cfg.generations): #starts from 1 because 1st generation (index 0) was evaluated already
+    for i in range(1, cfg.generations):  #starts from 1 because 1st generation (index 0) was evaluated already
         new_pop = []
 
         while len(new_pop) < cfg.popsize:
@@ -58,6 +64,9 @@ def start(cfg_file):
 
             #estimates fitness of children
             c1['fitness'] = estimate_fitness(c1, p1, p2)
+            c2['fitness'] = estimate_fitness(c2, p1, p2)
+
+            #calculates reliability of children
 
         #create [1..n].ch
         #estimate fitness; create i.fit
