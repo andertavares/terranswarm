@@ -35,6 +35,10 @@ class ExampleAIModule : public BWAPI::AIModule {
 	Task* buildVespeneGas;
 	Task* buildAcademy;
 	Task* trainMedic;
+	Task* upgradeAcademyStimpack;
+	Task* upgradeAcademyLongRange;
+	Task* upgradeAcademyOpticalFlare;
+
 	CommanderAgent* _commanderAgent;
 
 	//number of minerals found out of base range

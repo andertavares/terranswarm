@@ -159,7 +159,7 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 	Unitset enemiesInSight = Broodwar->getUnitsInRadius(gameUnit->getPosition(), gameUnit->getType().sightRange(), Filter::IsEnemy);
 
 	//if pack size is enough or has not enough colleagues around to pack or has enemy in sight, attacks
-	if(packSize >= 8 || colleaguesAround == packSize || enemiesInSight.size() > 0) {
+	if(packSize >= 10 || colleaguesAround == packSize || enemiesInSight.size() > 0) {
 		state = ATTACKING;
 	}
 	else{ //tries to pack-up with near colleagues
@@ -179,14 +179,17 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 
 	if(state == ATTACKING){
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nATK");
-		/*
+		
+		int hitPoints = gameUnit->getHitPoints();
+
 		//if there are targets nearby, choose one appropriately
 		Unitset foesAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), gameUnit->getType().groundWeapon().maxRange(), Filter::IsEnemy);
 		Unit victim = NULL;
 		float minHpRate = 1.0f;
 		for(auto foe = foesAround.begin(); foe != foesAround.end(); ++foe){
 			//shot workers or medics is priority
-			if (foe->getType().isWorker() || foe->getType() == UnitTypes::Terran_Medic){
+			//if (foe->getType().isWorker() || foe->getType() == UnitTypes::Terran_Medic){
+			if (foe->getType() == UnitTypes::Terran_Medic){
 				victim = *foe;
 				break;
 			}
@@ -207,10 +210,15 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 		}
 		else {
 			gameUnit->attack(victim);
-			Broodwar->drawLineMap(gameUnit->getPosition(),victim->getPosition,Color(Colors::Red));
+			Broodwar->drawLineMap(gameUnit->getPosition(),victim->getPosition(),Color(Colors::Red));
 		}
-		*/
-		gameUnit->attack(target);
+
+		if(!gameUnit->isStimmed()){
+			gameUnit->useTech(BWAPI::TechTypes::Stim_Packs);
+			//Broodwar->useTech(command.getUnitID(), command.getArg0());
+		}
+		
+		//gameUnit->attack(target);
 	}
 
 	
