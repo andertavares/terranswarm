@@ -1,4 +1,6 @@
 import os
+import copy
+import random
 import subprocess
 import time
 import glob
@@ -19,10 +21,32 @@ def estimate_fitness(c, p1, p2):
     :return: the estimated fitness
 
     '''
-    return (
-       p1['reliability'] * p1['fitness'] * similarity(p1, c) +
-       p2['reliability'] * p2['fitness'] * similarity(p2, c)
-    ) / (p1['reliability'] * similarity(p1, c) + p2['reliability'] * similarity(p2, c))
+
+    #creates aliases for the variables that enter the equation
+    s1, s2 = similarity(p1, c), similarity(p2, c)
+    r1, r2 = p1['reliability'], p2['reliability']
+    f1, f2 = p1['fitness'], p2['fitness']
+
+    return (r1 * f1 * s1 + r2 * f2 * s2) / (r1 * s1 + r2 * s2)
+
+
+def reliability(c, p1, p2):
+    '''
+    Returns the reliability of a child given its parents
+    :param c: the child
+    :param p1: a parent
+    :param p2: the other parent
+    :return: the calculated reliability
+
+    '''
+
+    #calculates the similarities between the child and the two parents
+    s1, s2 = similarity(p1, c), similarity(p2, c)
+    r1, r2 = p1['reliability'], p2['reliability']
+
+    #uses reliability equation to calculate reliability
+    return ((s1*r1)**2 + (s2*r2)**2) / (s1*r1 + s2*r2)
+
 
 def similarity(child, parent):
     '''
@@ -39,9 +63,11 @@ def similarity(child, parent):
 
     partial = 0.0
     for i in range(0, chr_length):
-        partial += abs(parent_array[i].value - child_array[i].value) / float(child_array[i].domain.max_value - child_array[i].domain.min_value)
+        partial += abs(parent_array[i].value - child_array[i].value) / \
+                   float(child_array[i].domain.max_value - child_array[i].domain.min_value)
 
     return 1 - partial / chr_length
+
 
 def start(cfg_file):
     cfg = configparser.ConfigParser(cfg_file)
@@ -59,8 +85,8 @@ def start(cfg_file):
         new_pop = []
 
         while len(new_pop) < cfg.popsize:
-            (p1, p2) = tournament_selection(old_pop)
-            (c1, c2) = crossover_and_mutation(p1, p2)
+            (p1, p2) = tournament_selection(old_pop, cfg.tournament_size)
+            (c1, c2) = crossover_and_mutation(p1, p2, cfg.p_crossover, cfg.p_mutation)
 
             #estimates fitness of children
             c1['fitness'] = estimate_fitness(c1, p1, p2)
@@ -73,6 +99,78 @@ def start(cfg_file):
         #if rel < thresh: evaluate
 
         #operators
+
+
+def tournament_selection(population, tournament_size):
+    '''
+    Executes two tournaments to return the two parents
+    :param population: array of individuals
+    :param tournament_size: number of contestants in the tournament
+    :return: a tuple (parent1, parent2)
+
+    '''
+    parents = []
+
+    while len(parents) < 2:  #we need 2 parents
+
+        #selects the contestants of the tournament randomly from the population
+        tournament = []
+        while len(tournament) < tournament_size:
+            tournament.append(random.choice(population))
+
+        #tournament winner is the one with maximum fitness among the contestants
+        parents.append(max(tournament, key=lambda x: x['fitness']))
+
+    return tuple(parents)
+
+
+def crossover_and_mutation(parent1, parent2, p_crossover, p_mutation):
+    '''
+    Performs crossover and mutation with the parents to produce the offspring
+    :param parent1:
+    :param parent2:
+    :param p_crossover:
+    :param p_mutation:
+    :return:
+
+    '''
+
+
+    child1_chromo = copy.copy(parent1['chromosome'])
+    child2_chromo = copy.copy(parent2['chromosome'])
+
+    assert len(child1_chromo) == len(child2_chromo)
+
+    length = len(child1_chromo)
+
+    if random.random() < p_crossover:
+        #select crossover point
+        xover_point = random.randint(1, len(parent1['chromosome'] - 1))
+
+        #performs one-point exchange around the xover point
+        child1_chromo[0: xover_point] = parent1[0: xover_point]
+        child1_chromo[xover_point: length] = parent2[xover_point: length]
+
+        child2_chromo[0: xover_point] = parent2[0: xover_point]
+        child2_chromo[xover_point: length] = parent1[xover_point: length]
+
+    for gene in child1_chromo:
+        if random.random < p_mutation:
+            gene.randomize()
+
+    for gene in child2_chromo:
+        if random.random < p_mutation:
+            gene.randomize()
+
+    return (
+        {'chromosome': child1_chromo, 'fitness': 0, 'reliability': 0},
+        {'chromosome': child2_chromo, 'fitness': 0, 'reliability': 0}
+    )
+
+
+
+
+
 
 def evaluate(population, generation, cfg):
     '''
@@ -90,7 +188,7 @@ def evaluate(population, generation, cfg):
     os.mkdir(write_dir)
 
 
-    for i in range(0,len(population)):
+    for i in range(0, len(population)):
         p = population[i]
 
         #creates a file and writes the chromosome
@@ -99,7 +197,7 @@ def evaluate(population, generation, cfg):
         chr_file.close()
         if p['reliability'] >= cfg.reliab_threshold:
             #create file with fitness, this individual won't be eval'ed
-            fit_file = open(os.path.join(write_dir,'%d.fit' % i), 'w')
+            fit_file = open(os.path.join(write_dir, '%d.fit' % i), 'w')
             fit_file.write(p['fitness'])
             fit_file.close()
 
@@ -107,8 +205,8 @@ def evaluate(population, generation, cfg):
     chaosLauncher = subprocess.Popen([CHAOSLAUNCHER])
 
     #watch directory to see if all .fit files were generated
-    while(True):
-        fit_files = glob.glob(os.path.join(cfg.output_dir,"*.fit"))
+    while True:
+        fit_files = glob.glob(os.path.join(cfg.output_dir, "*.fit"))
         if len(fit_files) >= cfg.popsize:
             break
         time.sleep(1)
