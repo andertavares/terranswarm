@@ -15,7 +15,10 @@ using namespace Filter;
 
 
 ExampleAIModule::ExampleAIModule() {
-	//does nothing, init is done in onStart()
+	//actual init is done in onStart()
+	trainMarine = NULL;
+	gatherMinerals = NULL;
+	buildSupplyDepot = NULL;
 }
 
 ExampleAIModule::~ExampleAIModule(){
@@ -43,6 +46,9 @@ void ExampleAIModule::onStart() {
 	// and reduce the bot's APM (Actions Per Minute).
 	Broodwar->setCommandOptimizationLevel(2);
 
+	Broodwar->setGUI(false); //disables gui drawing (better performance?)
+	Broodwar->setLocalSpeed(0); //fastest speed, rock on!
+
 	// Check if this is a replay
 	if ( Broodwar->isReplay() ) {
 
@@ -61,9 +67,6 @@ void ExampleAIModule::onStart() {
   
 		//Broodwar->sendText("show me the money");
 		//Broodwar->sendText("operation cwal");
-		//Broodwar->sendText("/speed 0");
-		Broodwar->setGUI(false); //disables gui drawing (better performance?)
-		Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
 		// If you wish to deal with multiple enemies then you must use enemies().
@@ -132,10 +135,23 @@ void ExampleAIModule::onEnd(bool isWinner) {
 void ExampleAIModule::onFrame() {
 	//TODO: set rally point of barracks to the nearest command center
 	// Called once every game frame
-	// Return if the game is a replay or is paused
-	if ( Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self() )
+	// Return if the game is paused
+	if ( Broodwar->isPaused() )// || !Broodwar->self() )
 		return;
 
+	if (Broodwar->isReplay()){
+
+		Playerset plrs = Broodwar->getPlayers();
+		Playerset::iterator plr;
+
+		Broodwar->drawTextScreen(290, 20, "Time: ~ %dh%dm%ds", Broodwar->elapsedTime() / 3600, Broodwar->elapsedTime() / 60, Broodwar->elapsedTime() % 60);
+		
+		int pCount = 1;
+		for (plr = plrs.begin(); plr != plrs.end(); plr++, pCount++){
+			Broodwar->drawTextScreen(290, 20 + (20 * pCount), "Score p%d - Unit, Building, Resource = %d, %d, %d ", pCount, plr->getUnitScore(), plr->getBuildingScore(), plr->gatheredMinerals() + plr->gatheredGas());
+		}
+		return;
+	}
 
 	_drawStats();
 
@@ -590,6 +606,13 @@ void ExampleAIModule::updateTrainSCV(){
 		Unitset scvAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsWorker && Filter::IsOwned);
 
 		trainSCVIncentives[*cmd] = max(0.0f, 1.0f - (scvAround.size() / (2.5f * mineralsAround.size())));
+		/* from medic-branch
+		if(scvMap.size() < 110){
+			trainSCVIncentives[*cmd] = max(0.0f, 1.0f - (scvAround.size() / (2.5f * mineralsAround.size())));
+		}
+		else{
+			trainSCVIncentives[*cmd] = 0.0f;
+		}*/
 
 	}
 	//Broodwar->getu
