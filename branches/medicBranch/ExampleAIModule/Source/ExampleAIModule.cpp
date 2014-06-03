@@ -62,7 +62,7 @@ void ExampleAIModule::onStart() {
 		//Broodwar->sendText("show me the money");
 		//Broodwar->sendText("operation cwal");
 		//Broodwar->sendText("/speed 0");
-		Broodwar->setGUI(false); //disables gui drawing (better performance?)
+		//Broodwar->setGUI(false); //disables gui drawing (better performance?)
 		Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
@@ -605,7 +605,7 @@ void ExampleAIModule::updateAttack(){
 
 void ExampleAIModule::updateTrainMarine(){
 	//tries to make a 12 marines per base (attempts to save some money to expansions)
-	if (Broodwar->self()->minerals() < 500){
+	/*if (Broodwar->self()->minerals() < 500){
 		if(commandCenters.size() < 2){
 			trainMarine->setIncentive(max(0.0f,  (0.1f/max(1.0f, marines.size() * 1.0f))));
 		}
@@ -616,7 +616,8 @@ void ExampleAIModule::updateTrainMarine(){
 	else {
 		//if i have money, produce more
 		trainMarine->setIncentive(.8f);
-	}
+	}*/
+	trainMarine->setIncentive(.8f);
 }
 
 void ExampleAIModule::updateTrainSCV(){
@@ -1040,7 +1041,8 @@ void ExampleAIModule::updateBuildAcademy(){
 		}
 	}
 
-	if(!hasAcademy && commandCenters.size() >= 2){
+	if(!hasAcademy){
+		//&& commandCenters.size() >= 2){
 		buildAcademy->setIncentive(.8f);
 	}
 	else{
@@ -1053,12 +1055,13 @@ void ExampleAIModule::updateTrainMedic(){
 	int numberOfMedics = medics.size();
 	int numberOfMarines = max(1.0f, marines.size() + 0.0f);
 
-	if (Broodwar->self()->minerals() < 450 && commandCenters.size() < 2){
+	/*if (Broodwar->self()->minerals() < 450 
+		&& commandCenters.size() < 2){
 		trainMedic->setIncentive(0.001f);
 	}
-	else {
+	else {*/
 		//if((numberOfMarines / 4) > numberOfMedics && Broodwar->self()->gas() >= 25){
-			int expectedMedicNumbers = max(1.0f, (numberOfMarines / 4) + 0.0f);
+			int expectedMedicNumbers = max(1.0f, (numberOfMarines / 3) + 0.0f);
 			//trainMedic->setIncentive(max(0.2f, numberOfMedics / (expectedMedicNumbers) + 0.0f));
 			if(expectedMedicNumbers > numberOfMedics){
 				trainMedic->setIncentive(1.0f - (numberOfMedics / (expectedMedicNumbers) + 0.0f));
@@ -1071,5 +1074,5 @@ void ExampleAIModule::updateTrainMedic(){
 		//	trainMedic->setIncentive(.0f);
 		//}
 		
-	}
+	//}
 }

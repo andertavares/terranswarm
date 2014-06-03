@@ -19,6 +19,7 @@ class MedicAgent {
 	Position lastPosition;
 	Position target;
 	Position originPosition;
+	int lastHealedId;
 	//static int MAX_MAP_DISTANCE;
 
 public:
@@ -29,6 +30,7 @@ public:
 	void cureInPos();
 	void updatePositionToCure();
 	bool evaluateIncentive();
+	bool allreadyFired(BWAPI::Unit enemy);
 
 	bool isOnAttack();
 	BWAPI::Unit gameUnit;
