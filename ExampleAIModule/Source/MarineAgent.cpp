@@ -156,7 +156,7 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 	Broodwar->drawTextMap(gameUnit->getPosition(),"\nPCK sz:%d; meetRadius:%d", packSize, colleaguesAround);
 
 	//retrieves the enemies around
-	Unitset enemiesInSight = Broodwar->getUnitsInRadius(gameUnit->getPosition(), gameUnit->getType().sightRange(), Filter::IsEnemy);
+	Unitset enemiesInSight = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 7 * TILE_SIZE, Filter::IsEnemy);
 
 	//if pack size is enough or has not enough colleagues around to pack or has enemy in sight, attacks
 	if(packSize >= 10 || colleaguesAround == packSize || enemiesInSight.size() > 0) {
@@ -203,10 +203,32 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 
 		}
 
+		Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 7 * TILE_SIZE, Filter::IsOwned);
+		int midRange = 0;
+		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
+			if(unit->getType() == UnitTypes::Terran_Marine){
+				midRange++;
+			}
+		}
+
+		closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 3 * TILE_SIZE, Filter::IsOwned);
+		int closeRange = 0;
+		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
+			if(unit->getType() == UnitTypes::Terran_Marine){
+				closeRange++;
+			}
+		}
+
+		closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 6 * TILE_SIZE, Filter::IsEnemy);
 
 		if (victim == NULL) {
-			gameUnit->attack(target);
-			Broodwar->drawLineMap(gameUnit->getPosition(),target,Color(Colors::Red));
+			if(midRange > closeRange && closeUnits.size() <= 1 && (gameUnit->isAttacking() || gameUnit->isMoving())){
+				gameUnit->stop();
+			}
+			else{
+				gameUnit->attack(target);
+				Broodwar->drawLineMap(gameUnit->getPosition(),target,Color(Colors::Red));
+			}
 		}
 		else {
 			gameUnit->attack(victim);
