@@ -136,7 +136,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 	}
 
 	// Simple approach to local incentives
-	if ( lastChecked + 35 < Broodwar->getFrameCount() || lastChecked == 0) {
+	if ( lastChecked + 75 < Broodwar->getFrameCount() || lastChecked == 0) {
 		for(unordered_map<TaskType, vector<Task>*>::iterator iter = taskMap->begin(); iter != taskMap->end(); ++iter){
 			TaskType taskType =  iter->first;
 			vector<Task>* taskList = iter->second;
