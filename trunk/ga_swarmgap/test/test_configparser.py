@@ -33,7 +33,7 @@ class Test(unittest.TestCase):
         #assumes _parse_path is correct
         config = configparser.ConfigParser('runs/test/config.xml')
 
-        self.assertEqual('somedir', config.output_dir)
+        self.assertEqual('test', config.output_dir)
 
         self.assertEqual(.9, config.p_crossover)
         self.assertEqual(.01, config.p_mutation)

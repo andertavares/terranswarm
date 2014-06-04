@@ -1,6 +1,5 @@
 import os
-import copy
-import random
+import geneticoperators as genops
 import subprocess
 import time
 import glob
@@ -85,8 +84,10 @@ def start(cfg_file):
         new_pop = []
 
         while len(new_pop) < cfg.popsize:
-            (p1, p2) = tournament_selection(old_pop, cfg.tournament_size)
-            (c1, c2) = crossover_and_mutation(p1, p2, cfg.p_crossover, cfg.p_mutation)
+            (p1, p2) = genops.tournament_selection(old_pop, cfg.tournament_size)
+            (c1, c2) = genops.crossover(p1, p2, cfg.p_crossover)
+            genops.mutation(c1, cfg.p_mutation)
+            genops.mutation(c2, cfg.p_mutation)
 
             #estimates fitness of children
             c1['fitness'] = estimate_fitness(c1, p1, p2)
@@ -99,77 +100,6 @@ def start(cfg_file):
         #if rel < thresh: evaluate
 
         #operators
-
-
-def tournament_selection(population, tournament_size):
-    '''
-    Executes two tournaments to return the two parents
-    :param population: array of individuals
-    :param tournament_size: number of contestants in the tournament
-    :return: a tuple (parent1, parent2)
-
-    '''
-    parents = []
-
-    while len(parents) < 2:  #we need 2 parents
-
-        #selects the contestants of the tournament randomly from the population
-        tournament = []
-        while len(tournament) < tournament_size:
-            tournament.append(random.choice(population))
-
-        #tournament winner is the one with maximum fitness among the contestants
-        parents.append(max(tournament, key=lambda x: x['fitness']))
-
-    return tuple(parents)
-
-
-def crossover_and_mutation(parent1, parent2, p_crossover, p_mutation):
-    '''
-    Performs crossover and mutation with the parents to produce the offspring
-    :param parent1:
-    :param parent2:
-    :param p_crossover:
-    :param p_mutation:
-    :return:
-
-    '''
-
-
-    child1_chromo = copy.copy(parent1['chromosome'])
-    child2_chromo = copy.copy(parent2['chromosome'])
-
-    assert len(child1_chromo) == len(child2_chromo)
-
-    length = len(child1_chromo)
-
-    if random.random() < p_crossover:
-        #select crossover point
-        xover_point = random.randint(1, len(parent1['chromosome'] - 1))
-
-        #performs one-point exchange around the xover point
-        child1_chromo[0: xover_point] = parent1[0: xover_point]
-        child1_chromo[xover_point: length] = parent2[xover_point: length]
-
-        child2_chromo[0: xover_point] = parent2[0: xover_point]
-        child2_chromo[xover_point: length] = parent1[xover_point: length]
-
-    for gene in child1_chromo:
-        if random.random < p_mutation:
-            gene.randomize()
-
-    for gene in child2_chromo:
-        if random.random < p_mutation:
-            gene.randomize()
-
-    return (
-        {'chromosome': child1_chromo, 'fitness': 0, 'reliability': 0},
-        {'chromosome': child2_chromo, 'fitness': 0, 'reliability': 0}
-    )
-
-
-
-
 
 
 def evaluate(population, generation, cfg):
