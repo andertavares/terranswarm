@@ -79,7 +79,7 @@ void ExampleAIModule::onStart() {
 		//initializes the map of task lists
 		//tasks are grouped by taskType
 		//insert all TaskTypes into map; all Types will point to empty list
-		for(int tt = TrainMarine; tt <= TrainMedic; tt++){
+		for(int tt = TrainMarine; tt <= ResearchAcademyLongRange; tt++){
 			allTasks[static_cast<TaskType>(tt)] = new vector<Task>;
 		}
 
@@ -95,6 +95,9 @@ void ExampleAIModule::onStart() {
 		// Vespene Gas
 		allTasks[BuildVespeneGas]->push_back(Task(BuildVespeneGas, .0f));
 		allTasks[TrainMedic]->push_back(Task(TrainMedic, .8f)); 
+		
+		// Upgrade
+		allTasks[ResearchAcademyLongRange]->push_back(Task(ResearchAcademyLongRange, .0f)); 
 
 		//retrieves the single-instance tasks and stores them in pointers for easier remembering
 		trainMarine = &allTasks[TrainMarine]->at(0);
@@ -107,6 +110,9 @@ void ExampleAIModule::onStart() {
 		buildVespeneGas = &allTasks[BuildVespeneGas]->at(0);
 		buildAcademy = &allTasks[BuildAcademy]->at(0);
 		trainMedic = &allTasks[TrainMedic]->at(0);
+
+		// Upgrades
+		researchAcademyLongRange = &allTasks[ResearchAcademyLongRange]->at(0);
 	}
 
 	// Create the main agents
@@ -189,6 +195,11 @@ void ExampleAIModule::onFrame() {
 	if(allTasks[BuildAcademy]->size() <= 0){
 		allTasks[BuildAcademy]->push_back(Task(BuildAcademy, 0));
 		buildAcademy = &allTasks[BuildAcademy]->at(0);
+	}
+	// Upgrades
+	if(allTasks[ResearchAcademyLongRange]->size() <= 0){
+		allTasks[ResearchAcademyLongRange]->push_back(Task(ResearchAcademyLongRange, 0));
+		researchAcademyLongRange = &allTasks[ResearchAcademyLongRange]->at(0);
 	}
 	
 	//sets all rally points of barracks to the nearest command center
@@ -458,6 +469,7 @@ void ExampleAIModule::updateTasks(){
 	updateBuildVespeneGas();
 	updateBuildAcademy();
 	updateTrainMedic();
+	updateResearchLongRange();
 }
 
 void ExampleAIModule::updateRepair(){
@@ -605,7 +617,7 @@ void ExampleAIModule::updateAttack(){
 
 void ExampleAIModule::updateTrainMarine(){
 	//tries to make a 12 marines per base (attempts to save some money to expansions)
-	/*if (Broodwar->self()->minerals() < 500){
+	if (Broodwar->self()->minerals() < 500){
 		if(commandCenters.size() < 2){
 			trainMarine->setIncentive(max(0.0f,  (0.1f/max(1.0f, marines.size() * 1.0f))));
 		}
@@ -616,8 +628,8 @@ void ExampleAIModule::updateTrainMarine(){
 	else {
 		//if i have money, produce more
 		trainMarine->setIncentive(.8f);
-	}*/
-	trainMarine->setIncentive(.8f);
+	}
+	//trainMarine->setIncentive(.8f);
 }
 
 void ExampleAIModule::updateTrainSCV(){
@@ -627,12 +639,15 @@ void ExampleAIModule::updateTrainSCV(){
 		Unitset mineralsAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsMineralField);
 		Unitset scvAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsWorker && Filter::IsOwned);
 
+		trainSCVIncentives[*cmd] = max(0.0f, 1.0f - (scvAround.size() / (2.5f * mineralsAround.size())));
+		
+		/*
 		if(scvMap.size() < 110){
 			trainSCVIncentives[*cmd] = max(0.0f, 1.0f - (scvAround.size() / (2.5f * mineralsAround.size())));
 		}
 		else{
 			trainSCVIncentives[*cmd] = 0.0f;
-		}
+		}*/
 
 	}
 	//Broodwar->getu
@@ -876,11 +891,12 @@ void ExampleAIModule::_drawStats(){
 		gatherMinerals->getIncentive()
 	);
 
-	Broodwar->drawTextScreen(20, 60, "%cBuild CMD [%.3f] Academy [%.3f] Gas [%.3f]", 
+	Broodwar->drawTextScreen(20, 60, "%cBuild CMD [%.3f] Academy [%.3f] Gas [%.3f] R LongRange [%.3f]", 
 		Text::White, 
 		buildCommandCenter->getIncentive(),
 		buildAcademy->getIncentive(),
-		buildVespeneGas->getIncentive()
+		buildVespeneGas->getIncentive(),
+		researchAcademyLongRange->getIncentive()
 	);
 
 	Broodwar->drawTextScreen(20, 75, "%cRepair tasks: %d", 
@@ -988,6 +1004,11 @@ void ExampleAIModule::_drawExploredStats(){
   **/
 void ExampleAIModule::updateBuildVespeneGas(){
 	
+	if (Broodwar->getFrameCount()/24 < 120) {
+		buildVespeneGas->setIncentive(0);
+		return;
+	}
+
 	if(Broodwar->self()->minerals() < UnitTypes::Terran_Refinery.mineralPrice()){
 		//not enough minerals, can't build more vespene gas
 		buildVespeneGas->setIncentive(0);
@@ -1041,9 +1062,8 @@ void ExampleAIModule::updateBuildAcademy(){
 		}
 	}
 
-	if(!hasAcademy){
-		//&& commandCenters.size() >= 2){
-		buildAcademy->setIncentive(.8f);
+	if(!hasAcademy && commandCenters.size() >= 2){
+		buildAcademy->setIncentive(.6f);
 	}
 	else{
 		buildAcademy->setIncentive(.0f);
@@ -1075,4 +1095,36 @@ void ExampleAIModule::updateTrainMedic(){
 		//}
 		
 	//}
+}
+
+void ExampleAIModule::updateResearchLongRange(){
+	
+	if (Broodwar->self()->getUpgradeLevel(UpgradeTypes::U_238_Shells) > 0) {
+		researchAcademyLongRange->setIncentive(0.0f);
+		return;
+	}
+
+	if(Broodwar->self()->minerals() < UpgradeTypes::U_238_Shells.mineralPrice() &&
+		Broodwar->self()->gas() < UpgradeTypes::U_238_Shells.gasPrice()){
+		//not enough minerals, can't build more vespene gas
+		researchAcademyLongRange->setIncentive(0.0f);
+		return;
+	}
+
+	Unitset units = Broodwar->self()->getUnits();
+	bool hasAcademy = false;
+
+	for (Unitset::iterator unit = units.begin(); unit != units.end(); unit++){
+		if(unit->getType() == UnitTypes::Terran_Academy && unit->exists()){
+			hasAcademy = true;
+			break;
+		}
+	}
+
+	if(hasAcademy && commandCenters.size() >= 2){
+		researchAcademyLongRange->setIncentive(.8f);
+	}
+	else{
+		researchAcademyLongRange->setIncentive(.0f);
+	}
 }

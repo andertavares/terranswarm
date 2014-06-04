@@ -16,7 +16,8 @@ enum TaskType{
 	GuardBase,
 	BuildVespeneGas,
 	BuildAcademy,
-	TrainMedic
+	TrainMedic,
+	ResearchAcademyLongRange
 };
 
 
