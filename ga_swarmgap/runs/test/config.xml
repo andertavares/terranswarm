@@ -1,7 +1,7 @@
 <ga_swarmgap>
 
     <io>
-        <output-dir value="somedir" />
+        <output-dir value="test" />
     </io>
 
 	<parameters>
