@@ -136,7 +136,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 	}
 
 	// Simple approach to local incentives
-	if ( lastChecked + 75 < Broodwar->getFrameCount() || lastChecked == 0) {
+	if ( lastChecked + 35 < Broodwar->getFrameCount() || lastChecked == 0) {
 		for(unordered_map<TaskType, vector<Task>*>::iterator iter = taskMap->begin(); iter != taskMap->end(); ++iter){
 			TaskType taskType =  iter->first;
 			vector<Task>* taskList = iter->second;
@@ -489,7 +489,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 			// Check if there is another ones gathering gas
 			// If there is <3 gathering gas then get the closest mineral or gas
 			// Else get only closest mineral
-			if(scvNearGatheringGas < 3){
+			if(scvNearGatheringGas < 2){
 				if ( !gameUnit->gather( gameUnit->getClosestUnit( IsMineralField || IsRefinery )) ) {
 					// If the call fails, then print the last error message
 					Broodwar << Broodwar->getLastError() << std::endl;

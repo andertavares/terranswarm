@@ -158,7 +158,7 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 		//&& distance > MAX_DISTNACE_TO_NONMEDIC) {
 		gameUnit->move(u->getPosition());
 
-		Broodwar << "Distance:" << distance << std::endl;
+		//Broodwar << "Distance:" << distance << std::endl;
 		
 		if(u->getPosition().getApproxDistance(gameUnit->getPosition()) <= 50){
 			gameUnit->attack(u->getPosition());

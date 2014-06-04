@@ -35,9 +35,9 @@ class ExampleAIModule : public BWAPI::AIModule {
 	Task* buildVespeneGas;
 	Task* buildAcademy;
 	Task* trainMedic;
-	Task* upgradeAcademyStimpack;
-	Task* upgradeAcademyLongRange;
-	Task* upgradeAcademyOpticalFlare;
+	Task* researchAcademyStimpack;
+	Task* researchAcademyLongRange;
+	Task* researchAcademyOpticalFlare;
 
 	CommanderAgent* _commanderAgent;
 
@@ -119,4 +119,6 @@ public:
 	void updateBuildVespeneGas();
 	void updateBuildAcademy();
 	void updateTrainMedic();
+
+	void updateResearchLongRange();
 };

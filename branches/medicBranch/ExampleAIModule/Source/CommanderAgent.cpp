@@ -99,6 +99,11 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 			}
 		} //closure
 	}
+	
+	TaskAssociation researchAcademyLongRange = TaskAssociation(&tasklist[TrainMarine]->at(0), .7f);
+	if ((rand() / float(RAND_MAX)) < researchAcademyLongRange.tValue()){
+		researchRequest(UpgradeTypes::U_238_Shells);
+	}
 }
 
 void CommanderAgent::createSupply(Unit u){
@@ -150,3 +155,28 @@ void CommanderAgent::createSupply(Unit u){
 	} // closure: insufficient supply
 }
 
+void CommanderAgent::researchRequest(TechType techType){
+	if (!Broodwar->self()->hasResearched(techType) && !Broodwar->self()->isResearching(techType)) {
+		Unitset units = Broodwar->self()->getUnits();
+		
+
+		for (Unitset::iterator unit = units.begin(); unit != units.end(); unit++){
+			if(unit->getType() == techType.whatResearches() && unit->exists()){
+				unit->research(techType);
+			}
+		}
+	}
+}
+
+void CommanderAgent::researchRequest(UpgradeType upgdType){
+	
+	if (Broodwar->self()->getUpgradeLevel(upgdType) > 0 && !Broodwar->self()->isUpgrading(upgdType)) {
+		Unitset units = Broodwar->self()->getUnits();
+
+		for (Unitset::iterator unit = units.begin(); unit != units.end(); unit++){
+			if(unit->getType() == upgdType.whatUpgrades() && unit->exists()){
+				unit->upgrade(upgdType);
+			}
+		}
+	}
+}
