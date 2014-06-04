@@ -159,7 +159,7 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 	Unitset enemiesInSight = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 7 * TILE_SIZE, Filter::IsEnemy);
 
 	//if pack size is enough or has not enough colleagues around to pack or has enemy in sight, attacks
-	if(packSize >= 10 || colleaguesAround == packSize || enemiesInSight.size() > 0) {
+	if(packSize >= 8 || colleaguesAround == packSize || enemiesInSight.size() > 0) {
 		state = ATTACKING;
 	}
 	else{ //tries to pack-up with near colleagues
@@ -179,7 +179,7 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 
 	if(state == ATTACKING){
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nATK");
-		
+		/*
 		int hitPoints = gameUnit->getHitPoints();
 
 		//if there are targets nearby, choose one appropriately
@@ -239,8 +239,8 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 			gameUnit->useTech(BWAPI::TechTypes::Stim_Packs);
 			//Broodwar->useTech(command.getUnitID(), command.getArg0());
 		}
-		
-		//gameUnit->attack(target);
+		*/
+		gameUnit->attack(target);
 	}
 
 	
