@@ -18,6 +18,7 @@ class MarineAgent {
 	int lastFrameCount;
 	Position lastPosition;
 	Position target;
+	Unit bunkerToMove;
 	//static int MAX_MAP_DISTANCE;
 
 public:

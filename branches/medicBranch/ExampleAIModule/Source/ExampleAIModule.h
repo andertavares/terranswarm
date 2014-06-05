@@ -38,6 +38,7 @@ class ExampleAIModule : public BWAPI::AIModule {
 	Task* researchAcademyStimpack;
 	Task* researchAcademyLongRange;
 	Task* researchAcademyOpticalFlare;
+	Task* buildBunker;
 
 	CommanderAgent* _commanderAgent;
 
@@ -124,4 +125,7 @@ public:
 
 	void updateResearchLongRange();
 	void updateResearchStimPack();
+	void updateBuildBunker();
+	int calculateBunkersFromCommandCenter(BWAPI::Unit cmdCenter);
+	
 };

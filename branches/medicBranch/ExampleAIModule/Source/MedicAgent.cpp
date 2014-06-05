@@ -114,7 +114,9 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 	Unit lastHealed = Broodwar->getUnit(lastHealedId);
 
 	//the if below crashes some games!!!
-	if(lastHealedId != 0 && lastHealed->exists() &&
+	if(lastHealedId > 0 &&  
+		lastHealed != NULL && 
+		lastHealed->exists() &&
 		lastHealed->getPosition().getApproxDistance(gameUnit->getPosition()) < 40 && 
 		lastHealed->getHitPoints() < //problem in this line or in the one below
 		lastHealed->getInitialHitPoints()) 

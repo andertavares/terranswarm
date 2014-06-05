@@ -82,7 +82,7 @@ void ExampleAIModule::onStart() {
 		//initializes the map of task lists
 		//tasks are grouped by taskType
 		//insert all TaskTypes into map; all Types will point to empty list
-		for(int tt = TrainMarine; tt <= ResearchAcademyStimPack; tt++){
+		for(int tt = TrainMarine; tt <= BuildComSat; tt++){
 			allTasks[static_cast<TaskType>(tt)] = new vector<Task>;
 		}
 
@@ -103,6 +103,9 @@ void ExampleAIModule::onStart() {
 		allTasks[ResearchAcademyLongRange]->push_back(Task(ResearchAcademyLongRange, .0f)); 
 		allTasks[ResearchAcademyStimPack]->push_back(Task(ResearchAcademyStimPack, .0f)); 
 
+		// New Buildings EXPERIMENTAL
+		allTasks[BuildBunker]->push_back(Task(BuildBunker, .0f)); 
+
 		//retrieves the single-instance tasks and stores them in pointers for easier remembering
 		trainMarine = &allTasks[TrainMarine]->at(0);
 		gatherMinerals = &allTasks[GatherMinerals]->at(0);
@@ -118,6 +121,8 @@ void ExampleAIModule::onStart() {
 		// single instance -- upgrades
 		researchAcademyLongRange = &allTasks[ResearchAcademyLongRange]->at(0);
 		researchAcademyStimpack = &allTasks[ResearchAcademyStimPack]->at(0);
+
+		buildBunker = &allTasks[BuildBunker]->at(0);
 	}
 
 	// Create the main agents
@@ -490,6 +495,7 @@ void ExampleAIModule::updateTasks(){
 	updateTrainMedic();
 	updateResearchLongRange();
 	updateResearchStimPack();
+	updateBuildBunker();
 }
 
 void ExampleAIModule::updateRepair(){
@@ -1083,7 +1089,8 @@ void ExampleAIModule::updateBuildAcademy(){
 		}
 	}
 
-	if(!hasAcademy && commandCenters.size() >= 2){
+	if(!hasAcademy){
+		//&& commandCenters.size() >= 2){
 		buildAcademy->setIncentive(.6f);
 	}
 	else{
@@ -1181,4 +1188,58 @@ void ExampleAIModule::updateResearchStimPack(){
 	else{
 		researchAcademyStimpack->setIncentive(.0f);
 	}
+}
+
+void ExampleAIModule::updateBuildBunker(){
+	//calculates the number of barracks around the command center
+	vector<Task>* newBunkersNeeded = new vector<Task>();
+
+	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); c++){
+		int bunkerNumber = calculateBunkersFromCommandCenter(Broodwar->getUnit(c->getID()));
+		float incentive =  max(0.0f, 1.0f - bunkerNumber/1.0f);
+
+		//sets incentive to ZERO if we have not enough minerals
+		if(Broodwar->self()->minerals() < UnitTypes::Terran_Bunker.mineralPrice()){
+			incentive = 0.0f;
+		}
+
+		//updates the number of barracks around all command centers
+		//builtBarracks[*c] = barracksNumber;
+		//buildBarracksIncentives[*c] = incentive;
+
+		newBunkersNeeded->push_back(Task(BuildBunker, incentive, c->getPosition()));
+	}
+
+	allTasks[BuildBunker]->swap(*newBunkersNeeded);
+	delete newBunkersNeeded; //hope this doesn't invalidates the barracks :)
+}
+
+/**
+  * Counts the bunkers constructed or under construction around a command center
+  */
+int ExampleAIModule::calculateBunkersFromCommandCenter(Unit cmdCenter) {
+
+	//first: count built barracks around the command center
+	Position commandCenterPos = cmdCenter->getPosition();
+	
+	Unitset units = Broodwar->getUnitsInRadius(commandCenterPos, BASE_RADIUS);
+	int builtBunkers = 0;
+	for ( Unitset::iterator u = units.begin(); u != units.end(); ++u ) {
+		if ( u->getType() == UnitTypes::Terran_Bunker && u->isCompleted()) {
+			builtBunkers++;
+		}
+	}
+	
+	//second: count the SCVs constructing around the command center
+	int scheduledForConstruction = 0;
+	for(auto scv = scvMap.begin(); scv != scvMap.end(); scv++){
+		//if SCV is not constructing the barracks but is moving towards it...
+		if(scv->second->state == BUILDING_BUNKER && Position(scv->second->newBuildingLocation).getApproxDistance(commandCenterPos) < BASE_RADIUS ){
+			
+			Broodwar->drawCircleMap(scv->second->gameUnit->getPosition(),20,Color(Colors::Cyan));
+			scheduledForConstruction++;
+		}
+	}
+	//Broodwar->sendText("%d - %d",builtBarracks,scheduledForConstruction);
+	return builtBunkers + scheduledForConstruction;
 }
