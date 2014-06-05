@@ -47,8 +47,6 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0, 1);
 
-
-
 	for(unordered_map<Unit, float>::iterator iter = trainSCVIncentives.begin(); iter != trainSCVIncentives.end(); ++iter){
 		Unit u =  iter->first;
 		float incentive = iter->second;
@@ -100,10 +98,16 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 		} //closure
 	}
 	
-	TaskAssociation researchAcademyLongRange = TaskAssociation(&tasklist[TrainMarine]->at(0), .7f);
+	TaskAssociation researchAcademyLongRange = TaskAssociation(&tasklist[ResearchAcademyLongRange]->at(0), .7f); //was[TrainMarine]
 	if ((rand() / float(RAND_MAX)) < researchAcademyLongRange.tValue()){
-		Broodwar << "Resquest research upgrade" << endl;
+		Broodwar << "Resquest U_238 upgrade" << endl;
 		researchRequest(UpgradeTypes::U_238_Shells);
+	}
+
+	TaskAssociation researchAcademyStimPack = TaskAssociation(&tasklist[ResearchAcademyStimPack]->at(0), .7f);
+	if ((rand() / float(RAND_MAX)) < researchAcademyStimPack.tValue()){
+		Broodwar << "Resquest Stim Pack upgrade" << endl;
+		researchRequest(TechTypes::Stim_Packs);
 	}
 }
 
@@ -156,6 +160,9 @@ void CommanderAgent::createSupply(Unit u){
 	} // closure: insufficient supply
 }
 
+/**
+  * Finds which building researches the required tech and researches it
+  */
 void CommanderAgent::researchRequest(TechType techType){
 	if (!Broodwar->self()->hasResearched(techType) && !Broodwar->self()->isResearching(techType)) {
 		Unitset units = Broodwar->self()->getUnits();
@@ -169,6 +176,9 @@ void CommanderAgent::researchRequest(TechType techType){
 	}
 }
 
+/**
+  * Finds which building researches the required upgrade and researches it
+  */
 void CommanderAgent::researchRequest(UpgradeType upgdType){
 	
 	if (Broodwar->self()->getUpgradeLevel(upgdType) <= 0 && !Broodwar->self()->isUpgrading(upgdType)) {
