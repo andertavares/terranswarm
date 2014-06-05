@@ -38,7 +38,20 @@ void CombatAgent::inCombatMarine(Unit *bestTarget, const UnitSet &enemies, Squad
 
 void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unordered_map<int, MarineAgent*> colleagues){
 	//if is already engaged in task, continues it
-	if(! gameUnit->isIdle() || !gameUnit->isCompleted() || Broodwar->getFrameCount() % latencyFrames != 0) {
+	if(gameUnit->isStimmed()){
+		Broodwar->drawCircleMap(gameUnit->getPosition(), 20, Color(Colors::Orange)); //crazy stimmed \o/ 
+	}
+
+	if(Broodwar->getFrameCount() % latencyFrames != 0 || !gameUnit->isCompleted()) {
+		return;
+	}
+
+	if(! gameUnit->isIdle() ) {
+		
+		if (state == ATTACKING){
+			doAttack(target);
+		}
+
 		return;
 	}
 
@@ -249,14 +262,39 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 		}
 
 		if(!gameUnit->isStimmed()){
-			gameUnit->useTech(BWAPI::TechTypes::Stim_Packs);
+			gameUnit->useTech(BWAPI::TechTypes::Stim_Packs);  
 			//Broodwar->useTech(command.getUnitID(), command.getArg0());
 		}
 		*/
-		gameUnit->attack(target);
+		doAttack(target);
+	}
+}
+
+/**
+  * Implements the actual attack
+  * tries to use stim packs if possible
+  */
+void MarineAgent::doAttack(Position target){
+	Unitset foesAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), gameUnit->getType().groundWeapon().maxRange(), Filter::IsEnemy);
+	Unitset friendsAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), gameUnit->getType().groundWeapon().maxRange(), Filter::IsAlly);
+		
+	//checks if there is a medic around
+	bool medicAround = false;
+	for (auto unit = friendsAround.begin(); unit != friendsAround.end(); unit++){
+		if (unit->getType() == UnitTypes::Terran_Medic){
+			medicAround = true;
+			break;
+		}
 	}
 
-	
+	if (Broodwar->self()->hasResearched(TechTypes::Stim_Packs) && medicAround) {
+		Broodwar->drawTextMap(gameUnit->getPosition(), "\n\nCan Stim");
+ 		//if (foesAround.size() > 0 && !gameUnit->isStimmed() && gameUnit->getHitPoints() > 20 && gameUnit->isAttacking()) {
+		if (!gameUnit->isStimmed() && gameUnit->getHitPoints() > 20 && gameUnit->isAttacking()) {
+ 			gameUnit->useTech(TechTypes::Stim_Packs);
+ 		}
+ 	}
+	gameUnit->attack(target);
 
 }
 

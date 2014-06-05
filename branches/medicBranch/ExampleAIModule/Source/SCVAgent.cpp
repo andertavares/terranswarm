@@ -260,7 +260,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 							if ( newBuildingLocation ){
 								// Register an event that draws the target build location
 								Broodwar->registerEvent([targetBuildLocation,supplyProviderType](Game*){
-										Broodwar->drawBoxMap( Position(targetBuildLocation), Position(targetBuildLocation + supplyProviderType.tileSize()),	Colors::Yellow);
+										Broodwar->drawBoxMap( Position(targetBuildLocation), Position(targetBuildLocation + supplyProviderType.tileSize()),	Colors::Orange);
 									},
 									nullptr,  // condition
 									supplyProviderType.buildTime() + 100 
