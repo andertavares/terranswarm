@@ -13,7 +13,9 @@ enum State { //7,4,2
 	EXPLORING,
 	PACKING,
 	ATTACKING,
-	CURE_MARINE
+	CURE_MARINE,
+	BUILDING_BUNKER,
+	MOVE_BUNKER
 };
 
 //std::map<State, std::string> stateNames; //do not use, initialization is not working =/

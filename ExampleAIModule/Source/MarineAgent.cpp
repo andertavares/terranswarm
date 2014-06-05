@@ -19,6 +19,7 @@ using namespace std;
 MarineAgent::MarineAgent(Unit u) : gameUnit(u), state(NO_TASK), latencyFrames(10){
 	lastPosition = Position(0,0);
 	lastFrameCount = Broodwar->getFrameCount();
+	bunkerToMove = NULL;
 }
 
 MarineAgent::~MarineAgent(void){
@@ -46,6 +47,16 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 	//skips if not completed or current frame is not the one to think in
 	if(!gameUnit->isCompleted() || Broodwar->getFrameCount() % latencyFrames != 0) {
 		return;
+	}
+
+	if(state == MOVE_BUNKER){
+		if(bunkerToMove != NULL){
+			if(bunkerToMove->getLoadedUnits() >= 4){
+				state = NO_TASK;
+				bunkerToMove == NULL;
+				attack(target, colleagues);
+			}
+		}
 	}
 
 	//if is already engaged in task, continues it. also, tries to use stim packs while attacking
@@ -205,12 +216,39 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 
 	//if pack size is enough or has not enough colleagues around to pack or has enemy in sight, attacks
 	if(packSize >= 8 || colleaguesAround == packSize || enemiesInSight.size() > 0) {
-		state = ATTACKING;
+		// Check for barracks
+		//MOVE_BUNKER
+		int distance = 0, newDistance = 0;
+
+		Unit u = NULL;
+
+		Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 45 * TILE_SIZE, Filter::IsOwned);
+		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
+			if(unit->getType() == UnitTypes::Terran_Bunker){
+				//unit->getType() == UnitTypes::Terran_SCV){ 
+				//&& unit->getHitPoints() < unit->getInitialHitPoints()){
+				newDistance = unit->getPosition().getApproxDistance(gameUnit->getPosition());
+				if (unit->getLoadedUnits() < 4 && (u == NULL || newDistance < distance)) {
+					distance = newDistance;
+					u = *unit;
+				}
+			}
+		}
+
+		if(u != NULL){
+			state = MOVE_BUNKER;
+			gameUnit->rightClick(u);
+			bunkerToMove = u;
+		}
+		else{
+			state = ATTACKING;
+		}
 	}
 	else{ //tries to pack-up with near colleagues
 		//tries to get close to the marine with the lowest ID around
 		Unit oldestColleague = oldestColleagueAround();
 		if (oldestColleague == NULL){
+			
 			//nobody found, attacks alone
 			state = ATTACKING;
 		}
