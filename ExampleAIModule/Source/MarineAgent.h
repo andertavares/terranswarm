@@ -30,6 +30,7 @@ public:
 	bool goScout();
 	void attack(Position target, unordered_map<int, MarineAgent*> colleagues);
 	void attack(unordered_map<int, MarineAgent*> colleagues);
+	void doAttack(Position target);
 	bool isOnAttack();
 	Unit MarineAgent::oldestColleagueAround();
 	BWAPI::Unit gameUnit;
