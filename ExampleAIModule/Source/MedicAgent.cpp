@@ -111,8 +111,11 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 		}
 	}
 
-
-	if(lastHealedId != 0 && Broodwar->getUnit(lastHealedId)->getPosition().getApproxDistance(gameUnit->getPosition()) < 40 && Broodwar->getUnit(lastHealedId)->getHitPoints() < Broodwar->getUnit(lastHealedId)->getInitialHitPoints()){
+	//the if below crashes some games!!!
+	if(lastHealedId != 0 && 
+		Broodwar->getUnit(lastHealedId)->getPosition().getApproxDistance(gameUnit->getPosition()) < 40 && 
+		Broodwar->getUnit(lastHealedId)->getHitPoints() < Broodwar->getUnit(lastHealedId)->getInitialHitPoints())
+	{
 		gameUnit->attack(Broodwar->getUnit(lastHealedId)->getPosition());
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nCONT HEAL MRN");
 	}

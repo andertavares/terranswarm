@@ -24,6 +24,18 @@ MarineAgent::MarineAgent(Unit u) : gameUnit(u), state(NO_TASK), latencyFrames(10
 MarineAgent::~MarineAgent(void){
 }
 
+/*---- code snippet for stimpack use, from nova bot
+// Use stimpacks when there are medics around:
+void CombatAgent::inCombatMarine(Unit *bestTarget, const UnitSet &enemies, SquadAgent *squad)
+{
+	if (Broodwar->self()->hasResearched(TechTypes::Stim_Packs) && squad->hasUnitOfType(UnitTypes::Terran_Medic)) {
+ 		if (bestTarget!=0 && !_unit->isStimmed() && _unit->getHitPoints() > 20 && _unit->isAttacking()) {
+ 			_unit->useTech(TechTypes::Stim_Packs);
+ 		}
+ 	}
+}---*/
+
+
 void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unordered_map<int, MarineAgent*> colleagues){
 	//if is already engaged in task, continues it
 	if(! gameUnit->isIdle() || !gameUnit->isCompleted() || Broodwar->getFrameCount() % latencyFrames != 0) {
