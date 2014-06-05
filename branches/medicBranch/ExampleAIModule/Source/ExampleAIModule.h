@@ -73,6 +73,8 @@ class ExampleAIModule : public BWAPI::AIModule {
 	//is a supply depot scheduled to be built?
 	bool scheduledSupplyDepots;
 
+	int academyCount; //keeps track of the number of academies
+
 	void _drawStats(); //writes information texts on screen and draws some useful figures
 	void _drawExploredStats();
 
@@ -121,4 +123,5 @@ public:
 	void updateTrainMedic();
 
 	void updateResearchLongRange();
+	void updateResearchStimPack();
 };

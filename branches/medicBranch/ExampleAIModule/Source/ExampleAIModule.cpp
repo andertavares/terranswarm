@@ -15,7 +15,10 @@ using namespace Filter;
 
 
 ExampleAIModule::ExampleAIModule() {
-	//does nothing, init is done in onStart()
+	//actual init is done in onStart()
+	trainMarine = NULL;
+	gatherMinerals = NULL;
+	buildSupplyDepot = NULL;
 }
 
 ExampleAIModule::~ExampleAIModule(){
@@ -43,6 +46,9 @@ void ExampleAIModule::onStart() {
 	// and reduce the bot's APM (Actions Per Minute).
 	Broodwar->setCommandOptimizationLevel(2);
 
+	//Broodwar->setGUI(false); //disables gui drawing (better performance?)
+	Broodwar->setLocalSpeed(0); //fastest speed, rock on!
+
 	// Check if this is a replay
 	if ( Broodwar->isReplay() ) {
 
@@ -61,9 +67,6 @@ void ExampleAIModule::onStart() {
   
 		//Broodwar->sendText("show me the money");
 		//Broodwar->sendText("operation cwal");
-		//Broodwar->sendText("/speed 0");
-		//Broodwar->setGUI(false); //disables gui drawing (better performance?)
-		Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
 		// If you wish to deal with multiple enemies then you must use enemies().
@@ -79,7 +82,7 @@ void ExampleAIModule::onStart() {
 		//initializes the map of task lists
 		//tasks are grouped by taskType
 		//insert all TaskTypes into map; all Types will point to empty list
-		for(int tt = TrainMarine; tt <= ResearchAcademyLongRange; tt++){
+		for(int tt = TrainMarine; tt <= ResearchAcademyStimPack; tt++){
 			allTasks[static_cast<TaskType>(tt)] = new vector<Task>;
 		}
 
@@ -96,8 +99,9 @@ void ExampleAIModule::onStart() {
 		allTasks[BuildVespeneGas]->push_back(Task(BuildVespeneGas, .0f));
 		allTasks[TrainMedic]->push_back(Task(TrainMedic, .8f)); 
 		
-		// Upgrade
+		// Upgrades
 		allTasks[ResearchAcademyLongRange]->push_back(Task(ResearchAcademyLongRange, .0f)); 
+		allTasks[ResearchAcademyStimPack]->push_back(Task(ResearchAcademyStimPack, .0f)); 
 
 		//retrieves the single-instance tasks and stores them in pointers for easier remembering
 		trainMarine = &allTasks[TrainMarine]->at(0);
@@ -106,13 +110,14 @@ void ExampleAIModule::onStart() {
 		buildSupplyDepot = &allTasks[BuildSupplyDepot]->at(0);
 		explore = &allTasks[Explore]->at(0);
 		
-		// Vespene Gas
+		// single instance -- vespene Gas
 		buildVespeneGas = &allTasks[BuildVespeneGas]->at(0);
 		buildAcademy = &allTasks[BuildAcademy]->at(0);
 		trainMedic = &allTasks[TrainMedic]->at(0);
 
-		// Upgrades
+		// single instance -- upgrades
 		researchAcademyLongRange = &allTasks[ResearchAcademyLongRange]->at(0);
+		researchAcademyStimpack = &allTasks[ResearchAcademyStimPack]->at(0);
 	}
 
 	// Create the main agents
@@ -142,9 +147,9 @@ void ExampleAIModule::onEnd(bool isWinner) {
 	ofstream resultFile;
 	Broodwar->enableFlag(Flag::CompleteMapInformation);
 	resultFile.open ("results.txt", std::ios_base::app);
-	resultFile << "MD," << Broodwar->mapName() << " " << Broodwar->elapsedTime() << " " << (isWinner ? "win" : "loss") << " ";
-	resultFile << me->getUnitScore() << " " << me->getBuildingScore() << " " << me->gatheredMinerals() + me->gatheredGas() << " ";
-	resultFile << enemy->getRace().getName() << " " << enemy->getUnitScore() << " " << enemy->getBuildingScore() << " " << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
+	resultFile << "MD," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << (isWinner ? "win" : "loss") << ",";
+	resultFile << me->getUnitScore() << "," << me->getBuildingScore() << "," << me->gatheredMinerals() + me->gatheredGas() << ",";
+	resultFile << enemy->getRace().getName() << "," << enemy->getUnitScore() << "," << enemy->getBuildingScore() << "," << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
 	resultFile.close();
 	Broodwar << "Results written" << endl;
 }
@@ -152,9 +157,23 @@ void ExampleAIModule::onEnd(bool isWinner) {
 void ExampleAIModule::onFrame() {
 	//TODO: set rally point of barracks to the nearest command center
 	// Called once every game frame
-	// Return if the game is a replay or is paused
-	if ( Broodwar->isReplay() || Broodwar->isPaused() || !Broodwar->self() )
+	// Return if the game is paused
+	if ( Broodwar->isPaused() )// || !Broodwar->self() )
 		return;
+
+	if (Broodwar->isReplay()){
+
+		Playerset plrs = Broodwar->getPlayers();
+		Playerset::iterator plr;
+
+		Broodwar->drawTextScreen(290, 20, "Time: ~ %dh%dm%ds", Broodwar->elapsedTime() / 3600, Broodwar->elapsedTime() / 60, Broodwar->elapsedTime() % 60);
+		
+		int pCount = 1;
+		for (plr = plrs.begin(); plr != plrs.end(); plr++, pCount++){
+			Broodwar->drawTextScreen(290, 20 + (20 * pCount), "Score p%d - Unit, Building, Resource = %d, %d, %d ", pCount, plr->getUnitScore(), plr->getBuildingScore(), plr->gatheredMinerals() + plr->gatheredGas());
+		}
+		return;
+	}
 
 	_drawStats();
 
@@ -1104,7 +1123,7 @@ void ExampleAIModule::updateResearchLongRange(){
 		return;
 	}
 
-	if(Broodwar->self()->minerals() < UpgradeTypes::U_238_Shells.mineralPrice() &&
+	if(Broodwar->self()->minerals() < UpgradeTypes::U_238_Shells.mineralPrice() ||
 		Broodwar->self()->gas() < UpgradeTypes::U_238_Shells.gasPrice()){
 		//not enough minerals, can't build more vespene gas
 		researchAcademyLongRange->setIncentive(0.0f);
@@ -1123,6 +1142,39 @@ void ExampleAIModule::updateResearchLongRange(){
 
 	if(hasAcademy && commandCenters.size() >= 2){
 		researchAcademyLongRange->setIncentive(.8f);
+	}
+	else{
+		researchAcademyLongRange->setIncentive(.0f);
+	}
+}
+
+void ExampleAIModule::updateResearchStimPack(){
+	TechType stim = TechTypes::Stim_Packs;
+
+	if (Broodwar->self()->hasResearched(stim)){
+		researchAcademyStimpack->setIncentive(0.0f);
+		return;
+	}
+	
+	if(Broodwar->self()->minerals() < stim.mineralPrice() || Broodwar->self()->gas() < stim.gasPrice()){
+		//not enough resources
+		researchAcademyStimpack->setIncentive(0.0f);
+		return;
+	}
+
+	Unitset units = Broodwar->self()->getUnits();
+	bool hasAcademy = false;
+
+
+	for (Unitset::iterator unit = units.begin(); unit != units.end(); unit++){
+		if(unit->getType() == UnitTypes::Terran_Academy && unit->exists()){
+			hasAcademy = true;
+			break;
+		}
+	}
+
+	if(hasAcademy){
+		researchAcademyStimpack->setIncentive(.8f);
 	}
 	else{
 		researchAcademyLongRange->setIncentive(.0f);
