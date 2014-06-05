@@ -48,7 +48,7 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 	if(!gameUnit->isCompleted() || Broodwar->getFrameCount() % latencyFrames != 0) {
 		return;
 	}
-
+	/*
 	if(state == MOVE_BUNKER){
 		if(bunkerToMove != NULL){
 			if(bunkerToMove->getLoadedUnits() >= 4){
@@ -58,6 +58,33 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 			}
 		}
 	}
+	*/
+
+	//checks if there is an non-full bunker around and enters it
+	Unit u = NULL;
+	int prevState = state;
+	Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 20 * TILE_SIZE, Filter::IsOwned && Filter::IsBuilding);
+	//Broodwar->drawTextMap(gameUnit->getPosition(), "\n\nCLU=%d", closeUnits.size());
+	for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
+		if(unit->getType() == UnitTypes::Terran_Bunker){
+			//Broodwar->sendText("Bunker found");
+			if (unit->getLoadedUnits().size() < 4) {
+				u = *unit;
+				break;
+			}
+		}
+	}
+
+	if(u != NULL){ //found non-full bunker, moving to it
+		state = MOVE_BUNKER;
+		gameUnit->rightClick(u);
+		bunkerToMove = u;
+		return;
+	}
+	else { //bunkers do not exist or are full, return to what i was doing
+		state = prevState;
+	}
+
 
 	//if is already engaged in task, continues it. also, tries to use stim packs while attacking
 	if(! gameUnit->isIdle() ){
@@ -85,6 +112,7 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 		return;
 	}
 
+	
 	//else, pick something to do
 	state = NO_TASK;
 	vector<TaskAssociation> taskAssociations;
@@ -131,31 +159,7 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 		}
 		
 	}
-	/*if(gameUnit->getID() == 1){
-		int offset = 0;
-		//Broodwar->drawTextScreen(200,115,"%d items", feasibleTasks.size());
-		for (auto ta = taskAssociations.begin(); ta != taskAssociations.end(); ta++){
-			Broodwar->drawTextScreen(200,115+offset,"%d - %d", ta->task()->getTaskType(), ta->task()->getIncentive());
-			offset += 15;
-		}
-		
-	}*/
-	//Broodwar->sendText("TA sz: %d", taskAssociations.size());
-	/*
-	if (gameUnit->getID() == 85){
-		std::string tsk = "";
-		int offset = 40;
-		//Broodwar->drawTextMap(gameUnit->getPosition(),"\n\n\nTA:");
-		for(auto ta = taskAssociations.begin(); ta != taskAssociations.end(); ++ta){
-			//std::string fmt = "%d - %.2f";
-			Broodwar->drawTextMap(gameUnit->getPosition().x, gameUnit->getPosition().y+offset,"%d-%.2f - %.2f - %d-%d",ta->task()->getTaskType(), ta->task()->getIncentive(), ta->tValue(), gameUnit->getDistance(ta->task()->getPosition()), maxDistance);
-			offset += 10;
-		}
-		
-		
-
-	}
-	*/
+	
 	//Task* toPerform = weightedSelection(taskAssociations);
 	//Broodwar->drawTextMap(gameUnit->getPosition(),"\n\nTAsz: %d", taskAssociations.size());
 	if (toPerform == NULL){
@@ -217,6 +221,8 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 	//if pack size is enough or has not enough colleagues around to pack or has enemy in sight, attacks
 	if(packSize >= 8 || colleaguesAround == packSize || enemiesInSight.size() > 0) {
 		// Check for barracks
+		state = ATTACKING;
+		/*
 		//MOVE_BUNKER
 		int distance = 0, newDistance = 0;
 
@@ -243,6 +249,7 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 		else{
 			state = ATTACKING;
 		}
+		*/
 	}
 	else{ //tries to pack-up with near colleagues
 		//tries to get close to the marine with the lowest ID around
