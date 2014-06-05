@@ -114,6 +114,7 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nEX");
 		if(!goScout()){ //if scouting does not work out, do something else
 			gameUnit->stop(); //become idle
+			Broodwar << "not scouting anymore" << endl;
 			state = NO_TASK;
 		}
 	}
@@ -325,6 +326,9 @@ bool MarineAgent::goScout(){
 	if ( currentFrameCount >= lastFrameCount + 20){
 		lastFrameCount = currentFrameCount;
 		Position pos = getPositionToScout();
+
+		Broodwar->drawTextMap(myPos, "\n\n%d,%d,%d", Broodwar->hasPath(myPos,pos), Broodwar->isExplored(TilePosition(pos)), Broodwar->isWalkable(WalkPosition(pos)));// {
+
 		Broodwar << "Agent [" << gameUnit->getID() << "] Scouting to :" << pos << std::endl;
 
 		gameUnit->attack(pos);

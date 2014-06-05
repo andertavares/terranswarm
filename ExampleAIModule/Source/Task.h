@@ -9,6 +9,7 @@ enum TaskType{
 	BuildSupplyDepot,
 	BuildBarracks,
 	BuildCommandCenter,
+	//BuildComSat, //this was making marines go explore weird places instead of attacking, why???
 	Repair,
 	GatherMinerals,
 	Explore,
@@ -17,7 +18,8 @@ enum TaskType{
 	BuildVespeneGas,
 	BuildAcademy,
 	TrainMedic,
-	ResearchAcademyLongRange
+	ResearchAcademyLongRange,
+	ResearchAcademyStimPack
 };
 
 
