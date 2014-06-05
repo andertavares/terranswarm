@@ -489,6 +489,7 @@ void ExampleAIModule::updateTasks(){
 	updateBuildAcademy();
 	updateTrainMedic();
 	updateResearchLongRange();
+	updateResearchStimPack();
 }
 
 void ExampleAIModule::updateRepair(){
@@ -910,12 +911,13 @@ void ExampleAIModule::_drawStats(){
 		gatherMinerals->getIncentive()
 	);
 
-	Broodwar->drawTextScreen(20, 60, "%cBuild CMD [%.3f] Academy [%.3f] Gas [%.3f] R LongRange [%.3f]", 
+	Broodwar->drawTextScreen(20, 60, "%cBuild CMD [%.3f] Academy [%.3f] Gas [%.3f] U-238 [%.3f] Stim [%.3f]", 
 		Text::White, 
 		buildCommandCenter->getIncentive(),
 		buildAcademy->getIncentive(),
 		buildVespeneGas->getIncentive(),
-		researchAcademyLongRange->getIncentive()
+		researchAcademyLongRange->getIncentive(),
+		researchAcademyStimpack->getIncentive()
 	);
 
 	Broodwar->drawTextScreen(20, 75, "%cRepair tasks: %d", 
@@ -1177,6 +1179,6 @@ void ExampleAIModule::updateResearchStimPack(){
 		researchAcademyStimpack->setIncentive(.8f);
 	}
 	else{
-		researchAcademyLongRange->setIncentive(.0f);
+		researchAcademyStimpack->setIncentive(.0f);
 	}
 }

@@ -167,7 +167,6 @@ void CommanderAgent::researchRequest(TechType techType){
 	if (!Broodwar->self()->hasResearched(techType) && !Broodwar->self()->isResearching(techType)) {
 		Unitset units = Broodwar->self()->getUnits();
 		
-
 		for (Unitset::iterator unit = units.begin(); unit != units.end(); unit++){
 			if(unit->getType() == techType.whatResearches() && unit->exists()){
 				unit->research(techType);
