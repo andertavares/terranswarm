@@ -113,7 +113,7 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 
 	Unit lastHealed = Broodwar->getUnit(lastHealedId);
 
-	//the if below crashes some games!!!
+	//the if below crashes some games!!! -- seems that it was fixed
 	if(lastHealedId > 0 &&  
 		lastHealed != NULL && 
 		lastHealed->exists() &&
@@ -133,13 +133,10 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 	Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 45 * TILE_SIZE, Filter::IsOwned);
 	for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
 		if(unit->getType() == UnitTypes::Terran_Marine){
-			//unit->getType() == UnitTypes::Terran_SCV){ 
-			//&& unit->getHitPoints() < unit->getInitialHitPoints()){
 			newDistance = unit->getPosition().getApproxDistance(gameUnit->getPosition());
 			if (u == NULL || newDistance < distance) {
 				distance = newDistance;
 				u = *unit;
-				
 			}
 		}
 	}
@@ -150,8 +147,6 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 	if(closeUnits.size() > 0){
 		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
 			if(unit->getType() == UnitTypes::Terran_Marine){
-				//unit->getType() == UnitTypes::Terran_SCV){ 
-				//&& unit->getHitPoints() < unit->getInitialHitPoints()){
 				newHitPoints = unit->getHitPoints();
 				if (newHitPoints < unit->getInitialHitPoints() && (u == NULL || newHitPoints < hitPoints)) {
 					hitPoints = newHitPoints;
@@ -162,10 +157,14 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 	}
 
 	// if it-s beyond the threshold, find closest unit, and send there:
-	if (u!=NULL){
+	if (u != NULL){
 		//&& distance > MAX_DISTNACE_TO_NONMEDIC) {
-		gameUnit->move(u->getPosition());
-
+		if (u->getPosition().getApproxDistance(gameUnit->getPosition()) > 10) { //tries to not suffocate the marine
+			//gameUnit->move(u->getPosition()); 
+			gameUnit->attack(u->getPosition()); 
+			return;
+		}
+		
 		//Broodwar << "Distance:" << distance << std::endl;
 		
 		if(u->getPosition().getApproxDistance(gameUnit->getPosition()) <= 50){

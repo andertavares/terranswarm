@@ -19,6 +19,7 @@ ExampleAIModule::ExampleAIModule() {
 	trainMarine = NULL;
 	gatherMinerals = NULL;
 	buildSupplyDepot = NULL;
+	ourComSat = NULL;
 }
 
 ExampleAIModule::~ExampleAIModule(){
@@ -249,6 +250,17 @@ void ExampleAIModule::onFrame() {
 		}
 	}
 
+	//builds com-sat if we have more than 15 minutes of game played
+	if(Broodwar->elapsedTime() / 60 >= 15){
+		if(ourComSat == NULL && 
+			Broodwar->self()->minerals() > UnitTypes::Terran_Comsat_Station.mineralPrice() &&
+			Broodwar->self()->gas() > UnitTypes::Terran_Comsat_Station.gasPrice()
+		){
+			//Broodwar->sendText("Wanna build ComSat!");
+			commandCenters[0]->buildAddon(UnitTypes::Terran_Comsat_Station); //builds comsat at 1st cmd center
+		}
+	}
+
 
 	updateTasks();
 
@@ -412,21 +424,10 @@ void ExampleAIModule::onUnitCreate(BWAPI::Unit unit) {
 			Broodwar->sendText("%.2d:%.2d: %s creates a %s", minutes, seconds, unit->getPlayer()->getName().c_str(), unit->getType().c_str());
 		}
     }
-	/*else{
-		if(unit->getType() == UnitTypes::Terran_Command_Center){
-			Unitset visibleMinerals = Broodwar->getMinerals();
-			
-			//when base is created, check if it covers all accessible minerals
-			bool allVisible = true;
-			for(Unitset::iterator min = visibleMinerals.begin(); min != visibleMinerals.end(); ++min){
-				if(unit->getDistance(*min) < BASE_RADIUS){
-					//allVisible = false;
-					//break;
-					mineralsOutOfBaseRange--;
-				}
-			}
-		}
-	}*/
+	if (unit->getPlayer() == Broodwar->self() && unit->getType() == UnitTypes::Terran_Comsat_Station){
+		ourComSat = unit;
+	}
+
 }
 
 //BWAPI calls this when a unit dies or otherwise removed from the game (i.e. a mined out mineral patch)
@@ -447,6 +448,9 @@ void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit){
 		}
 		else if(unit->getType() == UnitTypes::Terran_Medic){
 			medics.erase(unit->getID());
+		}
+		else if (unit->getType() == UnitTypes::Terran_Comsat_Station){
+			ourComSat = NULL;
 		}
 	}
 	else {
@@ -676,7 +680,6 @@ void ExampleAIModule::updateTrainSCV(){
 		}*/
 
 	}
-	//Broodwar->getu
 }
 
 void ExampleAIModule::updateBuildCommandCenter(){
@@ -686,13 +689,6 @@ void ExampleAIModule::updateBuildCommandCenter(){
 		buildCommandCenter->setIncentive(0.0f);
 		return;
 	}
-
-	/*if(buildCommandCenter->getIncentive() > 0) {
-		if(scvMap[3] != NULL){
-			scvMap[3]->buildCommandCenter(discoveredMinerals, commandCenters);
-		}
-	}*/
-
 
 	//for every discovered mineral, check if it is in range of a command center
 	for(auto mPos = discoveredMineralPositions.begin(); mPos != discoveredMineralPositions.end(); ++mPos){
@@ -771,20 +767,6 @@ void ExampleAIModule::updateBuildSupplyDepot(){
 	//buildSupplyDepot->setIncentive(max(0.0f,1.0f - (dif/10.0f))); //linear decay
 	buildSupplyDepot->setIncentive(max(0.0f, pow(float(EULER),-dif/2.0f))); //exponential decay
 
-	/*
-	// TODO: Check if this is ok
-	UnitType supplyProviderType = UnitTypes::Terran_Supply_Depot;
-	if (  Broodwar->self()->incompleteUnitCount(supplyProviderType) > 0 ) {
-		//dif = dif/5.0; //atenuates the difference if a supply depot is being built
-		//buildSupplyDepot->setIncentive(0.0f);
-	}
-	else{
-		buildSupplyDepot->setIncentive(max(0.0f,1.0f - (dif/10.0f))); //linear decay
-		//buildSupplyDepot->setIncentive(max(0.0, pow(EULER,-dif))); //exponential decay
-	}
-	//allTasks[BuildSupplyDepot]->at(0).setIncentive(1.0f - (dif/10.0f));
-	//buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
-	*/
 }
 
 void ExampleAIModule::updateExplore(){
