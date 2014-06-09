@@ -15,7 +15,8 @@ using namespace Filter;
 
 
 ExampleAIModule::ExampleAIModule() {
-	//actual init is done in onStart()
+	//init of game structure is done in onStart()
+	lastScan = 0;
 	trainMarine = NULL;
 	gatherMinerals = NULL;
 	buildSupplyDepot = NULL;
@@ -47,7 +48,7 @@ void ExampleAIModule::onStart() {
 	// and reduce the bot's APM (Actions Per Minute).
 	Broodwar->setCommandOptimizationLevel(2);
 
-	//Broodwar->setGUI(false); //disables gui drawing (better performance?)
+	Broodwar->setGUI(false); //disables gui drawing (better performance?)
 	Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 	// Check if this is a replay
@@ -161,7 +162,6 @@ void ExampleAIModule::onEnd(bool isWinner) {
 }
 
 void ExampleAIModule::onFrame() {
-	//TODO: set rally point of barracks to the nearest command center
 	// Called once every game frame
 	// Return if the game is paused
 	if ( Broodwar->isPaused() )// || !Broodwar->self() )
@@ -261,7 +261,11 @@ void ExampleAIModule::onFrame() {
 		}
 	}
 
+	//tries to reveal hidden units
+	//Broodwar->sendText << "will reveal" << endl;
+	revealHiddenUnits();
 
+	//Broodwar << "after trying to reveal" << endl;
 	updateTasks();
 
 	_commanderAgent->onFrame(allTasks, trainSCVIncentives);
@@ -526,6 +530,48 @@ void ExampleAIModule::updateRepair(){
 			allTasks[Repair]->push_back(Task(Repair, incentive, bldg->getPosition()));
 		}
 	}
+}
+
+void ExampleAIModule::revealHiddenUnits(){
+
+	TechType scan = TechTypes::Scanner_Sweep;
+	int cooldown = Broodwar->getFrameCount() - lastScan;
+
+	// scan.getWeapon().damageCooldown()
+	//does not scan if there is no comsat, of energy is low, or cooldown has not been reached
+	if(ourComSat == NULL ||  ourComSat->getEnergy() < scan.energyCost() || cooldown < 160 ){ //scan sweep lasts about 160 frames
+		//Broodwar->sendText("NULL? %d, sc cooldown: %d, act cooldown: %d, cost:%d, energy:%d", ourComSat == NULL, scan.getWeapon().damageCooldown(), cooldown, scan.energyCost(), ourComSat->getEnergy());
+		return;
+	}
+
+	//Broodwar->sendText("will traverse", ourComSat == NULL);
+
+	Unitset allunits = Broodwar->getAllUnits();
+	for(auto unit = allunits.begin(); unit != allunits.end(); unit++){
+		if(unit->getPlayer() != Broodwar->self() && (unit->isCloaked() || unit->isBurrowed())){
+			//hidden unit detected, scan it!
+			ourComSat->useTech(scan, unit->getPosition());
+			lastScan = Broodwar->getFrameCount();
+		}
+	}
+
+	/*for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
+
+		if(Broodwar->isVisible(task->getPosition().x / TILE_SIZE , task->getPosition().y / TILE_SIZE)){
+			Unitset inRange = Broodwar->getUnitsInRadius(task->getPosition(),  UnitTypes::Terran_Marine.groundWeapon().maxRange(), Filter::IsEnemy);
+			//Broodwar->sendText("%d in range of attack task.", inRange.size());
+			
+			// Check if the unit can be reached by the marines
+			// Sometimes cloacked or burrowed units can be marked as enemy but it cannot be attacked
+			bool onlyCloackedUnits = true;
+			for(auto u = inRange.begin(); u != inRange.end(); ++u) {
+				if( (u->isCloaked() || u->isBurrowed()) && !u->isInvincible()){
+					onlyCloackedUnits = false;
+					break;
+				}
+			}
+		}
+	}*/
 }
 
 /**

@@ -47,6 +47,8 @@ class ExampleAIModule : public BWAPI::AIModule {
 	//number of minerals found out of base range
 	//int mineralsOutOfBaseRange;
 
+	int lastScan;
+
 	//set of command centers
 	Unitset commandCenters;
 
@@ -105,6 +107,8 @@ public:
 	// Everything below this line is safe to modify.
 	ExampleAIModule();
 	~ExampleAIModule();
+
+	void revealHiddenUnits();
 
 	void updateTasks();
 	void updateRepair();
