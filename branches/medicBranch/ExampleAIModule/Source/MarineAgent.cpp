@@ -90,8 +90,10 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 	if(! gameUnit->isIdle() ){
 
 		//if attacking, check for stim packs!
-		Unitset friendsAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), gameUnit->getType().groundWeapon().maxRange(), Filter::IsAlly);
-		
+		Unitset friendsAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), gameUnit->getType().groundWeapon().maxRange() - 20, Filter::IsAlly);
+		//Broodwar->drawCircleMap(lastPosition,gameUnit->getType().groundWeapon().maxRange(),Color(Colors::Blue));
+
+
 		//checks if there is a medic around
 		bool medicAround = false;
 		for (auto unit = friendsAround.begin(); unit != friendsAround.end(); unit++){
@@ -105,7 +107,16 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 			Broodwar->drawTextMap(gameUnit->getPosition(), "\n\nCan Stim");
  			//if (foesAround.size() > 0 && !gameUnit->isStimmed() && gameUnit->getHitPoints() > 20 && gameUnit->isAttacking()) {
 			if (!gameUnit->isStimmed() && gameUnit->getHitPoints() > 20 && gameUnit->isAttacking()) {
- 				gameUnit->useTech(TechTypes::Stim_Packs);
+ 				int maxRange = gameUnit->getType().groundWeapon().maxRange();
+				BWAPI::Position p = gameUnit->getPosition();
+				Broodwar->registerEvent(
+							[p,maxRange](Game*){
+								Broodwar->drawCircleMap( p, maxRange -20,	Colors::Blue);
+							},
+							nullptr,  // condition
+							1000 
+				);  // frames to run
+				gameUnit->useTech(TechTypes::Stim_Packs);
  			}
  		}
 
@@ -269,8 +280,9 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 
 	if(state == ATTACKING){
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nATK");
-		/*
-		int hitPoints = gameUnit->getHitPoints();
+		
+		// TESTING
+		/*int hitPoints = gameUnit->getHitPoints();
 
 		//if there are targets nearby, choose one appropriately
 		Unitset foesAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), gameUnit->getType().groundWeapon().maxRange(), Filter::IsEnemy);
@@ -279,10 +291,10 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 		for(auto foe = foesAround.begin(); foe != foesAround.end(); ++foe){
 			//shot workers or medics is priority
 			//if (foe->getType().isWorker() || foe->getType() == UnitTypes::Terran_Medic){
-			if (foe->getType() == UnitTypes::Terran_Medic){
-				victim = *foe;
-				break;
-			}
+			//if (foe->getType() == UnitTypes::Terran_Medic){
+			//	victim = *foe;
+			//	break;
+			//}
 
 			//else, shoots the enemy unit closest to death
 			float hpRate = foe->getHitPoints() + foe->getShields() / float(foe->getType().maxHitPoints() + foe->getType().maxShields());
@@ -312,23 +324,24 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 		closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 6 * TILE_SIZE, Filter::IsEnemy);
 
 		if (victim == NULL) {
-			if(midRange > closeRange && closeUnits.size() <= 1 && (gameUnit->isAttacking() || gameUnit->isMoving())){
-				gameUnit->stop();
-			}
-			else{
+			//if(midRange > closeRange && closeUnits.size() <= 1 && (gameUnit->isAttacking() || gameUnit->isMoving())){
+			//	gameUnit->stop();
+			//}
+			//else{
 				gameUnit->attack(target);
 				Broodwar->drawLineMap(gameUnit->getPosition(),target,Color(Colors::Red));
-			}
+			//}
 		}
 		else {
 			gameUnit->attack(victim);
 			Broodwar->drawLineMap(gameUnit->getPosition(),victim->getPosition(),Color(Colors::Red));
 		}
 
-		if(!gameUnit->isStimmed()){
-			gameUnit->useTech(BWAPI::TechTypes::Stim_Packs);
+		//if(!gameUnit->isStimmed()){
+		//	gameUnit->useTech(BWAPI::TechTypes::Stim_Packs);
 			//Broodwar->useTech(command.getUnitID(), command.getArg0());
-		}
+		//}
+		// TESTING END
 		*/
 		gameUnit->attack(target);
 	}
