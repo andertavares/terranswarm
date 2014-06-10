@@ -20,6 +20,7 @@ class MedicAgent {
 	Position target;
 	Position originPosition;
 	int lastHealedId;
+	int lastHealedHP;
 	//static int MAX_MAP_DISTANCE;
 
 public:
