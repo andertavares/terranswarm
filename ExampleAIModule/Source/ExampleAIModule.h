@@ -133,5 +133,6 @@ public:
 	void updateResearchStimPack();
 	void updateBuildBunker();
 	int calculateBunkersFromCommandCenter(BWAPI::Unit cmdCenter);
+	int generateRandomnteger(int nMin, int nMax);
 	
 };

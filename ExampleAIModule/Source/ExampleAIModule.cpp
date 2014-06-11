@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <ctime>
 #include "ExampleAIModule.h"
 #include "Task.h"
 #include "CommanderAgent.h"
@@ -21,6 +22,7 @@ ExampleAIModule::ExampleAIModule() {
 	gatherMinerals = NULL;
 	buildSupplyDepot = NULL;
 	ourComSat = NULL;
+	srand(time(0));
 }
 
 ExampleAIModule::~ExampleAIModule(){
@@ -48,7 +50,7 @@ void ExampleAIModule::onStart() {
 	// and reduce the bot's APM (Actions Per Minute).
 	Broodwar->setCommandOptimizationLevel(2);
 
-	Broodwar->setGUI(false); //disables gui drawing (better performance?)
+	//Broodwar->setGUI(false); //disables gui drawing (better performance?)
 	Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 	// Check if this is a replay
@@ -553,6 +555,16 @@ void ExampleAIModule::revealHiddenUnits(){
 			ourComSat->useTech(scan, unit->getPosition());
 			lastScan = Broodwar->getFrameCount();
 		}
+	}
+
+	// Get random attack area to do a scan!
+	if(ourComSat->getEnergy() >= 170 && allTasks[Attack]->size() > 0){
+		vector<Task> *attackTaskVector = allTasks[Attack];
+		vector<Task>::iterator attackIt = (*attackTaskVector).begin();
+		std::advance( attackIt, generateRandomnteger(0, (*attackTaskVector).size()) );
+		ourComSat->useTech(scan, attackIt->getPosition());
+		lastScan = Broodwar->getFrameCount();
+		Broodwar << "Random attack position revealed!" << endl;
 	}
 
 	/*for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
@@ -1270,4 +1282,9 @@ int ExampleAIModule::calculateBunkersFromCommandCenter(Unit cmdCenter) {
 	}
 	//Broodwar->sendText("%d - %d",builtBarracks,scheduledForConstruction);
 	return builtBunkers + scheduledForConstruction;
+}
+
+int ExampleAIModule::generateRandomnteger(int nMin, int nMax)
+{
+    return nMin + (int)((double)rand() / (RAND_MAX+1) * (nMax-nMin+1));
 }

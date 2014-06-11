@@ -131,11 +131,10 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 	int distance = 0, newDistance = 0;
 
 	Unit u = NULL;
-	Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 45 * TILE_SIZE, Filter::IsOwned);
 
 	int hitPoints = 9999, newHitPoints = 0;
 	Broodwar->drawCircleMap(gameUnit->getPosition(), 5 * TILE_SIZE ,Color(Colors::White));
-	closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 5 * TILE_SIZE, Filter::IsOwned);
+	Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 5 * TILE_SIZE, Filter::IsOwned);
 	if(closeUnits.size() > 0){
 		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
 			if(unit->getType() == UnitTypes::Terran_Marine){
@@ -149,7 +148,7 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 	}
 
 	if(u == NULL){
-		
+		Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 45 * TILE_SIZE, Filter::IsOwned);
 		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
 			if(unit->getType() == UnitTypes::Terran_Marine){
 				newDistance = unit->getPosition().getApproxDistance(gameUnit->getPosition());
@@ -187,6 +186,25 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 		else{
 			gameUnit->rightClick(u);
 			Broodwar->drawTextMap(gameUnit->getPosition(),"\nMov to MRN");
+		}
+	}
+	else{
+		// Ugly and repeated code to does not let the medics standing after all the marines died
+		// TODO: Clean this
+		u = NULL;
+		Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 45 * TILE_SIZE, Filter::IsOwned);
+		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
+			if(unit->getType() == UnitTypes::Terran_Marine){
+				newDistance = unit->getPosition().getApproxDistance(gameUnit->getPosition());
+				if (u == NULL || newDistance < distance) {
+					distance = newDistance;
+					u = *unit;
+				}
+			}
+		}
+		if (u != NULL){
+			gameUnit->rightClick(u);
+			Broodwar->drawTextMap(gameUnit->getPosition(),"\nMov to MRN1");
 		}
 	}
 }

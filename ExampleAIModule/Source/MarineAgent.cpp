@@ -66,7 +66,7 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 	Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 20 * TILE_SIZE, Filter::IsOwned && Filter::IsBuilding);
 	//Broodwar->drawTextMap(gameUnit->getPosition(), "\n\nCLU=%d", closeUnits.size());
 	for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
-		if(unit->getType() == UnitTypes::Terran_Bunker){
+		if(unit->getType() == UnitTypes::Terran_Bunker && unit->isVisible()){
 			//Broodwar->sendText("Bunker found");
 			if (unit->getLoadedUnits().size() < 4) {
 				u = *unit;
