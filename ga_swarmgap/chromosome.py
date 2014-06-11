@@ -1,64 +1,6 @@
 import random
-from abc import ABCMeta, abstractmethod
+import domain
 
-STANDARD_INTERVAL = [a / 100.0 for a in range(0, 101, 5)] #the interval [0, 0.05, 0.10, ..., 0.95, 1.00]
-
-class AbstractDomain(object):
-    '''
-    Encapsulates the domain (set of values) a gene can assume.
-
-    '''
-    __metaclass__ = ABCMeta
-
-
-    @abstractmethod
-    def has_value(self, value):
-        '''
-        Returns whether the domain has the given value
-
-        '''
-        raise NotImplementedError("Only Domain subclasses should be instantiated.")
-
-    @abstractmethod
-    def random_value(self):
-        '''
-        Returns a random value from the domain
-
-        '''
-        raise NotImplementedError("Only Domain subclasses should be instantiated.")
-
-    @abstractmethod
-    def max_value(self):
-        '''
-        Returns the maximum value of this domain
-
-        '''
-        raise NotImplementedError("Only Domain subclasses should be instantiated.")
-
-    @abstractmethod
-    def min_value(self):
-        '''
-        Returns the minimum value of this domain
-
-        '''
-        raise NotImplementedError("Only Domain subclasses should be instantiated.")
-
-
-class DiscreteDomain(AbstractDomain):
-    def __init__(self, possible_values):
-        self._possible_values = possible_values
-
-    def has_value(self, value):
-        return value in self._possible_values
-
-    def random_value(self):
-        return random.choice(self._possible_values)
-
-    def max_value(self):
-        return max(self._possible_values)
-
-    def min_value(self):
-        return min(self._possible_values)
 
 class Gene(object):
     '''
@@ -150,12 +92,12 @@ class Chromosome(object):
             if value_array is not None:
                 value = value_array[i]
 
-            self._genes[self.GENE_NAMES[i]] = Gene(self.GENE_NAMES[i], DiscreteDomain(STANDARD_INTERVAL), value)
+            self._genes[self.GENE_NAMES[i]] = Gene(self.GENE_NAMES[i], domain.DiscreteDomain(domain.STANDARD_INTERVAL), value)
 
         #--- BEGIN: fixes information of genes with specific domains
-        self._genes['s_build_barracks_denominator'].set_domain(DiscreteDomain([1, 2, 3, 4, 5]))
-        self._genes['s_train_scv_denominator'].set_domain(DiscreteDomain([1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]))
-        self._genes['m_pack_size'].set_domain(DiscreteDomain(range(6, 24, 2)))
+        self._genes['s_build_barracks_denominator'].set_domain(domain.DiscreteDomain([1, 2, 3, 4, 5]))
+        self._genes['s_train_scv_denominator'].set_domain(domain.DiscreteDomain([1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]))
+        self._genes['m_pack_size'].set_domain(domain.DiscreteDomain(range(6, 24, 2)))
 
         if value_array is None:
             self._genes['s_build_barracks_denominator'].randomize()
