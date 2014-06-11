@@ -18,6 +18,7 @@ class MarineAgent {
 	int lastFrameCount;
 	Position lastPosition;
 	Position target;
+	Unit bunkerToMove;
 	//static int MAX_MAP_DISTANCE;
 
 public:
@@ -30,6 +31,7 @@ public:
 	bool goScout();
 	void attack(Position target, unordered_map<int, MarineAgent*> colleagues);
 	void attack(unordered_map<int, MarineAgent*> colleagues);
+	void doAttack(Position target);
 	bool isOnAttack();
 	Unit MarineAgent::oldestColleagueAround();
 	BWAPI::Unit gameUnit;

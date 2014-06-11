@@ -15,6 +15,8 @@ public:
 	void createSupply(BWAPI::Unit u);
 	int calculateBarracksFromCommandCenter(BWAPI::Unit u);
 	void createBarrackNearCommandCenter(BWAPI::Unit u);
+	void researchRequest(BWAPI::TechType techType);
+	void researchRequest(BWAPI::UpgradeType upgdType);
 
 private:
 	BWAPI::Unitset _commandCenters;

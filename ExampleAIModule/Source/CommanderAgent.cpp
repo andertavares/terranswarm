@@ -47,8 +47,6 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0, 1);
 
-
-
 	for(unordered_map<Unit, float>::iterator iter = trainSCVIncentives.begin(); iter != trainSCVIncentives.end(); ++iter){
 		Unit u =  iter->first;
 		float incentive = iter->second;
@@ -76,13 +74,21 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 
 	//iterates through the barracks
 	TaskAssociation trainMarine = TaskAssociation(&tasklist[TrainMarine]->at(0), .7f);
+	TaskAssociation trainMedic = TaskAssociation(&tasklist[TrainMedic]->at(0), .4f);
 	Unitset myUnits = Broodwar->self()->getUnits();
 	for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u ) {
 		
 		
 		if ( u->getType() == UnitTypes::Terran_Barracks ) {
 			
-			if ((rand() / float(RAND_MAX)) < trainMarine.tValue() && u->isIdle() && !u->train(UnitTypes::Terran_Marine)) {
+			if ((rand() / float(RAND_MAX)) < trainMedic.tValue() && u->isIdle() && !u->train(UnitTypes::Terran_Medic)) {
+				Error lastErr = Broodwar->getLastError();
+				if(lastErr == Errors::Insufficient_Supply){
+					//Broodwar->sendText("Marine can't be created - %s", lastErr.toString().c_str());	
+					//CommanderAgent::createSupply(Broodwar->getUnit(u->getID()));
+				}			
+			}
+			else if ((rand() / float(RAND_MAX)) < trainMarine.tValue() && u->isIdle() && !u->train(UnitTypes::Terran_Marine)) {
 				Error lastErr = Broodwar->getLastError();
 				if(lastErr == Errors::Insufficient_Supply){
 					//Broodwar->sendText("Marine can't be created - %s", lastErr.toString().c_str());	
@@ -90,6 +96,18 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 				}			
 			}
 		} //closure
+	}
+	
+	TaskAssociation researchAcademyLongRange = TaskAssociation(&tasklist[ResearchAcademyLongRange]->at(0), .7f); //was[TrainMarine]
+	if ((rand() / float(RAND_MAX)) < researchAcademyLongRange.tValue()){
+		Broodwar << "Resquest U_238 upgrade" << endl;
+		researchRequest(UpgradeTypes::U_238_Shells);
+	}
+
+	TaskAssociation researchAcademyStimPack = TaskAssociation(&tasklist[ResearchAcademyStimPack]->at(0), .7f);
+	if ((rand() / float(RAND_MAX)) < researchAcademyStimPack.tValue()){
+		Broodwar << "Resquest Stim Pack upgrade" << endl;
+		researchRequest(TechTypes::Stim_Packs);
 	}
 }
 
@@ -142,3 +160,33 @@ void CommanderAgent::createSupply(Unit u){
 	} // closure: insufficient supply
 }
 
+/**
+  * Finds which building researches the required tech and researches it
+  */
+void CommanderAgent::researchRequest(TechType techType){
+	if (!Broodwar->self()->hasResearched(techType) && !Broodwar->self()->isResearching(techType)) {
+		Unitset units = Broodwar->self()->getUnits();
+		
+		for (Unitset::iterator unit = units.begin(); unit != units.end(); unit++){
+			if(unit->getType() == techType.whatResearches() && unit->exists()){
+				unit->research(techType);
+			}
+		}
+	}
+}
+
+/**
+  * Finds which building researches the required upgrade and researches it
+  */
+void CommanderAgent::researchRequest(UpgradeType upgdType){
+	
+	if (Broodwar->self()->getUpgradeLevel(upgdType) <= 0 && !Broodwar->self()->isUpgrading(upgdType)) {
+		Unitset units = Broodwar->self()->getUnits();
+
+		for (Unitset::iterator unit = units.begin(); unit != units.end(); unit++){
+			if(unit->getType() == upgdType.whatUpgrades() && unit->exists()){
+				unit->upgrade(upgdType);
+			}
+		}
+	}
+}

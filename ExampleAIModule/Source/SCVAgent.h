@@ -58,6 +58,7 @@ public:
 	Position pointNearNewBase(vector<Position> theMinerals, Unitset commandCenters);
 	void createSupply();
 	void createBarrackNearCommandCenter(Position commandCenterPos);
+	void createBunkerNearCommandCenter(Position commandCenterPos);
 	bool isBuildingExpansion();
 	bool isRepairing();
 	bool shouldBeRepaired(Unit target);
