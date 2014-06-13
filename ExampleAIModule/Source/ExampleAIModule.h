@@ -125,7 +125,7 @@ public:
 	unordered_map<TaskType, vector<Task>*>& getTasks();
 
 	// Vespene gas
-	void updateBuildVespeneGas();
+	void updateBuildRefinery();
 	void updateBuildAcademy();
 	void updateTrainMedic();
 

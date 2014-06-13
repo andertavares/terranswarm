@@ -500,7 +500,7 @@ void ExampleAIModule::updateTasks(){
 	updateTrainMarine();
 	updateTrainSCV();
 	updateExplore();
-	updateBuildVespeneGas();
+	updateBuildRefinery();
 	updateBuildAcademy();
 	updateTrainMedic();
 	updateResearchLongRange();
@@ -1069,7 +1069,7 @@ void ExampleAIModule::_drawExploredStats(){
 /**
   * Updates the incentive for the Task buildVespeneGas
   **/
-void ExampleAIModule::updateBuildVespeneGas(){
+void ExampleAIModule::updateBuildRefinery(){
 	
 	if (Broodwar->getFrameCount()/24 < 120) {
 		buildVespeneGas->setIncentive(0);
