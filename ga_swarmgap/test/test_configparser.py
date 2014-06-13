@@ -14,7 +14,7 @@ import configparser
 class Test(unittest.TestCase):
 
     def test_defaults(self):
-        config = configparser.ConfigParser('test/empty.xml')
+        config = configparser.ConfigParser('empty.xml')
 
         self.assertEqual('testrun', config.output_dir)
 
@@ -31,7 +31,7 @@ class Test(unittest.TestCase):
 
     def test_parsing(self):
         #assumes _parse_path is correct
-        config = configparser.ConfigParser('runs/test/config.xml')
+        config = configparser.ConfigParser('../runs/test/config.xml')
 
         self.assertEqual('test', config.output_dir)
 

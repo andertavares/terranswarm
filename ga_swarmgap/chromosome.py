@@ -66,14 +66,20 @@ class Chromosome(object):
     GENE_NAMES = [
         's_gather_minerals', 's_build_barracks_denominator', 's_build_cmd_center',
         's_attack_near', 's_attack_mid', 's_attack_far', 's_train_scv_denominator',
-        's_train_marine', 'k_scv_gather_minerals', 'k_scv_build_barracks', 'k_scv_build_supply',
-        'k_scv_build_supply', 'k_scv_build_cmd_center', 'k_scv_repair_near', 'k_scv_repair_mid',
+        's_train_medic_ratio',
+        's_train_marine', 'k_scv_gather_minerals', #'k_scv_build_barracks',
+        #'k_scv_build_supply', 'k_scv_build_cmd_center',
+        'k_scv_repair_near', 'k_scv_repair_mid',
         'k_scv_repair_far', 'k_scv_explore', 'k_scv_attack_near', 'k_scv_repair_mid',
         'k_scv_repair_far', 'k_scv_explore', 'k_scv_attack_near', 'k_scv_attack_mid',
         'k_scv_attack_far', 'k_marine_explore', 'k_marine_attack_near', 'k_marine_attack_mid',
         'k_marine_attack_far', 'k_general_train_scv_denominator', 'k_general_train_marine',
+        'k_general_train_medic_ratio',
         'm_pack_size'
     ]
+    #some tasks or skills are hard-coded and do not enter in the gene: k_build refinery, k_build academy,
+    #k_build cmd center, k_build barracks, s/k_build supply depot,
+    #research U_238_shells, research stim pack and gather gas.
 
     def __init__(self, value_array=None):
         '''
@@ -97,11 +103,13 @@ class Chromosome(object):
         #--- BEGIN: fixes information of genes with specific domains
         self._genes['s_build_barracks_denominator'].set_domain(domain.DiscreteDomain([1, 2, 3, 4, 5]))
         self._genes['s_train_scv_denominator'].set_domain(domain.DiscreteDomain([1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]))
+        self._genes['s_train_medic_ratio'].set_domain(domain.DiscreteDomain([1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]))
         self._genes['m_pack_size'].set_domain(domain.DiscreteDomain(range(6, 24, 2)))
 
         if value_array is None:
             self._genes['s_build_barracks_denominator'].randomize()
             self._genes['s_train_scv_denominator'].randomize()
+            self._genes['s_train_medic_ratio'].randomize()
             self._genes['m_pack_size'].randomize()
         #--- END: fixes information of genes with specific domains
 
