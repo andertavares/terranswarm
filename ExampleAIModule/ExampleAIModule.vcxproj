@@ -109,6 +109,7 @@
     <ClInclude Include="Source\MedicAgent.h" />
     <ClInclude Include="Source\Parameters.h" />
     <ClInclude Include="Source\SCVAgent.h" />
+    <ClInclude Include="Source\Task.h" />
     <ClInclude Include="Source\TaskAssociation.h" />
     <ClInclude Include="Source\util.h" />
   </ItemGroup>
