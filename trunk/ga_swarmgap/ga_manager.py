@@ -1,4 +1,6 @@
 import os
+import random
+import copy
 import geneticoperators as genops
 import subprocess
 import time
