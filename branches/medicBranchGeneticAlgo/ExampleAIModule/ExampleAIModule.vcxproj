@@ -93,6 +93,7 @@
     <ClCompile Include="Source\CommanderAgent.cpp" />
     <ClCompile Include="Source\Dll.cpp" />
     <ClCompile Include="Source\ExampleAIModule.cpp" />
+    <ClCompile Include="Source\GeneticValues.cpp" />
     <ClCompile Include="Source\MarineAgent.cpp" />
     <ClCompile Include="Source\MedicAgent.cpp" />
     <ClCompile Include="Source\Parameters.cpp" />
@@ -105,6 +106,7 @@
     <ClInclude Include="Source\AgentStates.h" />
     <ClInclude Include="Source\CommanderAgent.h" />
     <ClInclude Include="Source\ExampleAIModule.h" />
+    <ClInclude Include="Source\GeneticValues.h" />
     <ClInclude Include="Source\MarineAgent.h" />
     <ClInclude Include="Source\MedicAgent.h" />
     <ClInclude Include="Source\Parameters.h" />
