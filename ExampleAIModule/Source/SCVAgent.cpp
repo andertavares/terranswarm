@@ -14,6 +14,8 @@
 #include "ExampleAIModule.h"
 #include "TaskAssociation.h"
 #include <set>
+#include "GeneticValues.h"
+#include "Parameters.h"
 
 using namespace BWAPI;
 using namespace Filter;
@@ -51,6 +53,7 @@ Unit SCVAgent::getUnit(){
 //TODO: SCV is building cmd center in invalid position!
 //TODO: scvs to build barracks in new cmd center is locking up
 void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<Position> mineralPositions, Unitset commandCenters, SCVMap scvMap){	
+
 	// Get our starting location
 	if (originPosition.x == 0 && originPosition.y == 0) {
 		originPosition = gameUnit->getPosition();

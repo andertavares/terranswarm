@@ -13,6 +13,8 @@
 #include "util.h"
 #include <set>
 
+#include "GeneticValues.h"
+
 
 using namespace BWAPI;
 using namespace std;
@@ -38,6 +40,8 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 		//|| Broodwar->getFrameCount() % latencyFrames != 0) {
 		return;
 	}
+
+	//Broodwar << GeneticValues::getValue("") << endl;
 
 	/*
 	int currentFrameCount = Broodwar->getFrameCount();
