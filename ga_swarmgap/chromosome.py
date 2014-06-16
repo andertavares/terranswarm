@@ -172,6 +172,9 @@ class Chromosome(object):
         :return: str
 
         '''
-        str = ""
-        for k,v in self.GENE_INDEXES.iteritems():
-            str += "%d %s" % (k, self._genes[v].value)
+
+        the_string = ""
+        for i in range(len(self.GENE_NAMES)):
+            the_string += "%d %s\n" % (i, self._genes[self.GENE_NAMES[i]].value)
+
+        return  the_string
