@@ -69,17 +69,47 @@ class Chromosome(object):
         's_train_medic_ratio',
         's_train_marine', 'k_scv_gather_minerals', #'k_scv_build_barracks',
         #'k_scv_build_supply', 'k_scv_build_cmd_center',
-        'k_scv_repair_near', 'k_scv_repair_mid',
-        'k_scv_repair_far', 'k_scv_explore', 'k_scv_attack_near', 'k_scv_repair_mid',
-        'k_scv_repair_far', 'k_scv_explore', 'k_scv_attack_near', 'k_scv_attack_mid',
-        'k_scv_attack_far', 'k_marine_explore', 'k_marine_attack_near', 'k_marine_attack_mid',
-        'k_marine_attack_far', 'k_general_train_scv_denominator', 'k_general_train_marine',
+        'k_scv_repair_near', 'k_scv_repair_mid', 'k_scv_repair_far',
+        'k_scv_explore', 'k_scv_attack_near', 'k_scv_attack_mid', 'k_scv_attack_far',
+        'k_marine_explore', 'k_marine_attack_near', 'k_marine_attack_mid', 'k_marine_attack_far',
+        'k_general_train_scv_denominator', 'k_general_train_marine',
         'k_general_train_medic_ratio',
         'm_pack_size'
     ]
     #some tasks or skills are hard-coded and do not enter in the gene: k_build refinery, k_build academy,
     #k_build cmd center, k_build barracks, s/k_build supply depot,
     #research U_238_shells, research stim pack and gather gas.
+
+    '''
+    #maps the c++ indexes to the names used here, according to the enum:
+    GENE_INDEXES = {
+        0: 's_gather_minerals',
+        1: 's_build_barracks_denominator',
+        2: 's_build_cmd_center',
+        3: 's_attack_near',
+        4: 's_attack_mid',
+        5: 's_attack_far',
+        6: 's_train_scv_denominator',
+        7: 's_train_medic_ratio',
+        8: 's_train_marine',
+        9: 'k_scv_gather_minerals',
+        10: 'k_scv_repair_near',
+        11: 'k_scv_repair_mid',
+        12: 'k_scv_repair_far',
+        13: 'k_scv_explore',
+        14: 'k_scv_attack_near',
+        15: 'k_scv_attack_mid',
+        16: 'k_scv_attack_far',
+        17: 'k_marine_explore',
+        18: 'k_marine_attack_near',
+        19: 'k_marine_attack_mid',
+        20: 'k_marine_attack_far',
+        21: 'k_general_train_scv_denominator',
+        22: 'k_general_train_marine',
+        23: 'k_general_train_medic_ratio',
+        24: 'm_pack_size'
+    }
+    '''
 
     def __init__(self, value_array=None):
         '''
@@ -127,6 +157,21 @@ class Chromosome(object):
         '''
         arr = []
         for i in range(0, len(self.GENE_NAMES)):
-            arr[i] = self._genes[self.self.GENE_NAMES[i]]
+            arr[i] = self._genes[self.GENE_NAMES[i]].value
 
         return arr
+
+    def to_file_string(self):
+        '''
+        Returns a string ready to be read by the c++ swarmgap module. Format is:
+        0 value0
+        1 value1
+
+        The mapping of indexes to attributes is explicited in GENE_INDEXES variable
+
+        :return: str
+
+        '''
+        str = ""
+        for k,v in self.GENE_INDEXES.iteritems():
+            str += "%d %s" % (k, self._genes[v].value)

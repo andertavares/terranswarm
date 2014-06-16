@@ -1,7 +1,7 @@
 import unittest
 import geneticoperators
 import chromosome as chromo
-
+import domain
 import random
 
 class TestGeneticOperators(unittest.TestCase):
@@ -31,28 +31,28 @@ class TestGeneticOperators(unittest.TestCase):
         if self._tournament_calls == 1:
             return {
                 'chromosome': [
-                    chromo.Gene('1', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.1),
+                    chromo.Gene('1', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.1),
                 ],
                 'fitness': 50
             }
         elif self._tournament_calls == 2:
             return {
                 'chromosome': [
-                    chromo.Gene('1', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.2),
+                    chromo.Gene('1', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.2),
                 ],
                 'fitness': 0
             }
         elif self._tournament_calls == 3:
             return  {
                 'chromosome': [
-                    chromo.Gene('1', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.3),
+                    chromo.Gene('1', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.3),
                 ],
                 'fitness': 0
             }
         elif self._tournament_calls == 4:
             return  {
                 'chromosome': [
-                    chromo.Gene('1', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.4),
+                    chromo.Gene('1', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.4),
                 ],
                 'fitness': 50
             }
@@ -64,19 +64,19 @@ class TestGeneticOperators(unittest.TestCase):
     def test_crossover(self):
         p1 = {
             'chromosome': [
-                chromo.Gene('1', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.1),
-                chromo.Gene('2', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.2),
-                chromo.Gene('3', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.3),
-                chromo.Gene('4', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.4),
+                chromo.Gene('1', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.1),
+                chromo.Gene('2', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.2),
+                chromo.Gene('3', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.3),
+                chromo.Gene('4', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.4),
             ]
         }
 
         p2 = {
             'chromosome': [
-                chromo.Gene('1', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.5),
-                chromo.Gene('2', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.6),
-                chromo.Gene('3', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.7),
-                chromo.Gene('4', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.8),
+                chromo.Gene('1', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.5),
+                chromo.Gene('2', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.6),
+                chromo.Gene('3', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.7),
+                chromo.Gene('4', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.8),
             ]
         }
 
@@ -95,10 +95,10 @@ class TestGeneticOperators(unittest.TestCase):
     def test_mutation(self):
         p1 = {
             'chromosome': [
-                chromo.Gene('1', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.1),
-                chromo.Gene('2', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.2),
-                chromo.Gene('3', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.3),
-                chromo.Gene('4', chromo.DiscreteDomain(chromo.STANDARD_INTERVAL), 0.4),
+                chromo.Gene('1', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.1),
+                chromo.Gene('2', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.2),
+                chromo.Gene('3', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.3),
+                chromo.Gene('4', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.4),
             ]
         }
 
