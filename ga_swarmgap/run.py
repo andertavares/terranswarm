@@ -23,8 +23,8 @@ if __name__ == "__main__":
         pfile = open('paths.ini','w')
 
         pfile.write(';please check whether the starcraft directory and path to chaoslauncher match the ones in your system\n')
-        pfile.write('starcraft_dir = "C:/Program Files/Starcraft"\n')
-        pfile.write('chaoslauncher_path = "C:/Program Files/Starcraft"\n')
+        pfile.write('starcraft_dir = "C:\Program Files\Starcraft"\n')
+        pfile.write('chaoslauncher_path = "C:\Program Files\BWAPI\Chaoslauncher\Chaoslauncher.exe"\n')
 
         pfile.close()
 
