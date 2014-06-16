@@ -1,5 +1,6 @@
 import os
 import re
+import distutils.dir_util
 import random
 import copy
 import geneticoperators as genops
@@ -97,12 +98,20 @@ def start(cfg_file):
             c2['fitness'] = estimate_fitness(c2, p1, p2)
 
             #calculates reliability of children
+            c1['reliability'] = reliability(c1, p1, p2)
+            c2['reliability'] = reliability(c2, p1, p2)
 
-        #create [1..n].ch
-        #estimate fitness; create i.fit
-        #if rel < thresh: evaluate
+            #adds children to the new population
+            new_pop.append(c1)
+            new_pop.append(c2)
 
-        #operators
+
+        #new population built, now evaluates it. Generation number is i+1
+        evaluate(new_pop, i+1, cfg)
+
+        #prepares for the next generation
+        old_pop = new_pop
+
 
 
 def tournament_selection(population, tournament_size):
@@ -138,7 +147,6 @@ def crossover_and_mutation(parent1, parent2, p_crossover, p_mutation):
     :return:
 
     '''
-
 
     child1_chromo = copy.copy(parent1['chromosome'])
     child2_chromo = copy.copy(parent2['chromosome'])
@@ -187,7 +195,7 @@ def evaluate(population, generation, cfg):
 
     #create dir g# in output_path
     write_dir = os.path.join(sc_dir, cfg.output_dir, 'g%d' % generation)
-    os.mkdir(write_dir)
+    distutils. dir_util.mkpath(write_dir)
 
 
     for i in range(0, len(population)):
@@ -195,7 +203,7 @@ def evaluate(population, generation, cfg):
 
         #creates a file and writes the chromosome
         chr_file = open(os.path.join(write_dir, '%d.chr' % i), 'w')
-        chr_file.write(p.to_file_string())
+        chr_file.write(p['chromosome'].to_file_string())
         chr_file.close()
 
 
