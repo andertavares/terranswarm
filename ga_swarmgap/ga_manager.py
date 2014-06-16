@@ -191,9 +191,11 @@ def evaluate(population, generation, cfg):
         p = population[i]
 
         #creates a file and writes the chromosome
-        chr_file = open(os.path.join(write_dir,'%d.chr' % i), 'w')
-        chr_file.write(','.join(p.to_array()))
+        chr_file = open(os.path.join(write_dir, '%d.chr' % i), 'w')
+        chr_file.write(p.to_file_string())
         chr_file.close()
+
+
         if p['reliability'] >= cfg.reliab_threshold:
             #create file with fitness, this individual won't be eval'ed
             fit_file = open(os.path.join(write_dir, '%d.fit' % i), 'w')
