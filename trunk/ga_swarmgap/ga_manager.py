@@ -223,11 +223,10 @@ def read_paths():
     #read from paths.ini
     paths = open('paths.ini', 'r').read()
 
-    sc_match_obj = re.match(r'starcraft_dir(.?)=(.?)".*"$', paths, re.M | re.I)
-    sc_dir = sc_match_obj.group(1)
+    sc_dir = re.match(r'.*starcraft_dir.?=.?"(.*?)"', paths, re.M | re.I | re.DOTALL).group(1)
+    #sc_dir = sc_match_obj.group(1)
 
-    cl_match_obj = re.match(r'chaoslauncher_path(.?)=(.?)".*"$', paths, re.M | re.I)
-    cl_path = cl_match_obj.group(1)
+    cl_path = re.match(r'.*chaoslauncher_path.?=.?"(.*?)"', paths, re.M | re.I | re.DOTALL).group(1)
 
     if not os.path.exists(sc_dir):
         raise RuntimeError('Directory to Starcraft was not found. paths.ini says: %s' % sc_dir)
