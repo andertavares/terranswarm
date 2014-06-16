@@ -1,4 +1,5 @@
 import os
+import re
 import random
 import copy
 import geneticoperators as genops
@@ -9,8 +10,8 @@ import glob
 import configparser
 from chromosome import Chromosome
 
-CHAOSLAUNCHER = "C:\Program Files (x86)\BWAPI\Chaoslauncher\Chaoslauncher.exe"
-STARCRAFT_PATH = 'C:/Program Files/Starcraft_old/'
+#CHAOSLAUNCHER = "C:\Program Files (x86)\BWAPI\Chaoslauncher\Chaoslauncher.exe"
+#STARCRAFT_PATH = 'C:/Program Files/Starcraft_old/'
 
 
 def estimate_fitness(c, p1, p2):
@@ -77,7 +78,7 @@ def start(cfg_file):
     old_pop = []
     for p in range(0, cfg.popsize):
         #sets fitness to 1 because population will be evaluated right after this loop
-        old_pop[p] = {'chromosome': Chromosome(), 'fitness': 1, 'reliability': 0}
+        old_pop.append({'chromosome': Chromosome(), 'fitness': 1, 'reliability': 0})
 
     #evaluates the 1st generation
     evaluate(old_pop, 1, cfg)
@@ -182,8 +183,10 @@ def evaluate(population, generation, cfg):
 
     '''
 
+    sc_dir, cl_path = read_paths()
+
     #create dir g# in output_path
-    write_dir = os.path.join(STARCRAFT_PATH, cfg.output_dir, 'g%d' % generation)
+    write_dir = os.path.join(sc_dir, cfg.output_dir, 'g%d' % generation)
     os.mkdir(write_dir)
 
 
@@ -203,7 +206,7 @@ def evaluate(population, generation, cfg):
             fit_file.close()
 
     #calls chaoslauncher, which will run the game for each missing .fit file in the last generation it finds
-    chaosLauncher = subprocess.Popen([CHAOSLAUNCHER])
+    chaosLauncher = subprocess.Popen([cl_path])
 
     #watch directory to see if all .fit files were generated
     while True:
@@ -215,3 +218,21 @@ def evaluate(population, generation, cfg):
     #finishes this execution of chaoslauncher and starcraft
     chaosLauncher.terminate()
     subprocess.call("taskkill /IM starcraft.exe")
+
+def read_paths():
+    #read from paths.ini
+    paths = open('paths.ini', 'r').read()
+
+    sc_match_obj = re.match(r'starcraft_dir(.?)=(.?)".*"$', paths, re.M | re.I)
+    sc_dir = sc_match_obj.group(1)
+
+    cl_match_obj = re.match(r'chaoslauncher_path(.?)=(.?)".*"$', paths, re.M | re.I)
+    cl_path = cl_match_obj.group(1)
+
+    if not os.path.exists(sc_dir):
+        raise RuntimeError('Directory to Starcraft was not found. paths.ini says: %s' % sc_dir)
+
+    if not os.path.exists(cl_path):
+        raise RuntimeError('Chaoslauncher executable was not found. paths.ini says: %s' % cl_path)
+
+    return (sc_dir, cl_path)
