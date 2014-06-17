@@ -11,6 +11,7 @@ using namespace BWAPI;
 using namespace std;
 
 std::map<int, double> GeneticValues::map_instance; //definition, prevents link error
+std::string GeneticValues::paramsFile = "";
 
 std::string utf8_encode(const std::wstring &wstr)
 {
@@ -31,6 +32,10 @@ std::wstring utf8_decode(const std::string &str)
 
 map<int, double> GeneticValues::getMap(){
 	return map_instance;
+}
+
+string GeneticValues::getParamsFile(){
+	return paramsFile;
 }
 
 //map<int, double> initializeMap(string mainPath)
@@ -59,6 +64,9 @@ void GeneticValues::initializeMap(string mainPath)
 
 			string fullPath = mainPath + "\\" + fileChar;
 			string fullPathLock = fullPath + ".lock";
+
+			//Broodwar << "fileChar: " << fileChar << endl;
+			paramsFile = fileChar;
 
 			strncpy_s(fullPathChar, fullPath.c_str(), sizeof(fullPathChar));
 			strncpy_s(fullPathLockChar, fullPathLock.c_str(), sizeof(fullPathLockChar));
