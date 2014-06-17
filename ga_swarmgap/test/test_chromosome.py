@@ -59,7 +59,7 @@ class TestChromosome(unittest.TestCase):
     def test_valid_init(self):
         chromo_values = [
             .8, 3, .15,
-            .15, .25, .35, 3,
+            .15, 3,
             3,
             .8, .95,
             .50, .25, .15,
@@ -81,7 +81,7 @@ class TestChromosome(unittest.TestCase):
     def test_invalid_init(self):
         chromo_values = [
             .8, 3, .15,
-            .15, .25, .35, 3,
+            .15, 3,
             7, #<< this is the invalid value
             .8, .95,
             .50, .25, .15,
@@ -97,7 +97,7 @@ class TestChromosome(unittest.TestCase):
 
         chromo_values = [
             .8, 3, .15,
-            .15, .25, .35, 3,
+            .15, 3,
             3,
             .8, .95,
             .50, .25, .15,
@@ -116,7 +116,7 @@ class TestChromosome(unittest.TestCase):
     def test_to_file_string(self):
         chromo_values = [
             .8, 3, .15,
-            .15, .25, .35, 3,
+            .15, 3,
             3,
             .8, .95,
             .50, .25, .15,
@@ -127,9 +127,9 @@ class TestChromosome(unittest.TestCase):
             8
         ]
 
-        expected_string = '0 0.8\n1 3\n2 0.15\n3 0.15\n4 0.25\n5 0.35\n6 3\n7 3\n8 0.8\n9 0.95\n10 0.5\n11 0.25\n' \
-                          '12 0.15\n13 0.1\n14 0.95\n15 0.3\n16 0\n17 0.3\n18 0.9\n19 0.8\n20 0.7\n21 0.3\n22 0.4' \
-                          '\n23 0.5\n24 8\n'
+        expected_string = '0 0.8\n1 3\n2 0.15\n3 0.15\n4 3\n5 3\n6 0.8\n7 0.95\n8 0.5\n9 0.25\n' \
+                          '10 0.15\n11 0.1\n12 0.95\n13 0.3\n14 0\n15 0.3\n16 0.9\n17 0.8\n18 0.7\n19 0.3\n20 0.4' \
+                          '\n21 0.5\n22 8\n'
 
         c = chromo.Chromosome(chromo_values)
 
