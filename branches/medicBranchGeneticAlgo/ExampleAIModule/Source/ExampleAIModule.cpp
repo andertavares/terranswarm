@@ -19,12 +19,13 @@ using namespace Filter;
 
 
 ExampleAIModule::ExampleAIModule() {
-	//init of game structure is done in onStart()
+	//init of game structures is done in onStart()
 	lastScan = 0;
 	trainMarine = NULL;
 	gatherMinerals = NULL;
 	buildSupplyDepot = NULL;
 	ourComSat = NULL;
+	timeOver = false;
 	srand(time(0));
 
 	//sets the working dir according to path.cfg located in starcraft directory
@@ -63,8 +64,8 @@ void ExampleAIModule::onStart() {
 	// and reduce the bot's APM (Actions Per Minute).
 	Broodwar->setCommandOptimizationLevel(2);
 
-	//Broodwar->setGUI(false); //disables gui drawing (better performance)
-	Broodwar->setLocalSpeed(10); //fastest speed, rock on!
+	Broodwar->setGUI(false); //disables gui drawing (better performance)
+	Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 	// Check if this is a replay
 	if ( Broodwar->isReplay() ) {
@@ -166,14 +167,39 @@ void ExampleAIModule::onEnd(bool isWinner) {
 	//Broodwar->
 	//opens a file and writes the results
 	//file layout is: Map Duration Win? Units Structure Resources EnemyRace Units Structure Resources (enemy)
+	
+
+	//determines whether the game ended as victory, draw or defeat
+	string gameResult = "win";
+	if (! isWinner){
+		gameResult = (timeOver ? "draw" : "loss");
+	}
+
+	//writes the default results file
 	ofstream resultFile;
-	Broodwar->enableFlag(Flag::CompleteMapInformation);
+	Broodwar->enableFlag(Flag::CompleteMapInformation);	//attemp to obtain enemy score, but does not work
 	resultFile.open ("results.txt", std::ios_base::app);
-	resultFile << "MD," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << (isWinner ? "win" : "loss") << ",";
+	resultFile << "GA," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << gameResult << ",";
 	resultFile << me->getUnitScore() << "," << me->getBuildingScore() << "," << me->gatheredMinerals() + me->gatheredGas() << ",";
 	resultFile << enemy->getRace().getName() << "," << enemy->getUnitScore() << "," << enemy->getBuildingScore() << "," << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
 	resultFile.close();
 	Broodwar << "Results written" << endl;
+
+	//writes the fitness for the genetic algorithm
+	string fitnessFile = GeneticValues::getParamsFile() + ".fit";
+	ofstream fitFile(workingDir + "\\" + fitnessFile, ios_base::out);
+	int fitness = me->getUnitScore() + me->getBuildingScore() + me->gatheredMinerals() + me->gatheredGas();
+	if (timeOver) {
+		fitness += 20000;
+	}
+	else if (isWinner) {
+		fitness += 50000;
+	}
+
+	fitFile << fitness << endl;
+	fitFile.close();
+	
+
 }
 
 void ExampleAIModule::onFrame() {
@@ -195,6 +221,14 @@ void ExampleAIModule::onFrame() {
 		}
 		return;
 	}
+
+
+	//checks if game is lasting too long. If so, ends the game as a draw
+	if(Broodwar->elapsedTime() >= 3600){ //1h of duration
+		timeOver = true;
+		Broodwar->leaveGame();
+	}
+
 
 	_drawStats();
 
@@ -678,7 +712,7 @@ void ExampleAIModule::updateAttack(){
 		//TODO: test is reachable 
 		Position foePos = foeUnit->getPosition();
 		if(! inRange && !foeUnit->isCloaked() && !foeUnit->isBurrowed() && !foeUnit->isInvincible() && Broodwar->isWalkable(foePos.x / 8, foePos.y / 8)){
-			Task* atk = new Task(Attack, .8f, foeUnit->getPosition());
+			Task* atk = new Task(Attack, parameters[S_ATTACK], foeUnit->getPosition());
 			allTasks[Attack]->push_back(*atk);
 			//Broodwar->sendText("Attack task added, pos=%d,%d // %d,%d ", unit->getPosition().x, unit->getPosition().y, atk->getPosition().x, atk->getPosition().y);
 		}
@@ -728,7 +762,7 @@ void ExampleAIModule::updateTrainMarine(){
 	}
 	else {
 		//if i have money, produce more
-		trainMarine->setIncentive(.8f);
+		trainMarine->setIncentive(parameters[S_TRAIN_MARINE]);
 	}
 	//trainMarine->setIncentive(.8f);
 }
@@ -740,7 +774,7 @@ void ExampleAIModule::updateTrainSCV(){
 		Unitset mineralsAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsMineralField);
 		Unitset scvAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsWorker && Filter::IsOwned);
 
-		trainSCVIncentives[*cmd] = max(0.0f, 1.0f - (scvAround.size() / (2.5f * mineralsAround.size())));
+		trainSCVIncentives[*cmd] = max(0.0f, 1.0f - float(scvAround.size() / (parameters[S_TRAIN_SCV_DENOMINATOR] * mineralsAround.size())));
 		
 		/*
 		if(scvMap.size() < 110){
@@ -771,7 +805,7 @@ void ExampleAIModule::updateBuildCommandCenter(){
 			}
 		}
 		if (!reachable){
-			buildCommandCenter->setIncentive(0.8f);
+			buildCommandCenter->setIncentive(parameters[S_BUILD_CMD_CENTER]);
 			return;
 		}
 	}
@@ -788,7 +822,7 @@ void ExampleAIModule::updateBuildBarracks(){
 
 	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); c++){
 		int barracksNumber = calculateBarracksFromCommandCenter(Broodwar->getUnit(c->getID()));
-		float incentive =  max(0.0f, 1.0f - barracksNumber/3.0f);
+		float incentive =  max(0.0f, 1.0f - barracksNumber/float(parameters[S_BUILD_BARRACKS_DENOMINATOR]));
 
 		//sets incentive to ZERO if we have not enough minerals
 		if(Broodwar->self()->minerals() < UnitTypes::Terran_Barracks.mineralPrice()){
@@ -1174,7 +1208,7 @@ void ExampleAIModule::updateTrainMedic(){
 	}
 	else {*/
 		//if((numberOfMarines / 4) > numberOfMedics && Broodwar->self()->gas() >= 25){
-			int expectedMedicNumbers = max(1.0f, (numberOfMarines / 3) + 0.0f);
+	int expectedMedicNumbers = max(1.0f, float(numberOfMarines / parameters[S_TRAIN_MEDIC_RATIO]));
 			//trainMedic->setIncentive(max(0.2f, numberOfMedics / (expectedMedicNumbers) + 0.0f));
 			if(expectedMedicNumbers > numberOfMedics){
 				trainMedic->setIncentive(1.0f - (numberOfMedics / (expectedMedicNumbers) + 0.0f));

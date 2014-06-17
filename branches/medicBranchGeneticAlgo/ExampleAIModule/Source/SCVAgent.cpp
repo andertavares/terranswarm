@@ -150,6 +150,9 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nMoving");
 		return;	
 	}
+	
+	map<int, double>& parameters = GeneticValues::getMap();
+	
 
 	// Simple approach to local incentives
 	if ( lastChecked + 75 < Broodwar->getFrameCount() || lastChecked == 0) {
@@ -161,7 +164,7 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
 					auto task = it;
 					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-					TaskAssociation taskA = TaskAssociation(&(*task), 0.7f);
+					TaskAssociation taskA = TaskAssociation(&(*task), parameters[K_SCV_GATHER_MINERALS]);
 
 					if(taskA.tValue() > rNumber){
 						state = GATHERING_MINERALS;
@@ -312,8 +315,17 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 				for(auto repair = taskList->begin(); repair != taskList->end(); repair++){
 					float rNumber = rand() / float(RAND_MAX);
 					int dist = gameUnit->getPosition().getApproxDistance(repair->getPosition());
-					float diff = 1.0f - gameUnit->getPosition().getApproxDistance(repair->getPosition()) / float(maxDistance);
-					TaskAssociation taskA = TaskAssociation(&(*repair), diff);// pow(float(EULER),-dist));
+
+					//calculates the 'normalized' distance from the agent to the task (1.0 = length of map diagonal)
+					float capability = 0.0f;
+					float normDist = (gameUnit->getPosition().getApproxDistance(repair->getPosition()) / float(maxDistance));
+					if(normDist < .33) capability = float(parameters[K_SCV_REPAIR_NEAR]);
+					else if (normDist < .66) capability = float(parameters[K_SCV_REPAIR_MID]);
+					else capability = float(parameters[K_SCV_REPAIR_FAR]);
+
+					//float diff = 1.0f - gameUnit->getPosition().getApproxDistance(repair->getPosition()) / float(maxDistance);
+
+					TaskAssociation taskA = TaskAssociation(&(*repair), capability);// pow(float(EULER),-dist));
 					//Broodwar->sendText("Rpr: s:%.3f, T:%.3f, k:%.3f", repair->getIncentive(), taskA.tValue(), diff);// pow(float(EULER),-diff));
 					if(rNumber < taskA.tValue()){
 						lastChecked = Broodwar->getFrameCount();

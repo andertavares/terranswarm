@@ -7,6 +7,8 @@
 #include "TaskAssociation.h"
 #include <random>
 #include <iostream>
+#include "GeneticValues.h"
+#include "Parameters.h"
 
 using namespace BWAPI;
 using namespace Filter;
@@ -23,13 +25,14 @@ CommanderAgent::~CommanderAgent(){
 
 void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, unordered_map<Unit, float> trainSCVIncentives) {
 
-	//debug info
+	map<int, double>& parameters = GeneticValues::getMap();
+	
 	for(unordered_map<Unit, float>::iterator iter = trainSCVIncentives.begin(); iter != trainSCVIncentives.end(); ++iter){
 		Unit u =  iter->first;
 		float incentive = iter->second;
 		//double uniformOn01 = dis(gen);
 		Task scv = Task(TrainWorker, iter->second);//&tasklist[TrainWorker]->at(0);
-		TaskAssociation trainSCV = TaskAssociation(&scv, .7f);
+		TaskAssociation trainSCV = TaskAssociation(&scv, parameters[K_GENERAL_TRAIN_SCV]);
 		//Broodwar->drawTextMap(u->getPosition(),"SCV inc: %.3f, T: %.3f", trainSCV.task()->getIncentive(), trainSCV.tValue());
 	}
 
@@ -52,7 +55,7 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 		float incentive = iter->second;
 		//double uniformOn01 = dis(gen);
 		Task scv = Task(TrainWorker, iter->second);//&tasklist[TrainWorker]->at(0);
-		TaskAssociation trainSCV = TaskAssociation(&scv, .7f);
+		TaskAssociation trainSCV = TaskAssociation(&scv, parameters[K_GENERAL_TRAIN_SCV]);
 
 		//Broodwar->drawTextMap(u->getPosition(),"SCV inc: %.3f, T: %.3f", trainSCV.task()->getIncentive(), trainSCV.tValue());
 
@@ -73,8 +76,8 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 	}
 
 	//iterates through the barracks
-	TaskAssociation trainMarine = TaskAssociation(&tasklist[TrainMarine]->at(0), .7f);
-	TaskAssociation trainMedic = TaskAssociation(&tasklist[TrainMedic]->at(0), .4f);
+	TaskAssociation trainMarine = TaskAssociation(&tasklist[TrainMarine]->at(0), parameters[K_GENERAL_TRAIN_MARINE]);
+	TaskAssociation trainMedic = TaskAssociation(&tasklist[TrainMedic]->at(0), parameters[K_GENERAL_TRAIN_MEDIC]);
 	Unitset myUnits = Broodwar->self()->getUnits();
 	for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u ) {
 		
