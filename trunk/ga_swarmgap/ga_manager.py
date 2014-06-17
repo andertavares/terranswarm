@@ -216,6 +216,11 @@ def evaluate(population, generation, cfg):
             fit_file.write(p['fitness'])
             fit_file.close()
 
+    #creates path.cfg on SC directory in order to orientate c++ where to find the chromosome files
+    pfile = open(os.path.join(sc_dir, 'path.cfg'), 'w')
+    pfile.write(write_dir)
+    pfile.close()
+
     #calls chaoslauncher, which will run the game for each missing .fit file in the last generation it finds
     print 'starting simulations...'
     chaosLauncher = subprocess.Popen([cl_path])
