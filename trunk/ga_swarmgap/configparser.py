@@ -27,7 +27,7 @@ class ConfigParser(object):
         cfgtree = ET.parse(cfgpath)
         
         
-        print 'Config file parsing started...'
+        #print 'Config file parsing started...'
 
         for io_element in cfgtree.find('io'):
 
