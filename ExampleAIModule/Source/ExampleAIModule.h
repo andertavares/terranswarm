@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <list>
+#include "Parameters.h"
 #include "Task.h"
 #include "CommanderAgent.h"
 #include "MarineAgent.h"
@@ -25,6 +26,12 @@ typedef unordered_map<int, MedicAgent*> MedicMap;
 // Remember not to use "Broodwar" in any global class constructor!
 
 class ExampleAIModule : public BWAPI::AIModule {
+
+	//relative path where the chromosome files are located
+	string workingDir;
+
+	//parameters that are used here and will be evolved by the GA
+	map<int, double> parameters;
 
 	//tasks that will have a single instance
 	Task* gatherMinerals;

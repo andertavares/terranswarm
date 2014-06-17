@@ -8,6 +8,7 @@
 #include "ExampleAIModule.h"
 #include "Task.h"
 #include "CommanderAgent.h"
+#include "GeneticValues.h"
 
 #define EULER 2.71828182845904523536
 
@@ -23,6 +24,16 @@ ExampleAIModule::ExampleAIModule() {
 	buildSupplyDepot = NULL;
 	ourComSat = NULL;
 	srand(time(0));
+
+	//sets the working dir according to path.cfg located in starcraft directory
+	ifstream infile("path.cfg");
+	stringstream buffer;
+	buffer << infile.rdbuf();
+	workingDir = buffer.str();
+
+	//loads the parameters
+	//GeneticValues& gv = new GeneticValues();
+	parameters = initializeMap(workingDir);
 }
 
 ExampleAIModule::~ExampleAIModule(){
@@ -33,11 +44,11 @@ ExampleAIModule::~ExampleAIModule(){
 
 void ExampleAIModule::onStart() {
 	// Hello World!
-	Broodwar->sendText("TerranSwarm is online!");
-
+	Broodwar->sendText("GAMedic is online!");
+	Broodwar << "working dir:" << workingDir << endl;
 	// Print the map name.
 	// BWAPI returns std::string when retrieving a string, don't forget to add .c_str() when printing!
-	Broodwar << "The map is " << Broodwar->mapName() << "!" << std::endl;
+	//Broodwar << "The map is " << Broodwar->mapName() << "!" << std::endl;
 	
   
 	// Enable the UserInput flag, which allows us to control the bot and type messages.
@@ -50,7 +61,7 @@ void ExampleAIModule::onStart() {
 	// and reduce the bot's APM (Actions Per Minute).
 	Broodwar->setCommandOptimizationLevel(2);
 
-	//Broodwar->setGUI(false); //disables gui drawing (better performance?)
+	//Broodwar->setGUI(false); //disables gui drawing (better performance)
 	Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 	// Check if this is a replay

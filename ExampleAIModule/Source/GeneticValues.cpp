@@ -26,14 +26,14 @@ std::wstring utf8_decode(const std::string &str)
     return wstrTo;
 }
 
-map<int, double> initializeMap()
+map<int, double> initializeMap(string mainPath)
 {
 	map<int, double> m;
 
 	HANDLE hFind;
 	WIN32_FIND_DATA data;
-	string mainPath = "c:\\test_files\\";
-	string fullFilePath = mainPath+"*.txt";
+	//string mainPath = "c:\\test_files\\";
+	string fullFilePath = mainPath+"*.chr";
 
 	std::wstring stemp = utf8_decode(fullFilePath);
 	LPCWSTR filePath = stemp.c_str();
@@ -92,10 +92,10 @@ map<int, double> initializeMap()
 	return m;
 }
 
-map<int, double> m = initializeMap();
+//map<int, double> m = initializeMap("c:\\test_files\\");
 
-
+/*
 double GeneticValues::getValue(int key){
 	return m[key];
 }
-
+*/
