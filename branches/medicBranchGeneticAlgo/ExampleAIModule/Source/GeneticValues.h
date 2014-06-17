@@ -5,11 +5,12 @@
 
 using namespace BWAPI;
 
+
+std::map<int, double> initializeMap(std::string path);
+
 class GeneticValues {
 
 public:
-	static double getValue(int key);
-
-private:
-
+	//static double getValue(int key);
+	
 };
