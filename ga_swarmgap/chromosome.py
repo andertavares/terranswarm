@@ -74,8 +74,8 @@ class Chromosome(object):
         'k_scv_repair_near', 'k_scv_repair_mid', 'k_scv_repair_far',
         'k_scv_explore', 'k_scv_attack_near', 'k_scv_attack_mid', 'k_scv_attack_far',
         'k_marine_explore', 'k_marine_attack_near', 'k_marine_attack_mid', 'k_marine_attack_far',
-        'k_general_train_scv_denominator', 'k_general_train_marine',
-        'k_general_train_medic_ratio',
+        'k_general_train_scv', 'k_general_train_marine',
+        'k_general_train_medic',
         'm_pack_size'
     ]
     #some tasks or skills are hard-coded and do not enter in the gene: k_build refinery, k_build academy,
