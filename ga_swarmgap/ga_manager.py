@@ -82,6 +82,7 @@ def start(cfg_file):
         old_pop.append({'chromosome': Chromosome(), 'fitness': 1, 'reliability': 0})
 
     #evaluates the 1st generation
+    print 'Evaluating generation #1'
     evaluate(old_pop, 1, cfg)
 
     for i in range(1, cfg.generations):  #starts from 1 because 1st generation (index 0) was evaluated already
@@ -107,10 +108,12 @@ def start(cfg_file):
 
 
         #new population built, now evaluates it. Generation number is i+1
+        print 'Evaluating generatino #%d' % (i+1)
         evaluate(new_pop, i+1, cfg)
 
         #prepares for the next generation
         old_pop = new_pop
+
 
 
 
@@ -214,6 +217,7 @@ def evaluate(population, generation, cfg):
             fit_file.close()
 
     #calls chaoslauncher, which will run the game for each missing .fit file in the last generation it finds
+    print 'starting simulations...'
     chaosLauncher = subprocess.Popen([cl_path])
 
     #watch directory to see if all .fit files were generated
@@ -226,6 +230,7 @@ def evaluate(population, generation, cfg):
     #finishes this execution of chaoslauncher and starcraft
     chaosLauncher.terminate()
     subprocess.call("taskkill /IM starcraft.exe")
+    print 'simulations finished.'
 
 def read_paths():
     #read from paths.ini

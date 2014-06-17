@@ -9,7 +9,7 @@ import ga_manager as ga
 def runGA(config_file):
     print 'Genetic algorithm for SwarmGAP in Starcraft started.'
     ga.start(config_file)
-    print 'Done.'
+    print 'DONE.'
 
 if __name__ == "__main__":
     #checks whether paths.ini already exists:
