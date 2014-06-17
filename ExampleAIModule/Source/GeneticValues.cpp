@@ -1,4 +1,5 @@
 #include "GeneticValues.h"
+#include <BWAPI.h>
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -8,6 +9,8 @@
 
 using namespace BWAPI;
 using namespace std;
+
+std::map<int, double> GeneticValues::map_instance; //definition, prevents link error
 
 std::string utf8_encode(const std::wstring &wstr)
 {
@@ -26,18 +29,23 @@ std::wstring utf8_decode(const std::string &str)
     return wstrTo;
 }
 
-map<int, double> initializeMap(string mainPath)
+map<int, double> GeneticValues::getMap(){
+	return map_instance;
+}
+
+//map<int, double> initializeMap(string mainPath)
+void GeneticValues::initializeMap(string mainPath)
 {
-	map<int, double> m;
+	//map<int, double> m;
 
 	HANDLE hFind;
 	WIN32_FIND_DATA data;
 	//string mainPath = "c:\\test_files\\";
-	string fullFilePath = mainPath+"*.chr";
-
+	string fullFilePath = mainPath + "\\" + "*.chr";
+	Broodwar << "looking for file:" << fullFilePath << endl;
 	std::wstring stemp = utf8_decode(fullFilePath);
 	LPCWSTR filePath = stemp.c_str();
-
+	
 	hFind = FindFirstFile(filePath, &data);
 	if (hFind != INVALID_HANDLE_VALUE) {
 		do {
@@ -49,14 +57,15 @@ map<int, double> initializeMap(string mainPath)
 			char fullPathChar[1024];
 			char fullPathLockChar[1024];
 
-			string fullPath = mainPath+fileChar;
-			string fullPathLock = mainPath+fileChar+".lock";
+			string fullPath = mainPath + "\\" + fileChar;
+			string fullPathLock = fullPath + ".lock";
 
-			strncpy(fullPathChar, fullPath.c_str(), sizeof(fullPathChar));
-			strncpy(fullPathLockChar, fullPathLock.c_str(), sizeof(fullPathLockChar));
+			strncpy_s(fullPathChar, fullPath.c_str(), sizeof(fullPathChar));
+			strncpy_s(fullPathLockChar, fullPathLock.c_str(), sizeof(fullPathLockChar));
 			fullPathChar[sizeof(fullPathChar) - 1] = 0;
 			fullPathLockChar[sizeof(fullPathLockChar) - 1] = 0;
 
+			Broodwar << "Will read params from " << fullPathChar << endl;
 			// Read the file and get the values into a map
 			string line;
 			ifstream myfile (fullPathChar);
@@ -69,7 +78,7 @@ map<int, double> initializeMap(string mainPath)
 					if (!(iss >> key >> value)) break;  // error
 
 					//cout << key << " -> " << value << '\n';
-					m[key] = value;
+					map_instance[key] = value;
 				}
 				myfile.close();
 			}
@@ -89,7 +98,7 @@ map<int, double> initializeMap(string mainPath)
 		} while (FindNextFile(hFind, &data));
 		FindClose(hFind);
 	}
-	return m;
+	//return m;
 }
 
 //map<int, double> m = initializeMap("c:\\test_files\\");

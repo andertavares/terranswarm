@@ -8,9 +8,11 @@
 #include "ExampleAIModule.h"
 #include "Task.h"
 #include "CommanderAgent.h"
+#include "Parameters.h"
 #include "GeneticValues.h"
 
 #define EULER 2.71828182845904523536
+#define DEBUG_GA true
 
 using namespace BWAPI;
 using namespace Filter;
@@ -32,8 +34,8 @@ ExampleAIModule::ExampleAIModule() {
 	workingDir = buffer.str();
 
 	//loads the parameters
-	//GeneticValues& gv = new GeneticValues();
-	parameters = initializeMap(workingDir);
+	GeneticValues::initializeMap(workingDir);
+	parameters = GeneticValues::getMap();
 }
 
 ExampleAIModule::~ExampleAIModule(){
@@ -62,7 +64,7 @@ void ExampleAIModule::onStart() {
 	Broodwar->setCommandOptimizationLevel(2);
 
 	//Broodwar->setGUI(false); //disables gui drawing (better performance)
-	Broodwar->setLocalSpeed(0); //fastest speed, rock on!
+	Broodwar->setLocalSpeed(10); //fastest speed, rock on!
 
 	// Check if this is a replay
 	if ( Broodwar->isReplay() ) {
@@ -940,11 +942,23 @@ void ExampleAIModule::_drawStats(){
 	Broodwar->drawTextScreen(290, 45, "Time: ~ %dh%dm%ds", Broodwar->elapsedTime() / 3600, Broodwar->elapsedTime() / 60, Broodwar->elapsedTime() % 60);
 	_drawExploredStats();
 
+	//display the parameters
+	if (DEBUG_GA){
+		int offset = 0;
+		for(int par = S_GATHER_MINERALS; par <= M_PACK_SIZE; par++){
+			Broodwar->drawTextScreen(400, offset,  "%s: %f", PARAMETER_NAMES[par], parameters[par] );
+			//allTasks[static_cast<TaskType>(tt)] = new vector<Task>;
+			offset += 11;
+		}
+
+	}
+
 	// display some debug info...
 	Broodwar->drawTextScreen(20, 0, "%cSupply Depot incentive = %.3f", 
 		Text::White, 
 		buildSupplyDepot->getIncentive()
 	); 
+
 
 	//Broodwar->sendText("%d", &allTasks[BuildSupplyDepot]->at(0) == buildSupplyDepot);
 

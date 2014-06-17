@@ -2,6 +2,7 @@
 #include <BWAPI.h>
 #include <list>
 #include <unordered_map>
+#include <map>
 #include "Task.h"
 #include "AgentStates.h"
 
@@ -10,6 +11,9 @@ using namespace std;
 #define MEETING_RADIUS TILE_SIZE * 10
 
 class MarineAgent {
+
+	//parameters read from a file
+	//static std::map<int, double>& parameters;
 
 	//bool engaged;
 	int latencyFrames;
@@ -24,6 +28,7 @@ class MarineAgent {
 public:
 	MarineAgent(BWAPI::Unit u);
 	~MarineAgent(void);
+	//static void setParameters(map<int, double>& params);
 	void onTask(unordered_map<TaskType, list<Task>*> taskMap);
 	void onFrame(unordered_map<TaskType, vector<Task>*> tasks, unordered_map<int, MarineAgent*> colleagues);
 	bool evaluateIncentive();
@@ -36,7 +41,5 @@ public:
 	Unit MarineAgent::oldestColleagueAround();
 	BWAPI::Unit gameUnit;
 
-private:
-	
 };
 

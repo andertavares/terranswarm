@@ -8,7 +8,8 @@
 
 #include "MarineAgent.h"
 #include "Task.h"
-//#include "PositionTask.h"
+#include "Parameters.h"
+#include "GeneticValues.h"
 #include "TaskAssociation.h"
 #include "util.h"
 
@@ -24,18 +25,11 @@ MarineAgent::MarineAgent(Unit u) : gameUnit(u), state(NO_TASK), latencyFrames(10
 
 MarineAgent::~MarineAgent(void){
 }
-
-/*---- code snippet for stimpack use, from nova bot
-// Use stimpacks when there are medics around:
-void CombatAgent::inCombatMarine(Unit *bestTarget, const UnitSet &enemies, SquadAgent *squad)
-{
-	if (Broodwar->self()->hasResearched(TechTypes::Stim_Packs) && squad->hasUnitOfType(UnitTypes::Terran_Medic)) {
- 		if (bestTarget!=0 && !_unit->isStimmed() && _unit->getHitPoints() > 20 && _unit->isAttacking()) {
- 			_unit->useTech(TechTypes::Stim_Packs);
- 		}
- 	}
-}---*/
-
+/*
+void MarineAgent::setParameters(map<int, double>& params){
+	parameters = params;
+}
+*/
 
 void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unordered_map<int, MarineAgent*> colleagues){
 
@@ -48,6 +42,9 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 	if(!gameUnit->isCompleted() || Broodwar->getFrameCount() % latencyFrames != 0) {
 		return;
 	}
+
+	map<int, double>& parameters = GeneticValues::getMap();
+
 	/*
 	if(state == MOVE_BUNKER){
 		if(bunkerToMove != NULL){
@@ -139,10 +136,19 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 		switch(taskIter->first){
 		
 		case Attack:
-			//inserts an TaskAssociation for each Attack task; capability is proportional to distance to the task
+			//inserts an TaskAssociation for each Attack task; 
+			//capability depends whether task is near, mid distance or far
 
 			for (auto atk = taskIter->second->begin(); atk != taskIter->second->end(); atk++){
-				capability = 1.0f - (gameUnit->getPosition().getApproxDistance(atk->getPosition()) / float(maxDistance));
+				//capability = 1.0f - (gameUnit->getPosition().getApproxDistance(atk->getPosition()) / float(maxDistance));
+				
+				//calculates the 'normalized' distance from the agent to the task (1.0 = length of map diagonal)
+				float normDist = (gameUnit->getPosition().getApproxDistance(atk->getPosition()) / float(maxDistance));
+
+				if(normDist < .33) capability = float(parameters[K_MARINE_ATTACK_NEAR]);
+				else if (normDist < .66) capability = float(parameters[K_MARINE_ATTACK_MID]);
+				else capability = float(parameters[K_MARINE_ATTACK_FAR]);
+				
 
 				if( (rand() / RAND_MAX) < TaskAssociation(&(*atk), capability).tValue()){
 					toPerform = &(*atk);
@@ -154,7 +160,7 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 			break;
 
 		case Explore:
-			capability = 0.3f;
+			capability = float(parameters[K_MARINE_EXPLORE]);
 			Task* exp = &(taskIter->second->at(0));
 			if( (rand() / RAND_MAX) < TaskAssociation(exp, capability).tValue()){
 				toPerform = exp;
@@ -228,9 +234,10 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 
 	//retrieves the enemies around
 	Unitset enemiesInSight = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 7 * TILE_SIZE, Filter::IsEnemy);
-
+	
 	//if pack size is enough or has not enough colleagues around to pack or has enemy in sight, attacks
-	if(packSize >= 8 || colleaguesAround == packSize || enemiesInSight.size() > 0) {
+	map<int, double>& parameters = GeneticValues::getMap();
+	if(packSize >= parameters[M_PACK_SIZE] || colleaguesAround == packSize || enemiesInSight.size() > 0) {
 		// Check for barracks
 		state = ATTACKING;
 		/*
