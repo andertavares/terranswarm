@@ -33,7 +33,7 @@ class TestGene(unittest.TestCase):
 class TestChromosome(unittest.TestCase):
     def test_random_init(self):
         c = chromo.Chromosome()
-
+        self.assertEqual(23, c.size)
         values = []
 
         for i in range(1,100):
@@ -70,7 +70,7 @@ class TestChromosome(unittest.TestCase):
             8
         ]
         c = chromo.Chromosome(chromo_values)
-
+        self.assertEqual(23, c.size)
         #self.assertEqual(len(chromo_values), len(c._genes))
 
         for i in range(0, len(chromo.Chromosome.GENE_NAMES)):
@@ -111,6 +111,11 @@ class TestChromosome(unittest.TestCase):
             c = chromo.Chromosome(chromo_values)
 
     def test_to_array(self):
+        #TODO: implement this test
+        pass
+
+    def test_from_array(self):
+        #TODO: implement this test
         pass
 
     def test_to_file_string(self):
@@ -132,7 +137,7 @@ class TestChromosome(unittest.TestCase):
                           '\n21 0.5\n22 8\n'
 
         c = chromo.Chromosome(chromo_values)
-
+        self.assertEqual(23, c.size)
         self.assertEqual(expected_string, c.to_file_string())
 
 if __name__ == '__main__':

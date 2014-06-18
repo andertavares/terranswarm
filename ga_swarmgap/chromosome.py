@@ -34,6 +34,9 @@ class Gene(object):
         '''
         self._domain = domain
 
+    def set_value(self, value):
+        self._value = value
+
     @property
     def name(self):
         return self._name
@@ -120,6 +123,23 @@ class Chromosome(object):
                 raise ValueError("Value %d not valid in %s domain" % (gene.value, gene.name))
 
 
+    @property
+    def size(self):
+        return len(self._genes)
+
+    def from_array(self, arr):
+        '''
+        Sets the chromosome genes from an array. Elements *must* be in the order given by GENE_NAMES array
+
+        :param arr:
+        :return:
+        '''
+        for i in range(0, len(self.GENE_NAMES)):
+            self._genes[self.GENE_NAMES[i]].set_value(arr[i])
+            #arr[i] = self._genes[self.GENE_NAMES[i]].value
+
+
+
     def to_array(self):
         '''
         Returns the chromosome genes as an array. Gene order obeys the GENE_NAMES array
@@ -128,7 +148,7 @@ class Chromosome(object):
         '''
         arr = []
         for i in range(0, len(self.GENE_NAMES)):
-            arr[i] = self._genes[self.GENE_NAMES[i]].value
+            arr.append(self._genes[self.GENE_NAMES[i]].value)
 
         return arr
 
