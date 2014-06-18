@@ -4,6 +4,7 @@ import distutils.dir_util
 import random
 import copy
 import geneticoperators as genops
+import chromosome as chromo
 import subprocess
 import time
 import glob
@@ -62,13 +63,14 @@ def similarity(child, parent):
     #TODO: fix this method
     chr_length = child['chromosome'].size
 
-    parent_array = parent.to_array()
-    child_array = child.to_array()
+    parent_array = parent['chromosome']._genes
+    child_array = child['chromosome']._genes
 
     partial = 0.0
     for i in range(0, chr_length):
-        partial += abs(parent_array[i].value - child_array[i].value) / \
-                   float(child_array[i].domain.max_value - child_array[i].domain.min_value)
+        index = chromo.Chromosome.GENE_NAMES[i]
+        partial += abs(parent_array[index].value - child_array[index].value) / \
+                   float(child_array[index].domain.max_value() - child_array[index].domain.min_value())
 
     return 1 - partial / chr_length
 
@@ -208,16 +210,25 @@ def evaluate(population, generation, cfg):
         p = population[i]
 
         #creates a file and writes the chromosome
-        chr_file = open(os.path.join(write_dir, '%d.chr' % i), 'w')
-        chr_file.write(p['chromosome'].to_file_string())
-        chr_file.close()
 
+
+        #chr_file = None
 
         if p['reliability'] >= cfg.reliab_threshold:
             #create file with fitness, this individual won't be eval'ed
+            #also, we create its chr_file with .lock extension, so that broodwar won't simulate it
+            chr_file = open(os.path.join(write_dir, '%d.chr.lock' % i), 'w')
             fit_file = open(os.path.join(write_dir, '%d.fit' % i), 'w')
-            fit_file.write(p['fitness'])
+            print type(p['fitness'])
+            fit_file.write(str(p['fitness']))
             fit_file.close()
+        else:
+            #as this individual will be evaluated, we set its reliability to 1 a priori
+            chr_file = open(os.path.join(write_dir, '%d.chr' % i), 'w')
+            p['reliability'] = 1
+
+        chr_file.write(p['chromosome'].to_file_string())
+        chr_file.close()
 
     #creates path.cfg on SC directory in order to orientate c++ where to find the chromosome files
     pfile = open(os.path.join(sc_dir, 'path.cfg'), 'w')
@@ -226,7 +237,16 @@ def evaluate(population, generation, cfg):
 
     #calls chaoslauncher, which will run the game for each missing .fit file in the last generation it finds
     print 'starting simulations...'
-    chaosLauncher = subprocess.Popen([cl_path])
+
+    #calls chaoslauncher if not all fitness files were generated #TODO: make this prettier
+    fit_files_pattern = os.path.join(write_dir, "*.fit")
+    fit_files = glob.glob(fit_files_pattern)
+
+    cl_called = False
+
+    if len(fit_files) < cfg.popsize:
+        chaosLauncher = subprocess.Popen([cl_path])
+        cl_called = True
 
     #watch directory to see if all .fit files were generated
     while True:
@@ -238,7 +258,9 @@ def evaluate(population, generation, cfg):
         time.sleep(1)
 
     #finishes this execution of chaoslauncher and starcraft
-    chaosLauncher.terminate()
+    if(cl_called):
+        chaosLauncher.terminate()
+
     subprocess.call("taskkill /IM starcraft.exe")
     print 'Simulations finished. Collecting fitness information'
 
@@ -248,7 +270,10 @@ def evaluate(population, generation, cfg):
         fname_parts = fname.split('.')
         indiv_index = int(fname_parts[0]) #index of the individual is the part in file name before the first dot
 
-        population[indiv_index]['fitness'] = int(open(f).read().strip())
+
+        fit_value = float(open(f).read().strip())
+        #print 'Fitness for individual %d= %d ' % (indiv_index, fit_value)
+        population[indiv_index]['fitness'] = fit_value
 
 
 def read_paths():
