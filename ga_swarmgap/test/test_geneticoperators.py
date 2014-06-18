@@ -19,7 +19,7 @@ class TestGeneticOperators(unittest.TestCase):
     def rand_for_mutation(self):
         self._mutation_calls += 1
 
-        if self._mutation_calls == 2: #ensures that mutation happens at 2nd call
+        if self._mutation_calls == 3: #ensures that mutation happens at 2nd call
             return 0.0
         return 1.0
 
@@ -127,24 +127,41 @@ class TestGeneticOperators(unittest.TestCase):
 
     def test_mutation(self):
         #TODO: update this test
-        p1 = {
-            'chromosome': [
-                chromo.Gene('1', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.1),
-                chromo.Gene('2', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.2),
-                chromo.Gene('3', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.3),
-                chromo.Gene('4', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.4),
-            ]
-        }
+        chromo1 = chromo.Chromosome([
+            .9, 2, .20,
+            .60, 4,
+            4,
+            .9, .7,
+            .4, .2, .1,
+            .3, .7, .4, .3,
+            .4, .8, .7, .6,
+            .4, .5,
+            .6,
+            20
+        ])
+
+        p1 = {'chromosome': chromo1}
 
         #patches methods from random
-        random.random = self.rand_for_mutation
+        random.random = self.rand_for_mutation #problem: with rand_for_mutation we expect 2nd gene to be mutated, but mutation uses a different gene ordering
         random.choice = self.choice_for_mutation
 
         geneticoperators.mutation(p1, 0.5)
 
-        p1_values = [gene.value for gene in p1['chromosome']]
+        p1_values = p1['chromosome'].to_array()
 
-        self.assertEqual(p1_values, [0.1, 0.999, 0.3, 0.4])
+        self.assertEqual(p1_values, [
+            .9, 2, .20,
+            .60, 4,
+            4,
+            .9, .7,
+            .4, .2, .1,
+            .3, .7, .4, .3,
+            .999, .8, .7, .6,
+            .4, .5,
+            .6,
+            20
+        ])
 
     def test_tournament_selection(self):
         #patches random.choice for convenient selection of individuals

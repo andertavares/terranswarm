@@ -111,12 +111,47 @@ class TestChromosome(unittest.TestCase):
             c = chromo.Chromosome(chromo_values)
 
     def test_to_array(self):
-        #TODO: implement this test
-        pass
+        chromo_values = [
+            .8, 3, .15,
+            .15, 3,
+            3,
+            .8, .95,
+            .50, .25, .15,
+            .1, .95, .3, 0,
+            .3, .90, .8, .7,
+            .3, .4,
+            .5,
+            8
+        ]
+        c = chromo.Chromosome(chromo_values)
+
+        self.assertEqual(chromo_values, c.to_array())
 
     def test_from_array(self):
-        #TODO: implement this test
-        pass
+        '''
+        Assumes that test_to_array passes
+        :return:
+        '''
+        c = chromo.Chromosome() #creates random chromosome
+
+        chromo_values = [
+            .8, 3, .15,
+            .15, 3,
+            3,
+            .8, .95,
+            .50, .25, .15,
+            .1, .95, .3, 0,
+            .3, .90, .8, .7,
+            .3, .4,
+            .5,
+            8
+        ]
+        self.assertNotEqual(chromo_values, c.to_array())
+
+        #fills chromosome with known values
+        c.from_array(chromo_values)
+
+        self.assertEqual(chromo_values, c.to_array())
 
     def test_to_file_string(self):
         chromo_values = [
