@@ -76,6 +76,8 @@ def similarity(child, parent):
 def start(cfg_file):
     cfg = configparser.ConfigParser(cfg_file)
 
+    random.seed(cfg.random_seed)
+
     #generates initial population
     old_pop = []
     for p in range(0, cfg.popsize):
@@ -232,7 +234,7 @@ def evaluate(population, generation, cfg):
         fit_files = glob.glob(fit_files_pattern)
         if len(fit_files) >= cfg.popsize:
             break
-        print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
+        #print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
         time.sleep(1)
 
     #finishes this execution of chaoslauncher and starcraft
