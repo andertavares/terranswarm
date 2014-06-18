@@ -59,7 +59,8 @@ def similarity(child, parent):
     :return: the similarity value in [0..1]
 
     '''
-    chr_length = len(child['chromosome'])
+    #TODO: fix this method
+    chr_length = child['chromosome'].size
 
     parent_array = parent.to_array()
     child_array = child.to_array()
@@ -227,15 +228,26 @@ def evaluate(population, generation, cfg):
 
     #watch directory to see if all .fit files were generated
     while True:
-        fit_files = glob.glob(os.path.join(cfg.output_dir, "*.fit"))
+        fit_files_pattern = os.path.join(write_dir, "*.fit")
+        fit_files = glob.glob(fit_files_pattern)
         if len(fit_files) >= cfg.popsize:
             break
+        print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
         time.sleep(1)
 
     #finishes this execution of chaoslauncher and starcraft
     chaosLauncher.terminate()
     subprocess.call("taskkill /IM starcraft.exe")
-    print 'simulations finished.'
+    print 'Simulations finished. Collecting fitness information'
+
+    for f in fit_files:
+        path_parts = f.split(os.sep)
+        fname = path_parts[-1] #after the last slash we have the file name
+        fname_parts = fname.split('.')
+        indiv_index = int(fname_parts[0]) #index of the individual is the part in file name before the first dot
+
+        population[indiv_index]['fitness'] = int(open(f).read().strip())
+
 
 def read_paths():
     #read from paths.ini

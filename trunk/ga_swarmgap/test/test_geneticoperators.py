@@ -11,8 +11,9 @@ class TestGeneticOperators(unittest.TestCase):
         self._tournament_calls = 0
 
     def patch_randint(self, min, max):
+        #print max
         assert min == 1
-        assert max == 3
+        assert max == 22
         return self._rand_return
 
     def rand_for_mutation(self):
@@ -62,37 +63,70 @@ class TestGeneticOperators(unittest.TestCase):
 
 
     def test_crossover(self):
-        p1 = {
-            'chromosome': [
-                chromo.Gene('1', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.1),
-                chromo.Gene('2', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.2),
-                chromo.Gene('3', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.3),
-                chromo.Gene('4', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.4),
-            ]
-        }
+        chromo1 = chromo.Chromosome([
+            .8, 3, .15,
+            .15, 3,
+            3,
+            .8, .95,
+            .50, .25, .15, #<< xover point will be here, will exchange values below
+            .1, .95, .3, 0,
+            .3, .90, .8, .7,
+            .3, .4,
+            .5,
+            8
+        ])
+        chromo2 = chromo.Chromosome([
+            .9, 2, .20,
+            .60, 4,
+            4,
+            .9, .7,
+            .4, .2, .1,  #<< xover point will be here, will exchange values below
+            .3, .7, .4, .3,
+            .4, .8, .7, .6,
+            .4, .5,
+            .6,
+            20
+        ])
 
-        p2 = {
-            'chromosome': [
-                chromo.Gene('1', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.5),
-                chromo.Gene('2', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.6),
-                chromo.Gene('3', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.7),
-                chromo.Gene('4', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.8),
-            ]
-        }
+        p1 = {'chromosome': chromo1}
+        p2 = {'chromosome': chromo2}
 
         #replaces standard library methods...
-        self._rand_return = 2
+        self._rand_return = 11
         random.randint = self.patch_randint
 
         c1, c2 = geneticoperators.crossover(p1, p2, 1.0)
 
-        c1_values = [gene.value for gene in c1['chromosome']]
-        c2_values = [gene.value for gene in c2['chromosome']]
-        self.assertEqual(c1_values, [0.1, 0.2, 0.7, 0.8])
-        self.assertEqual(c2_values, [0.5, 0.6, 0.3, 0.4])
+        #print c1['chromosome']._genes
+        c1_values = c1['chromosome'].to_array()
+        c2_values = c2['chromosome'].to_array()
+        self.assertEqual(c1_values, [
+            .8, 3, .15,
+            .15, 3,
+            3,
+            .8, .95,
+            .50, .25, .15,
+            .3, .7, .4, .3,
+            .4, .8, .7, .6,
+            .4, .5,
+            .6,
+            20
+        ])
+        self.assertEqual(c2_values,  [.9, 2, .20,
+            .60, 4,
+            4,
+            .9, .7,
+            .4, .2, .1,
+            .1, .95, .3, 0,
+            .3, .90, .8, .7,
+            .3, .4,
+            .5,
+            8
+        ])
 
 
     def test_mutation(self):
+        #TODO: update this test
         p1 = {
             'chromosome': [
                 chromo.Gene('1', domain.DiscreteDomain(domain.STANDARD_INTERVAL), 0.1),

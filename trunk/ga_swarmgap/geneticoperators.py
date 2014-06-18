@@ -35,23 +35,35 @@ def crossover(parent1, parent2, p_crossover):
     '''
     par1_chromo = parent1['chromosome']
     par2_chromo = parent2['chromosome']
-    child1_chromo = copy.copy(par1_chromo)
-    child2_chromo = copy.copy(par2_chromo)
+    child1_chromo = copy.deepcopy(par1_chromo)
+    child2_chromo = copy.deepcopy(par2_chromo)
 
-    assert len(child1_chromo) == len(child2_chromo)
+    assert child1_chromo.size == child2_chromo.size
 
-    length = len(child1_chromo)
+    length = child1_chromo.size
 
     if random.random() < p_crossover:
         #select crossover point
-        xover_point = random.randint(1, len(parent1['chromosome']) - 1)
+        xover_point = random.randint(1, length - 1)
+        #print type(par1_chromo._genes), type(child1_chromo._genes)
+
+        #gets the arrays with values to perform the exchange
+        p1_array = par1_chromo.to_array()
+        p2_array = par2_chromo.to_array()
+
+        c1_array = child1_chromo.to_array()
+        c2_array = child2_chromo.to_array()
 
         #performs one-point exchange around the xover point
-        child1_chromo[0: xover_point] = par1_chromo[0: xover_point]
-        child1_chromo[xover_point: length] = par2_chromo[xover_point: length]
+        c1_array[0: xover_point] = p1_array[0: xover_point]
+        c1_array[xover_point: length] = p2_array[xover_point: length]
 
-        child2_chromo[0: xover_point] = par2_chromo[0: xover_point]
-        child2_chromo[xover_point: length] = par1_chromo[xover_point: length]
+        c2_array[0: xover_point] = p2_array[0: xover_point]
+        c2_array[xover_point: length] = p1_array[xover_point: length]
+
+        #use the exchanged arrays to set the new values in the chromosome
+        child1_chromo.from_array(c1_array)
+        child2_chromo.from_array(c2_array)
 
     return (
         {'chromosome': child1_chromo, 'fitness': 0, 'reliability': 0},
@@ -67,6 +79,6 @@ def mutation(individual, p_mutation):
 
     '''
 
-    for gene in individual['chromosome']:
+    for name, gene in individual['chromosome']._genes.iteritems():
         if random.random() < p_mutation:
             gene.randomize()
