@@ -1,5 +1,6 @@
 import os
 import re
+import math
 import distutils.dir_util
 import random
 import copy
@@ -60,7 +61,6 @@ def similarity(child, parent):
     :return: the similarity value in [0..1]
 
     '''
-    #TODO: fix this method
     chr_length = child['chromosome'].size
 
     parent_array = parent['chromosome']._genes
@@ -68,11 +68,11 @@ def similarity(child, parent):
 
     partial = 0.0
     for i in range(0, chr_length):
-        index = chromo.Chromosome.GENE_NAMES[i]
+        index = child['chromosome'].GENE_NAMES[i]
         partial += abs(parent_array[index].value - child_array[index].value) / \
-                   float(child_array[index].domain.max_value() - child_array[index].domain.min_value())
+                   abs(float(child_array[index].domain.max_value() - child_array[index].domain.min_value()))
 
-    return 1 - partial / chr_length
+    return 1 - (math.sqrt(partial) / chr_length)
 
 
 def start(cfg_file):
