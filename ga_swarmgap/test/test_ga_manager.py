@@ -17,11 +17,11 @@ class TestGaManager(unittest.TestCase):
         parent = {'chromosome': SimpleChromosome([2, .3])}
         child = {'chromosome': SimpleChromosome([4, .5])}
 
-        #1 - sqrt(sum( (ci - pi)^2)/ (abs(maxi - mini)) / length
+        #1 - (sum( abs(ci - pi))/ (abs(maxi - mini)) / length
 
         #hand calculations for the given chromosomes:
-        #1 - sqrt((4-2)^2 / (5-0) + (.5-.3)^2 / (.5-.1)) / 2 = 0.4743
-        self.assertAlmostEqual(0.52565, gam.similarity(child, parent), None, None, 0.00001)
+        #1 - ((4-2) / (5-0) + (.5-.3) / (.5-.1)) / 2 = .55
+        self.assertEqual(.55, gam.similarity(child, parent))
 
 
 class SimpleChromosome(object):

@@ -72,7 +72,7 @@ def similarity(child, parent):
         partial += abs(parent_array[index].value - child_array[index].value) / \
                    abs(float(child_array[index].domain.max_value() - child_array[index].domain.min_value()))
 
-    return 1 - (math.sqrt(partial) / chr_length)
+    return 1 - (partial / chr_length)
 
 
 def start(cfg_file):
