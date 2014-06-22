@@ -32,7 +32,7 @@ def estimate_fitness(c, p1, p2):
     r1, r2 = p1['reliability'], p2['reliability']
     f1, f2 = p1['fitness'], p2['fitness']
 
-    return (r1 * f1 * s1 + r2 * f2 * s2) / (r1 * s1 + r2 * s2)
+    return ((r1 * f1 * s1) + (r2 * f2 * s2)) / float((r1 * s1) + (r2 * s2))
 
 
 def reliability(c, p1, p2):

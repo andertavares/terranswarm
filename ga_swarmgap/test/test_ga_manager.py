@@ -55,6 +55,26 @@ class TestGaManager(unittest.TestCase):
         self.assertAlmostEqual(.5198, gam.reliability(child, parent1, parent2), None, None, 0.0001)
 
 
+    def test_estimate_fitness(self):
+        '''
+        Assumes that similarity function is working
+
+        '''
+
+        #same chromosomes used in test_reliability, with fitness added
+        parent1 = {'chromosome': SimpleChromosome([3, .4]), 'reliability': .7, 'fitness': 75000 }
+        parent2 = {'chromosome': SimpleChromosome([4, .5]), 'reliability': .9, 'fitness': 25520}
+        child = {'chromosome': SimpleChromosome([2, .3])}
+
+        #s1: similarity between parent1 and child; s2: similarity between parent2 and child
+        #r1 and r2 are reliability for parent1 and parent2, respectively
+        #s1 and s2 were hand calculated; r1 and r2 were stipulated
+        #s1, s2 = .775, .55
+
+        #hand-calculating estimated fitness: ((75000 * .775 * .7) + (25520 * .55 * .9)) / ((.775*.7) + (.55*.9))
+        self.assertAlmostEqual(51392.6746, gam.estimate_fitness(child, parent1, parent2), None, None, 0.0001)
+
+
 class SimpleChromosome(object):
     '''
     Class that mocks up Chromosome in order to do the tests
