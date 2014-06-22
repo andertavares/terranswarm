@@ -263,6 +263,7 @@ def evaluate(population, generation, cfg):
 
     subprocess.call("taskkill /IM starcraft.exe")
     print 'Simulations finished. Collecting fitness information'
+    time.sleep(2)
 
     for f in fit_files:
         path_parts = f.split(os.sep)
