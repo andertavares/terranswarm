@@ -23,6 +23,14 @@ def tournament_selection(population, tournament_size):
 
     return tuple(parents)
 
+def elite(population):
+    '''
+    Returns the best individual from the population
+    :param population:
+    :return:
+    '''
+    return max(population, key=lambda x: x['fitness'])
+
 def crossover(parent1, parent2, p_crossover):
     '''
     Performs crossover with the parents to produce the offspring

@@ -163,6 +163,17 @@ class TestGeneticOperators(unittest.TestCase):
             20
         ])
 
+    def test_elite(self):
+        '''
+        Tests whether elitism returns the highest fitness individual
+        :return:
+        '''
+        i1 = {'fitness':70000}
+        i2 = {'fitness':70001}
+        i3 = {'fitness':69999}
+
+        self.assertEqual(i2, geneticoperators.elite([i1, i2, i3]))
+
     def test_tournament_selection(self):
         #patches random.choice for convenient selection of individuals
         #we want individuals 1 and 4 to be the winners, they have values

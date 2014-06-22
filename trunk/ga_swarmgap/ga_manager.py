@@ -93,6 +93,10 @@ def start(cfg_file):
     for i in range(1, cfg.generations):  #starts from 1 because 1st generation (index 0) was evaluated already
         new_pop = []
 
+        if cfg.elitism:
+            #adds the best individual from previous population
+            new_pop.append(genops.elite(old_pop))
+
         while len(new_pop) < cfg.popsize:
             (p1, p2) = genops.tournament_selection(old_pop, cfg.tournament_size)
             (c1, c2) = genops.crossover(p1, p2, cfg.p_crossover)
@@ -108,12 +112,15 @@ def start(cfg_file):
             c2['reliability'] = reliability(c2, p1, p2)
 
             #adds children to the new population
+            #because of elitism, we test if second child can be added
+            #otherwise, new population size can be 1 + old pop. size
             new_pop.append(c1)
-            new_pop.append(c2)
+            if (len(new_pop) < cfg.popsize):
+                new_pop.append(c2)
 
 
         #new population built, now evaluates it. Generation number is i+1
-        print 'Evaluating generatino #%d' % (i+1)
+        print 'Evaluating generation #%d' % (i+1)
         evaluate(new_pop, i+1, cfg)
 
         #prepares for the next generation
@@ -121,15 +128,15 @@ def start(cfg_file):
 
 
 
-
+'''
 def tournament_selection(population, tournament_size):
-    '''
+    ''
     Executes two tournaments to return the two parents
     :param population: array of individuals
     :param tournament_size: number of contestants in the tournament
     :return: a tuple (parent1, parent2)
+''
 
-    '''
     parents = []
 
     while len(parents) < 2:  #we need 2 parents
@@ -143,10 +150,10 @@ def tournament_selection(population, tournament_size):
         parents.append(max(tournament, key=lambda x: x['fitness']))
 
     return tuple(parents)
-
+''
 
 def crossover_and_mutation(parent1, parent2, p_crossover, p_mutation):
-    '''
+    ''
     Performs crossover and mutation with the parents to produce the offspring
     :param parent1:
     :param parent2:
@@ -154,7 +161,7 @@ def crossover_and_mutation(parent1, parent2, p_crossover, p_mutation):
     :param p_mutation:
     :return:
 
-    '''
+    ''
 
     child1_chromo = copy.copy(parent1['chromosome'])
     child2_chromo = copy.copy(parent2['chromosome'])
@@ -186,7 +193,7 @@ def crossover_and_mutation(parent1, parent2, p_crossover, p_mutation):
         {'chromosome': child1_chromo, 'fitness': 0, 'reliability': 0},
         {'chromosome': child2_chromo, 'fitness': 0, 'reliability': 0}
     )
-
+'''
 
 def evaluate(population, generation, cfg):
     '''
@@ -209,17 +216,12 @@ def evaluate(population, generation, cfg):
     for i in range(0, len(population)):
         p = population[i]
 
-        #creates a file and writes the chromosome
-
-
-        #chr_file = None
-
         if p['reliability'] >= cfg.reliab_threshold:
             #create file with fitness, this individual won't be eval'ed
             #also, we create its chr_file with .lock extension, so that broodwar won't simulate it
             chr_file = open(os.path.join(write_dir, '%d.chr.lock' % i), 'w')
             fit_file = open(os.path.join(write_dir, '%d.fit' % i), 'w')
-            print type(p['fitness'])
+            #print type(p['fitness'])
             fit_file.write(str(p['fitness']))
             fit_file.close()
         else:
