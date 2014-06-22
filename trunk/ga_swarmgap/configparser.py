@@ -55,13 +55,16 @@ class ConfigParser(object):
 
             if param_element.tag == 'reliab-threshold':
                 self.reliab_threshold = float(param_element.get('value'))
+
+            if param_element.tag == 'p-eval-above-thresh':
+                self.p_eval_above_thresh = float(param_element.get('value'))
             
-        for sumo_element in cfgtree.find('externals'):
-            if sumo_element.tag == 'random-seed':
-                self.random_seed = float(sumo_element.get('value'))
+        for ext_element in cfgtree.find('externals'):
+            if ext_element.tag == 'random-seed':
+                self.random_seed = float(ext_element.get('value'))
             
-            if sumo_element.tag == 'repetitions':
-                self.repetitions = int(sumo_element.get('value'))
+            if ext_element.tag == 'repetitions':
+                self.repetitions = int(ext_element.get('value'))
 
     def _parse_path(self, value):
         return os.path.join(
@@ -78,6 +81,7 @@ class ConfigParser(object):
         self.elitism = True
         self.tournament_size = 2
         self.reliab_threshold = 0.6
+        self.p_eval_above_thresh = 0.05
         
         self.random_seed = 1
         self.repetitions = 1
