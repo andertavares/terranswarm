@@ -25,13 +25,14 @@ class Test(unittest.TestCase):
         self.assertEqual(True, config.elitism)
         self.assertEqual(2, config.tournament_size)
         self.assertEqual(.6, config.reliab_threshold)
+        self.assertEqual(.05, config.p_eval_above_thresh)
 
         self.assertEqual(1, config.random_seed)
         self.assertEqual(1, config.repetitions)
 
     def test_parsing(self):
         #assumes _parse_path is correct
-        config = configparser.ConfigParser('runs/test/config.xml')
+        config = configparser.ConfigParser('test/test.xml')
 
         self.assertEqual('test', config.output_dir)
 
@@ -42,6 +43,7 @@ class Test(unittest.TestCase):
         self.assertEqual(True, config.elitism)
         self.assertEqual(5, config.tournament_size)
         self.assertEqual(.6, config.reliab_threshold)
+        self.assertEqual(.1, config.p_eval_above_thresh)
 
         self.assertEqual(6, config.random_seed)
         self.assertEqual(1, config.repetitions)
