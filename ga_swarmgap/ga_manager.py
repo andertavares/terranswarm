@@ -50,7 +50,7 @@ def reliability(c, p1, p2):
     r1, r2 = p1['reliability'], p2['reliability']
 
     #uses reliability equation to calculate reliability
-    return ((s1*r1)**2 + (s2*r2)**2) / (s1*r1 + s2*r2)
+    return ((s1*r1)**2 + (s2*r2)**2) / float(s1*r1 + s2*r2)
 
 
 def similarity(child, parent):
