@@ -2,76 +2,81 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import re
+import sys
 
-rootdir = 'test/'
+def do_plots(rootdir):
 
-fitnessDict = dict()
+    #rootdir = 'test/'
 
-for subdir, dirs, files in os.walk(rootdir):
-	
-	#print "Actual dir:", subdir
+    fitnessDict = dict()
 
-	for file in files:
-		fileName, fileExtension = os.path.splitext(file)
-		fullPath = os.path.join(subdir, file)
-		baseGeneration = os.path.basename(subdir)
+    for subdir, dirs, files in os.walk(rootdir):
 
-		if baseGeneration != "":
-			generationNumber = int(re.findall(r'\d+', baseGeneration)[0])
+        #print "Actual dir:", subdir
 
-			if fileExtension == ".fit" :
-					f = open(fullPath)
-					fitness = float("".join(f.readlines()))
-					f.close()
-					#print '\t', generationNumber, file , fitness
+        for file in files:
+            fileName, fileExtension = os.path.splitext(file)
+            fullPath = os.path.join(subdir, file)
+            baseGeneration = os.path.basename(subdir)
 
-					if generationNumber not in fitnessDict:
-						fitnessDict[generationNumber] = []
+            if baseGeneration != "":
+                generationNumber = int(re.findall(r'\d+', baseGeneration)[0])
 
-					fitnessDict[generationNumber].append(fitness)
+                if fileExtension == ".fit" :
+                    f = open(fullPath)
+                    fitness = float("".join(f.readlines()))
+                    f.close()
+                        #print '\t', generationNumber, file , fitness
 
-'''
-The dict fitnessDict uses the integer number of the generation as the key
-to hold an array of values (the float values of the fitness).
-'''
+                    if generationNumber not in fitnessDict:
+                        fitnessDict[generationNumber] = []
 
-plotX = []
-plotY = []
+                    fitnessDict[generationNumber].append(fitness)
 
-for key in fitnessDict.keys():
-	plotX.append(key)
-	plotY.append(sum(fitnessDict[key]) / float(len(fitnessDict[key])))
-	print key, '-->', sum(fitnessDict[key]) / float(len(fitnessDict[key]))
+    '''
+    The dict fitnessDict uses the integer number of the generation as the key
+    to hold an array of values (the float values of the fitness).
+    '''
+    plotX = []
+    plotY = []
 
-plt.plot(plotX, plotY)
-plt.ylabel('Fitness value')
-plt.xlabel('Generation Number')
-plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
-plt.show()
+    for key in fitnessDict.keys():
+        plotX.append(key)
+        plotY.append(np.mean(fitnessDict[key]))# sum(fitnessDict[key]) / float(len(fitnessDict[key])))
+        #print key, '-->', sum(fitnessDict[key]) / float(len(fitnessDict[key]))
+
+    plt.plot(plotX, plotY, 'b')
+    plt.ylabel('Fitness value')
+    plt.xlabel('Generation Number')
+    plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
+    #plt.show()
 
 
-plotX = []
-plotY = []
+    plotX = []
+    plotY = []
 
-for key in fitnessDict.keys():
-	plotX.append(key)
-	plotY.append(min(fitnessDict[key]))
+    for key in fitnessDict.keys():
+        plotX.append(key)
+        plotY.append(min(fitnessDict[key]))
 
-plt.plot(plotX, plotY)
-plt.ylabel('Fitness value (min)')
-plt.xlabel('Generation Number')
-plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
-plt.show()
+    plt.plot(plotX, plotY, 'r')
+    plt.ylabel('Fitness value (min)')
+    plt.xlabel('Generation Number')
+    plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
+    #plt.show()
 
-plotX = []
-plotY = []
+    plotX = []
+    plotY = []
 
-for key in fitnessDict.keys():
-	plotX.append(key)
-	plotY.append(max(fitnessDict[key]))
+    for key in fitnessDict.keys():
+        plotX.append(key)
+        plotY.append(max(fitnessDict[key]))
 
-plt.plot(plotX, plotY)
-plt.ylabel('Fitness value (max)')
-plt.xlabel('Generation Number')
-plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
-plt.show()
+    plt.plot(plotX, plotY, 'g')
+    plt.ylabel('Fitness value (max)')
+    plt.xlabel('Generation Number')
+    plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
+    plt.show()
+
+if __name__ == '__main__':
+    do_plots(sys.argv[1])
