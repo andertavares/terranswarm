@@ -1,6 +1,6 @@
 import os
 import re
-import math
+import shutil
 import distutils.dir_util
 import random
 import copy
@@ -77,8 +77,22 @@ def similarity(child, parent):
 
 def start(cfg_file):
     cfg = configparser.ConfigParser(cfg_file)
-
     random.seed(cfg.random_seed)
+
+    #copies bwapi.ini from experiment dir to starcraft dir
+    try:
+        sc_dir, cl_path = read_paths()
+        exp_inipath = os.path.join(os.path.dirname(os.path.abspath(cfg_file)), 'bwapi.ini')
+        sc_inipath = os.path.join(sc_dir, 'bwapi-data', 'bwapi.ini')
+        shutil.copyfile(exp_inipath, sc_inipath)
+    except IOError:
+        print 'An error has occurred. Probably you don\'t have a bwapi.ini\n' \
+              'file in the same dir as the configuration .xml file.\n' \
+              'Please create a bwapi.ini file in \n' \
+              '%s \n' \
+              'with the configurations for starcraft execution (enemy_race, etc).' % exp_inipath
+
+        exit()
 
     #generates initial population
     old_pop = []
@@ -127,74 +141,6 @@ def start(cfg_file):
         old_pop = new_pop
 
 
-
-'''
-def tournament_selection(population, tournament_size):
-    ''
-    Executes two tournaments to return the two parents
-    :param population: array of individuals
-    :param tournament_size: number of contestants in the tournament
-    :return: a tuple (parent1, parent2)
-''
-
-    parents = []
-
-    while len(parents) < 2:  #we need 2 parents
-
-        #selects the contestants of the tournament randomly from the population
-        tournament = []
-        while len(tournament) < tournament_size:
-            tournament.append(random.choice(population))
-
-        #tournament winner is the one with maximum fitness among the contestants
-        parents.append(max(tournament, key=lambda x: x['fitness']))
-
-    return tuple(parents)
-''
-
-def crossover_and_mutation(parent1, parent2, p_crossover, p_mutation):
-    ''
-    Performs crossover and mutation with the parents to produce the offspring
-    :param parent1:
-    :param parent2:
-    :param p_crossover:
-    :param p_mutation:
-    :return:
-
-    ''
-
-    child1_chromo = copy.copy(parent1['chromosome'])
-    child2_chromo = copy.copy(parent2['chromosome'])
-
-    assert len(child1_chromo) == len(child2_chromo)
-
-    length = len(child1_chromo)
-
-    if random.random() < p_crossover:
-        #select crossover point
-        xover_point = random.randint(1, len(parent1['chromosome'] - 1))
-
-        #performs one-point exchange around the xover point
-        child1_chromo[0: xover_point] = parent1[0: xover_point]
-        child1_chromo[xover_point: length] = parent2[xover_point: length]
-
-        child2_chromo[0: xover_point] = parent2[0: xover_point]
-        child2_chromo[xover_point: length] = parent1[xover_point: length]
-
-    for gene in child1_chromo:
-        if random.random < p_mutation:
-            gene.randomize()
-
-    for gene in child2_chromo:
-        if random.random < p_mutation:
-            gene.randomize()
-
-    return (
-        {'chromosome': child1_chromo, 'fitness': 0, 'reliability': 0},
-        {'chromosome': child2_chromo, 'fitness': 0, 'reliability': 0}
-    )
-'''
-
 def evaluate(population, generation, cfg):
     '''
     Evaluates fitness of population members whose reliability values are below
@@ -235,6 +181,11 @@ def evaluate(population, generation, cfg):
         chr_file.write(p['chromosome'].to_file_string())
         chr_file.close()
 
+        #creates a file with the reliability of this individual
+        misc_file = open(os.path.join(write_dir, '%d.misc' % i), 'w')
+        misc_file.write(str(p['reliability']))
+        misc_file.close()
+
     #creates path.cfg on SC directory in order to orientate c++ where to find the chromosome files
     pfile = open(os.path.join(sc_dir, 'path.cfg'), 'w')
     pfile.write(write_dir)
@@ -263,14 +214,15 @@ def evaluate(population, generation, cfg):
         time.sleep(1)
 
     #finishes this execution of chaoslauncher and starcraft
+    subprocess.call("taskkill /IM starcraft.exe")
     if(cl_called):
         chaosLauncher.terminate()
 
-    subprocess.call("taskkill /IM starcraft.exe")
     print 'Simulations finished. Collecting fitness information'
-    time.sleep(2)
+    time.sleep(5)
 
     for f in fit_files:
+        print f
         path_parts = f.split(os.sep)
         fname = path_parts[-1] #after the last slash we have the file name
         fname_parts = fname.split('.')
