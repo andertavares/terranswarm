@@ -17,7 +17,7 @@
 	</parameters>     
 	           
 	<externals>
-		<random-seed value='1' />
+		<random-seed value='5' />
 		<repetitions value='1' />
 	</externals>            
 </ga_swarmgap>
