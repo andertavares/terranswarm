@@ -33,6 +33,20 @@ Task* weightedSelection(vector<TaskAssociation>& theTasks){
 	//Broodwar->sendText("Weighted selection error! %d items; %f sum", theTasks.size(), sum);
 }
 
+/**
+  * Returns a pseudo-random integer in the interval [min:max)
+  * Code from: http://stackoverflow.com/questions/5891811/generate-random-number-between-1-and-3-in-c
+  */
+int randomInRange(int min, int max){
+
+	double x = rand()/static_cast<double>(RAND_MAX); 
+
+   // [0,1[ * (max - min) + min is in [min,max[
+   int that = min + static_cast<int>( x * (max - min) );
+
+   return that;
+}
+
 Position getPositionToScout(Unit unit, Position& lastPosition){
 	Position returnPosition;
 	//Unit unit = ((Unit) gameUnit);

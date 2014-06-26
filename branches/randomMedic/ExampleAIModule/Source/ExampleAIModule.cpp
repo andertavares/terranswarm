@@ -270,7 +270,7 @@ void ExampleAIModule::onFrame() {
 	//Broodwar << "after trying to reveal" << endl;
 	updateTasks();
 
-	_commanderAgent->onFrame(allTasks, trainSCVIncentives);
+	_commanderAgent->onFrame(allTasks, trainSCVIncentives, commandCenters);
 
 	//iterates through all marines
 	for(auto marine = marines.begin(); marine != marines.end(); marine++){
