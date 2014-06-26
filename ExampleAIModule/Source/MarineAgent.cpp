@@ -19,17 +19,111 @@ using namespace std;
 MarineAgent::MarineAgent(Unit u) : gameUnit(u), state(NO_TASK), latencyFrames(10){
 	lastPosition = Position(0,0);
 	lastFrameCount = Broodwar->getFrameCount();
+	bunkerToMove = NULL;
 }
 
 MarineAgent::~MarineAgent(void){
 }
 
+/*---- code snippet for stimpack use, from nova bot
+// Use stimpacks when there are medics around:
+void CombatAgent::inCombatMarine(Unit *bestTarget, const UnitSet &enemies, SquadAgent *squad)
+{
+	if (Broodwar->self()->hasResearched(TechTypes::Stim_Packs) && squad->hasUnitOfType(UnitTypes::Terran_Medic)) {
+ 		if (bestTarget!=0 && !_unit->isStimmed() && _unit->getHitPoints() > 20 && _unit->isAttacking()) {
+ 			_unit->useTech(TechTypes::Stim_Packs);
+ 		}
+ 	}
+}---*/
+
+
 void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unordered_map<int, MarineAgent*> colleagues){
-	//if is already engaged in task, continues it
-	if(! gameUnit->isIdle() || !gameUnit->isCompleted() || Broodwar->getFrameCount() % latencyFrames != 0) {
+
+	//draws circle if on stim packs
+	if(gameUnit->isStimmed()){
+		Broodwar->drawCircleMap(gameUnit->getPosition(), 10, Color(Colors::Orange), true); //crazy stimmed \o/ 
+	}
+
+	//skips if not completed or current frame is not the one to think in
+	if(!gameUnit->isCompleted() || Broodwar->getFrameCount() % latencyFrames != 0) {
+		return;
+	}
+	/*
+	if(state == MOVE_BUNKER){
+		if(bunkerToMove != NULL){
+			if(bunkerToMove->getLoadedUnits() >= 4){
+				state = NO_TASK;
+				bunkerToMove == NULL;
+				attack(target, colleagues);
+			}
+		}
+	}
+	*/
+
+	//checks if there is an non-full bunker around and enters it
+	Unit u = NULL;
+	int prevState = state;
+	Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 20 * TILE_SIZE, Filter::IsOwned && Filter::IsBuilding);
+	//Broodwar->drawTextMap(gameUnit->getPosition(), "\n\nCLU=%d", closeUnits.size());
+	for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
+		if(unit->getType() == UnitTypes::Terran_Bunker && unit->isVisible()){
+			//Broodwar->sendText("Bunker found");
+			if (unit->getLoadedUnits().size() < 4) {
+				u = *unit;
+				break;
+			}
+		}
+	}
+
+	if(u != NULL){ //found non-full bunker, moving to it
+		state = MOVE_BUNKER;
+		gameUnit->rightClick(u);
+		bunkerToMove = u;
+		return;
+	}
+	else { //bunkers do not exist or are full, return to what i was doing
+		state = prevState;
+	}
+
+
+	//if is already engaged in task, continues it. also, tries to use stim packs while attacking
+	if(! gameUnit->isIdle() ){
+
+		//if attacking, check for stim packs!
+		Unitset friendsAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), gameUnit->getType().groundWeapon().maxRange() - 20, Filter::IsAlly);
+		//Broodwar->drawCircleMap(lastPosition,gameUnit->getType().groundWeapon().maxRange(),Color(Colors::Blue));
+
+
+		//checks if there is a medic around
+		bool medicAround = false;
+		for (auto unit = friendsAround.begin(); unit != friendsAround.end(); unit++){
+			if (unit->getType() == UnitTypes::Terran_Medic){
+				medicAround = true;
+				break;
+			}
+		}
+
+		if (Broodwar->self()->hasResearched(TechTypes::Stim_Packs) && medicAround) {
+			Broodwar->drawTextMap(gameUnit->getPosition(), "\n\nCan Stim");
+ 			//if (foesAround.size() > 0 && !gameUnit->isStimmed() && gameUnit->getHitPoints() > 20 && gameUnit->isAttacking()) {
+			if (!gameUnit->isStimmed() && gameUnit->getHitPoints() > 20 && gameUnit->isAttacking()) {
+ 				int maxRange = gameUnit->getType().groundWeapon().maxRange();
+				BWAPI::Position p = gameUnit->getPosition();
+				Broodwar->registerEvent(
+							[p,maxRange](Game*){
+								Broodwar->drawCircleMap( p, maxRange -20,	Colors::Blue);
+							},
+							nullptr,  // condition
+							1000 
+				);  // frames to run
+				gameUnit->useTech(TechTypes::Stim_Packs);
+ 			}
+ 		}
+
 		return;
 	}
 
+	
 	//else, pick something to do
 	state = NO_TASK;
 	vector<TaskAssociation> taskAssociations;
@@ -76,31 +170,7 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 		}
 		
 	}
-	/*if(gameUnit->getID() == 1){
-		int offset = 0;
-		//Broodwar->drawTextScreen(200,115,"%d items", feasibleTasks.size());
-		for (auto ta = taskAssociations.begin(); ta != taskAssociations.end(); ta++){
-			Broodwar->drawTextScreen(200,115+offset,"%d - %d", ta->task()->getTaskType(), ta->task()->getIncentive());
-			offset += 15;
-		}
-		
-	}*/
-	//Broodwar->sendText("TA sz: %d", taskAssociations.size());
-	/*
-	if (gameUnit->getID() == 85){
-		std::string tsk = "";
-		int offset = 40;
-		//Broodwar->drawTextMap(gameUnit->getPosition(),"\n\n\nTA:");
-		for(auto ta = taskAssociations.begin(); ta != taskAssociations.end(); ++ta){
-			//std::string fmt = "%d - %.2f";
-			Broodwar->drawTextMap(gameUnit->getPosition().x, gameUnit->getPosition().y+offset,"%d-%.2f - %.2f - %d-%d",ta->task()->getTaskType(), ta->task()->getIncentive(), ta->tValue(), gameUnit->getDistance(ta->task()->getPosition()), maxDistance);
-			offset += 10;
-		}
-		
-		
-
-	}
-	*/
+	
 	//Task* toPerform = weightedSelection(taskAssociations);
 	//Broodwar->drawTextMap(gameUnit->getPosition(),"\n\nTAsz: %d", taskAssociations.size());
 	if (toPerform == NULL){
@@ -114,6 +184,7 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nEX");
 		if(!goScout()){ //if scouting does not work out, do something else
 			gameUnit->stop(); //become idle
+			Broodwar << "not scouting anymore" << endl;
 			state = NO_TASK;
 		}
 	}
@@ -156,16 +227,46 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 	Broodwar->drawTextMap(gameUnit->getPosition(),"\nPCK sz:%d; meetRadius:%d", packSize, colleaguesAround);
 
 	//retrieves the enemies around
-	Unitset enemiesInSight = Broodwar->getUnitsInRadius(gameUnit->getPosition(), gameUnit->getType().sightRange(), Filter::IsEnemy);
+	Unitset enemiesInSight = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 7 * TILE_SIZE, Filter::IsEnemy);
 
 	//if pack size is enough or has not enough colleagues around to pack or has enemy in sight, attacks
 	if(packSize >= 8 || colleaguesAround == packSize || enemiesInSight.size() > 0) {
+		// Check for barracks
 		state = ATTACKING;
+		/*
+		//MOVE_BUNKER
+		int distance = 0, newDistance = 0;
+
+		Unit u = NULL;
+
+		Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 45 * TILE_SIZE, Filter::IsOwned);
+		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
+			if(unit->getType() == UnitTypes::Terran_Bunker){
+				//unit->getType() == UnitTypes::Terran_SCV){ 
+				//&& unit->getHitPoints() < unit->getInitialHitPoints()){
+				newDistance = unit->getPosition().getApproxDistance(gameUnit->getPosition());
+				if (unit->getLoadedUnits() < 4 && (u == NULL || newDistance < distance)) {
+					distance = newDistance;
+					u = *unit;
+				}
+			}
+		}
+
+		if(u != NULL){
+			state = MOVE_BUNKER;
+			gameUnit->rightClick(u);
+			bunkerToMove = u;
+		}
+		else{
+			state = ATTACKING;
+		}
+		*/
 	}
 	else{ //tries to pack-up with near colleagues
 		//tries to get close to the marine with the lowest ID around
 		Unit oldestColleague = oldestColleagueAround();
 		if (oldestColleague == NULL){
+			
 			//nobody found, attacks alone
 			state = ATTACKING;
 		}
@@ -179,17 +280,21 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 
 	if(state == ATTACKING){
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nATK");
-		/*
+		
+		// TESTING
+		/*int hitPoints = gameUnit->getHitPoints();
+
 		//if there are targets nearby, choose one appropriately
 		Unitset foesAround = Broodwar->getUnitsInRadius(gameUnit->getPosition(), gameUnit->getType().groundWeapon().maxRange(), Filter::IsEnemy);
 		Unit victim = NULL;
 		float minHpRate = 1.0f;
 		for(auto foe = foesAround.begin(); foe != foesAround.end(); ++foe){
 			//shot workers or medics is priority
-			if (foe->getType().isWorker() || foe->getType() == UnitTypes::Terran_Medic){
-				victim = *foe;
-				break;
-			}
+			//if (foe->getType().isWorker() || foe->getType() == UnitTypes::Terran_Medic){
+			//if (foe->getType() == UnitTypes::Terran_Medic){
+			//	victim = *foe;
+			//	break;
+			//}
 
 			//else, shoots the enemy unit closest to death
 			float hpRate = foe->getHitPoints() + foe->getShields() / float(foe->getType().maxHitPoints() + foe->getType().maxShields());
@@ -200,15 +305,43 @@ void MarineAgent::attack(unordered_map<int, MarineAgent*> colleagues){
 
 		}
 
+		Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 7 * TILE_SIZE, Filter::IsOwned);
+		int midRange = 0;
+		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
+			if(unit->getType() == UnitTypes::Terran_Marine){
+				midRange++;
+			}
+		}
+
+		closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 3 * TILE_SIZE, Filter::IsOwned);
+		int closeRange = 0;
+		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
+			if(unit->getType() == UnitTypes::Terran_Marine){
+				closeRange++;
+			}
+		}
+
+		closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 6 * TILE_SIZE, Filter::IsEnemy);
 
 		if (victim == NULL) {
-			gameUnit->attack(target);
-			Broodwar->drawLineMap(gameUnit->getPosition(),target,Color(Colors::Red));
+			//if(midRange > closeRange && closeUnits.size() <= 1 && (gameUnit->isAttacking() || gameUnit->isMoving())){
+			//	gameUnit->stop();
+			//}
+			//else{
+				gameUnit->attack(target);
+				Broodwar->drawLineMap(gameUnit->getPosition(),target,Color(Colors::Red));
+			//}
 		}
 		else {
 			gameUnit->attack(victim);
-			Broodwar->drawLineMap(gameUnit->getPosition(),victim->getPosition,Color(Colors::Red));
+			Broodwar->drawLineMap(gameUnit->getPosition(),victim->getPosition(),Color(Colors::Red));
 		}
+
+		//if(!gameUnit->isStimmed()){
+		//	gameUnit->useTech(BWAPI::TechTypes::Stim_Packs);
+			//Broodwar->useTech(command.getUnitID(), command.getArg0());
+		//}
+		// TESTING END
 		*/
 		gameUnit->attack(target);
 	}
@@ -295,6 +428,9 @@ bool MarineAgent::goScout(){
 	if ( currentFrameCount >= lastFrameCount + 20){
 		lastFrameCount = currentFrameCount;
 		Position pos = getPositionToScout();
+
+		Broodwar->drawTextMap(myPos, "\n\n%d,%d,%d", Broodwar->hasPath(myPos,pos), Broodwar->isExplored(TilePosition(pos)), Broodwar->isWalkable(WalkPosition(pos)));// {
+
 		Broodwar << "Agent [" << gameUnit->getID() << "] Scouting to :" << pos << std::endl;
 
 		gameUnit->attack(pos);
