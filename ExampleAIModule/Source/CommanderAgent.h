@@ -11,7 +11,7 @@ class CommanderAgent{
 public:
 	CommanderAgent(void);
 	~CommanderAgent(void);
-	void onFrame(unordered_map<TaskType, vector<Task>*> tasklist, unordered_map<Unit, float> trainSCVIncentives);
+	void onFrame(unordered_map<TaskType, vector<Task>*> tasklist, unordered_map<Unit, float> trainSCVIncentives, Unitset commandCenters);
 	void createSupply(BWAPI::Unit u);
 	int calculateBarracksFromCommandCenter(BWAPI::Unit u);
 	void createBarrackNearCommandCenter(BWAPI::Unit u);

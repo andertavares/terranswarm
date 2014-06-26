@@ -39,67 +39,6 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 		return;
 	}
 
-	/*
-	int currentFrameCount = Broodwar->getFrameCount();
-	if ( currentFrameCount >= lastFrameCount + 20){
-		lastFrameCount = currentFrameCount;
-	}
-	else{
-		return;
-	}
-
-	//Broodwar->drawLineMap(gameUnit->getPosition(), lastPosition, Colors::Red);
-
-	// Get our starting location
-	if (originPosition.x == 0 && originPosition.y == 0) {
-		originPosition = gameUnit->getPosition();
-	}
-
-
-	Unitset closeUnits = Broodwar->getUnitsInRadius(lastPosition, 6 * TILE_SIZE, Filter::IsOwned);
-	for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
-		if(unit->getType() == UnitTypes::Terran_Marine && unit->getHitPoints() < unit->getInitialHitPoints()){
-			gameUnit->attack(unit->getPosition());
-			return;
-		}
-	}
-
-	if(state == CURE_MARINE){
-		/*Unitset closeUnits = Broodwar->getUnitsInRadius(lastPosition, 6 * TILE_SIZE, Filter::IsOwned);
-		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
-			if(unit->getType() == UnitTypes::Terran_Marine && unit->getHitPoints() < unit->getInitialHitPoints()){
-				gameUnit->attack(unit->getPosition());
-				return;
-			}
-		}*/
-
-	/*
-		Unitset units = Broodwar->getUnitsInRadius(lastPosition, 2 * TILE_SIZE, Filter::IsOwned);
-		Broodwar->drawCircleMap(lastPosition,2 * TILE_SIZE,Color(Colors::White));
-		int marines = 0;
-		for (auto unit = units.begin(); unit != units.end(); unit++){
-			if(unit->getType() == UnitTypes::Terran_Marine){
-				marines++;
-			}
-		}
-
-		Broodwar->drawTextMap(gameUnit->getPosition(),"\nMarines %d", marines);
-
-		if(marines <= 0) {
-			updatePositionToCure();
-		}
-		else{
-			gameUnit->attack(lastPosition);
-		}
-	}
-	else{
-		updatePositionToCure();
-	}
-
-	gameUnit->attack(lastPosition);
-	Broodwar->drawLineMap(gameUnit->getPosition(), lastPosition, Colors::Green);
-	*/
-
 	// First, use optical flare:
 	Unitset UnitsInRange;
 	if (Broodwar->self()->hasResearched(TechTypes::Optical_Flare) && gameUnit->getEnergy()>75) {
@@ -113,19 +52,6 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 	}
 
 	Unit lastHealed = Broodwar->getUnit(lastHealedId);
-
-	/*if(lastHealedId > 0 &&  
-		lastHealed != NULL && 
-		lastHealed->exists() &&
-		lastHealed->getPosition().getApproxDistance(gameUnit->getPosition()) < 40 && 
-		lastHealed->getHitPoints() <
-		lastHealed->getInitialHitPoints() - 20) 
-	{
-		//gameUnit->attack(Broodwar->getUnit(lastHealedId)->getPosition());		
-		//gameUnit->rightClick(Broodwar->getUnit(lastHealedId));
-		gameUnit->useTech(TechTypes::Healing, Broodwar->getUnit(lastHealedId));
-		Broodwar->drawTextMap(gameUnit->getPosition(),"\nCONT HEAL MRN");
-	}*/
 
 	// compute distance to nearest healable non-medic unit (for now, ignore the fact that medics can heal each other):
 	int distance = 0, newDistance = 0;
@@ -164,21 +90,8 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 
 	// if it-s beyond the threshold, find closest unit, and send there:
 	if (u != NULL){
-		//&& distance > MAX_DISTNACE_TO_NONMEDIC) {
-		/*if (u->getPosition().getApproxDistance(gameUnit->getPosition()) > 10) { //tries to not suffocate the marine
-			//gameUnit->move(u->getPosition()); 
-			//gameUnit->attack(u->getPosition()); 
-			gameUnit->rightClick(u);
-			//gameUnit->useTech(TechTypes::Healing, u);
-			Broodwar->drawTextMap(gameUnit->getPosition(),"\nHEAL MRN1 %u", u->getID());
-			return;
-		}*/
-		
-		//Broodwar << "Distance:" << distance << std::endl;
 		
 		if(u->getPosition().getApproxDistance(gameUnit->getPosition()) <= 50){
-			//gameUnit->attack(u->getPosition());
-			//gameUnit->rightClick(u);
 			gameUnit->useTech(TechTypes::Healing, u);
 			Broodwar->drawTextMap(gameUnit->getPosition(),"\nHEAL MRN");
 			lastHealedId = u->getID();
