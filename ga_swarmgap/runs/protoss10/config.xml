@@ -1,0 +1,23 @@
+<ga_swarmgap>
+<!-- please use this configuration in matches agains the protoss-->
+    <io>
+        <output-dir value="protoss10" />
+    </io>
+
+	<parameters>
+		<popsize value='30' />
+		<elitism value='true' />
+		<tournament-size value='5' />
+		<p-crossover value='.9' />
+		<p-mutation value='.01' />
+		<generations value='100' />
+		
+		<reliab-threshold value='0.8' />
+        <p-eval-above-thresh value='0.2' />
+	</parameters>     
+	           
+	<externals>
+		<random-seed value='10' />
+		<repetitions value='1' />
+	</externals>            
+</ga_swarmgap>
