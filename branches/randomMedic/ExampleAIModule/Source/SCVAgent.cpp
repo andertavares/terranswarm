@@ -156,9 +156,10 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 			all.push_back(&(*task));
 		}
 	}
-
-	int index = randomInRange(0, all.size());
 	if(all.size() == 0) return;
+
+	int index = min(int(all.size()-1), max(0, randomInRange(0, all.size()))); //validation
+	
 	toPerform = all[index]; //error here
 	//sanity check, does not perform tasks that cannot/should not be done
 	if (toPerform->getIncentive() <= 0) {
