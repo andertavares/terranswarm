@@ -50,7 +50,7 @@ void ExampleAIModule::onStart() {
 	// and reduce the bot's APM (Actions Per Minute).
 	Broodwar->setCommandOptimizationLevel(2);
 
-	//Broodwar->setGUI(false); //disables gui drawing (better performance?)
+	Broodwar->setGUI(false); //disables gui drawing (better performance?)
 	Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 	// Check if this is a replay
