@@ -13,6 +13,7 @@
 
 using namespace BWAPI;
 using namespace Filter;
+using namespace std;
 
 CommanderAgent::CommanderAgent() : latencyFrames(10){
 	_barracks.clear();
@@ -38,7 +39,9 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 	Task* toPerform;
 	vector<Task*> all;
 	for(auto taskIter = tasklist.begin(); taskIter != tasklist.end(); ++taskIter){
-		if (taskIter->first == TrainMarine || taskIter->first == TrainWorker){
+		if (taskIter->first == TrainMarine || taskIter->first == TrainWorker ||
+			taskIter->first == TrainMedic || taskIter->first == ResearchAcademyLongRange ||
+			taskIter->first == ResearchAcademyStimPack){
 			for (auto task = taskIter->second->begin(); task != taskIter->second->end(); task++){
 				all.push_back(&(*task));
 			}
@@ -59,21 +62,8 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 
 	}
 
-	/*
-	for(unordered_map<Unit, float>::iterator iter = trainSCVIncentives.begin(); iter != trainSCVIncentives.end(); ++iter){
-		Unit u =  iter->first;
-		
-		if(!u || !u->exists()) continue;
-		//Broodwar << u << endl;
-		u->getPosition();
-
-		float incentive = iter->second;
-		//double uniformOn01 = dis(gen);
-		
-	}
-	*/
 	if(all.size() == 0) return;
-	int index = randomInRange(0, all.size());
+	int index = min(int(all.size() - 1), max(0, randomInRange(0, all.size()))); //validation
 	
 
 	toPerform = all[index];

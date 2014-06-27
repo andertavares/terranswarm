@@ -17,6 +17,7 @@ using namespace Filter;
 
 ExampleAIModule::ExampleAIModule() {
 	//init of game structure is done in onStart()
+	timeOver = false;
 	lastScan = 0;
 	trainMarine = NULL;
 	gatherMinerals = NULL;
@@ -221,7 +222,7 @@ void ExampleAIModule::onFrame() {
 		allTasks[BuildVespeneGas]->push_back(Task(BuildVespeneGas, 0));
 		buildVespeneGas = &allTasks[BuildVespeneGas]->at(0);
 	}
-	// Vespene Gas
+	// Academy
 	if(allTasks[BuildAcademy]->size() <= 0){
 		allTasks[BuildAcademy]->push_back(Task(BuildAcademy, 0));
 		buildAcademy = &allTasks[BuildAcademy]->at(0);
@@ -285,7 +286,7 @@ void ExampleAIModule::onFrame() {
 		medic->second->onFrame(allTasks);
 	}
 
-	// Iterate through all the SCV on the map
+	// Iterate through all SCVs
 	unordered_map<int, SCVAgent*>::iterator it = scvMap.begin();
 	for(unordered_map<int, SCVAgent*>::iterator iter = scvMap.begin(); iter != scvMap.end(); ++iter){
 		int unitId =  iter->first;
@@ -294,33 +295,8 @@ void ExampleAIModule::onFrame() {
 
 		agent->onFrame(&allTasks, discoveredMineralPositions, commandCenters, scvMap);
 
-		//Broodwar->drawTextMap(u->getPosition().x, u->getPosition().y, "agentId[%d]", unitId);
-
-		/*if ( u->isLockedDown() || u->isMaelstrommed() || u->isStasised() )
-			continue;
-		
-		if ( u->isIdle() ) {
-			// Order workers carrying a resource to return them to the center,
-			// otherwise find a mineral patch to harvest.
-			if ( u->isCarryingGas() || u->isCarryingMinerals() ) {
-				u->returnCargo();
-			}
-			else if ( !u->getPowerUp() ) { // The worker cannot harvest anything if it
-											 // is carrying a powerup such as a flag
-					// Harvest from the nearest mineral patch or gas refinery
-				if ( !u->gather( u->getClosestUnit( IsMineralField || IsRefinery )) ) {
-					// If the call fails, then print the last error message
-					Broodwar << Broodwar->getLastError() << std::endl;
-				}
-
-			} // closure: has no powerup
-		} // closure: if idle
-		*/
 	}
 	
-	/*Broodwar->drawTextScreen(20, 90 + yOffset, "Number of SCV in map [%d]", 
-		Text::White, scvMap->size()
-	);*/
 }
 
 unordered_map<TaskType, vector<Task>*>& ExampleAIModule::getTasks(){
@@ -444,16 +420,13 @@ void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit){
 	if (unit->getPlayer() == Broodwar->self()){
 		Broodwar->sendText("%s lost.", unit->getType().getName().c_str());
 		if(unit->getType() == UnitTypes::Terran_SCV){
-			// Delete this SCV from the map
 			scvMap.erase(unit->getID()); 
 		}
 		else if(unit->getType() == UnitTypes::Terran_Marine){
 			marines.erase(unit->getID());
 		}
 		else if (unit->getType() == UnitTypes::Terran_Command_Center){
-			//Broodwar->sendText("cmdSize before: %d",commandCenters.size());
 			commandCenters.erase(unit);
-			//Broodwar->sendText("cmdSize AFTER: %d",commandCenters.size());
 		}
 		else if(unit->getType() == UnitTypes::Terran_Medic){
 			medics.erase(unit->getID());
@@ -542,14 +515,11 @@ void ExampleAIModule::revealHiddenUnits(){
 	TechType scan = TechTypes::Scanner_Sweep;
 	int cooldown = Broodwar->getFrameCount() - lastScan;
 
-	// scan.getWeapon().damageCooldown()
 	//does not scan if there is no comsat, of energy is low, or cooldown has not been reached
 	if(ourComSat == NULL ||  ourComSat->getEnergy() < scan.energyCost() || cooldown < 160 ){ //scan sweep lasts about 160 frames
 		//Broodwar->sendText("NULL? %d, sc cooldown: %d, act cooldown: %d, cost:%d, energy:%d", ourComSat == NULL, scan.getWeapon().damageCooldown(), cooldown, scan.energyCost(), ourComSat->getEnergy());
 		return;
 	}
-
-	//Broodwar->sendText("will traverse", ourComSat == NULL);
 
 	Unitset allunits = Broodwar->getAllUnits();
 	for(auto unit = allunits.begin(); unit != allunits.end(); unit++){
@@ -564,30 +534,12 @@ void ExampleAIModule::revealHiddenUnits(){
 	if(ourComSat->getEnergy() >= 170 && allTasks[Attack]->size() > 0){
 		vector<Task> *attackTaskVector = allTasks[Attack];
 		vector<Task>::iterator attackIt = (*attackTaskVector).begin();
-		int index = generateRandomnteger(0, (*attackTaskVector).size());
+		int index = min(int((*attackTaskVector).size() - 1), max(0, generateRandomnteger(0, (*attackTaskVector).size()))); //validation
 		std::advance( attackIt, index );
 		ourComSat->useTech(scan, attackIt->getPosition()); //TODO: error here!
 		lastScan = Broodwar->getFrameCount();
 		Broodwar << "Random attack position revealed!" << endl;
 	}
-
-	/*for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
-
-		if(Broodwar->isVisible(task->getPosition().x / TILE_SIZE , task->getPosition().y / TILE_SIZE)){
-			Unitset inRange = Broodwar->getUnitsInRadius(task->getPosition(),  UnitTypes::Terran_Marine.groundWeapon().maxRange(), Filter::IsEnemy);
-			//Broodwar->sendText("%d in range of attack task.", inRange.size());
-			
-			// Check if the unit can be reached by the marines
-			// Sometimes cloacked or burrowed units can be marked as enemy but it cannot be attacked
-			bool onlyCloackedUnits = true;
-			for(auto u = inRange.begin(); u != inRange.end(); ++u) {
-				if( (u->isCloaked() || u->isBurrowed()) && !u->isInvincible()){
-					onlyCloackedUnits = false;
-					break;
-				}
-			}
-		}
-	}*/
 }
 
 /**
