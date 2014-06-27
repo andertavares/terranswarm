@@ -26,6 +26,9 @@ typedef unordered_map<int, MedicAgent*> MedicMap;
 
 class ExampleAIModule : public BWAPI::AIModule {
 
+	//stores whether the game has lasted too long and should end as a draw
+	bool timeOver;
+
 	//tasks that will have a single instance
 	Task* gatherMinerals;
 	Task* trainMarine;

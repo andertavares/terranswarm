@@ -33,7 +33,7 @@ ExampleAIModule::~ExampleAIModule(){
 
 void ExampleAIModule::onStart() {
 	// Hello World!
-	Broodwar->sendText("TerranSwarm is online!");
+	Broodwar->sendText("RandomMedic is online!");
 
 	// Print the map name.
 	// BWAPI returns std::string when retrieving a string, don't forget to add .c_str() when printing!
@@ -50,7 +50,7 @@ void ExampleAIModule::onStart() {
 	// and reduce the bot's APM (Actions Per Minute).
 	Broodwar->setCommandOptimizationLevel(2);
 
-	//Broodwar->setGUI(false); //disables gui drawing (better performance?)
+	Broodwar->setGUI(false); //disables gui drawing (better performance)
 	Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 	// Check if this is a replay
@@ -69,9 +69,6 @@ void ExampleAIModule::onStart() {
 	}
 	else {// if this is not a replay
   
-		//Broodwar->sendText("show me the money");
-		//Broodwar->sendText("operation cwal");
-
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
 		// If you wish to deal with multiple enemies then you must use enemies().
 		if ( Broodwar->enemy() ) // First make sure there is an enemy
@@ -143,10 +140,10 @@ void ExampleAIModule::onEnd(bool isWinner) {
 		Broodwar->sendText("POWER OVERWHELMING!");
 	}
 
-	ofstream outputFile;
-	outputFile.open("C:\\gameResults.txt", ios::app);
-	outputFile << isWinner << endl;
-	outputFile.close();
+	string gameResult = "win";
+	if (! isWinner){
+		gameResult = (timeOver ? "draw" : "loss");
+	}
 
 	Player me = Broodwar->self();
 	Player enemy = Broodwar->enemy();
@@ -156,7 +153,7 @@ void ExampleAIModule::onEnd(bool isWinner) {
 	ofstream resultFile;
 	Broodwar->enableFlag(Flag::CompleteMapInformation);
 	resultFile.open ("results.txt", std::ios_base::app);
-	resultFile << "MD," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << (isWinner ? "win" : "loss") << ",";
+	resultFile << "RM," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << gameResult << ",";
 	resultFile << me->getUnitScore() << "," << me->getBuildingScore() << "," << me->gatheredMinerals() + me->gatheredGas() << ",";
 	resultFile << enemy->getRace().getName() << "," << enemy->getUnitScore() << "," << enemy->getBuildingScore() << "," << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
 	resultFile.close();
@@ -181,6 +178,12 @@ void ExampleAIModule::onFrame() {
 			Broodwar->drawTextScreen(290, 20 + (20 * pCount), "Score p%d - Unit, Building, Resource = %d, %d, %d ", pCount, plr->getUnitScore(), plr->getBuildingScore(), plr->gatheredMinerals() + plr->gatheredGas());
 		}
 		return;
+	}
+
+	//checks if game is lasting too long. If so, ends the game as a draw
+	if(Broodwar->elapsedTime() >= 3600){ //1h of duration
+		timeOver = true;
+		Broodwar->leaveGame();
 	}
 
 	_drawStats();
@@ -561,8 +564,9 @@ void ExampleAIModule::revealHiddenUnits(){
 	if(ourComSat->getEnergy() >= 170 && allTasks[Attack]->size() > 0){
 		vector<Task> *attackTaskVector = allTasks[Attack];
 		vector<Task>::iterator attackIt = (*attackTaskVector).begin();
-		std::advance( attackIt, generateRandomnteger(0, (*attackTaskVector).size()) );
-		ourComSat->useTech(scan, attackIt->getPosition());
+		int index = generateRandomnteger(0, (*attackTaskVector).size());
+		std::advance( attackIt, index );
+		ourComSat->useTech(scan, attackIt->getPosition()); //TODO: error here!
 		lastScan = Broodwar->getFrameCount();
 		Broodwar << "Random attack position revealed!" << endl;
 	}

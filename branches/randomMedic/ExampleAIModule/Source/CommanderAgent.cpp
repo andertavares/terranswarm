@@ -72,7 +72,10 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 		
 	}
 	*/
+	if(all.size() == 0) return;
 	int index = randomInRange(0, all.size());
+	
+
 	toPerform = all[index];
 	all.clear();
 	//sanity check, does not perform tasks that cannot/should not be done
@@ -121,6 +124,38 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 				}
 			} //closure
 		}
+	}
+
+	if(toPerform->getTaskType() == TrainMedic){
+		//iterates through the barracks, finds one idle and trains the medic in it
+		Unitset myUnits = Broodwar->self()->getUnits();
+		for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u ) {
+			if ( u->getType() == UnitTypes::Terran_Barracks ) {
+			
+				if (u->isIdle()){
+					if( !u->train(UnitTypes::Terran_Medic)) {
+						Error lastErr = Broodwar->getLastError();
+						if(lastErr == Errors::Insufficient_Supply){
+							//Broodwar->sendText("Marine can't be created - %s", lastErr.toString().c_str());	
+							//CommanderAgent::createSupply(Broodwar->getUnit(u->getID()));
+						}
+					}
+					return;
+				}
+			} //closure
+		}
+	}
+
+	if(toPerform->getTaskType() == ResearchAcademyLongRange) {
+		Broodwar << "Resquest U_238 upgrade" << endl;
+		researchRequest(UpgradeTypes::U_238_Shells);
+		return;
+	}
+
+	if(toPerform->getTaskType() == ResearchAcademyStimPack){
+		Broodwar << "Resquest Stim Pack upgrade" << endl;
+		researchRequest(TechTypes::Stim_Packs);
+		return;
 	}
 }
 

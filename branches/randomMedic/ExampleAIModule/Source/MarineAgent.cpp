@@ -140,7 +140,9 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 	}
 
 	int index = randomInRange(0, all.size());
-	toPerform = all[index];
+	if (all.size() == 0) return;
+
+	toPerform = all[index]; //TODO: error here!
 
 		
 	//Task* toPerform = weightedSelection(taskAssociations);
