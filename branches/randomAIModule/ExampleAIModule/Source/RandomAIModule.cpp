@@ -122,7 +122,7 @@ void ExampleAIModule::onEnd(bool isWinner) {
 	ofstream resultFile;
 	Broodwar->enableFlag(Flag::CompleteMapInformation);
 	resultFile.open ("results.txt", std::ios_base::app);
-	resultFile << "Rand," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << (isWinner ? "win" : "loss") << ",";
+	resultFile << "RD," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << (isWinner ? "win" : "loss") << ",";
 	resultFile << me->getUnitScore() << "," << me->getBuildingScore() << "," << me->gatheredMinerals() + me->gatheredGas() << ",";
 	resultFile << enemy->getRace().getName() << "," << enemy->getUnitScore() << "," << enemy->getBuildingScore() << "," << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
 	resultFile.close();
@@ -207,7 +207,7 @@ void ExampleAIModule::onFrame() {
 		}
 	}
 
-	// Iterate through all the SCV on the map
+	// Iterate through all SCVs
 	unordered_map<int, SCVAgent*>::iterator it = scvMap.begin();
 	for(unordered_map<int, SCVAgent*>::iterator iter = scvMap.begin(); iter != scvMap.end(); ++iter){
 		int unitId =  iter->first;
@@ -216,33 +216,8 @@ void ExampleAIModule::onFrame() {
 
 		agent->onFrame(&allTasks, discoveredMineralPositions, commandCenters, scvMap);
 
-		//Broodwar->drawTextMap(u->getPosition().x, u->getPosition().y, "agentId[%d]", unitId);
-
-		/*if ( u->isLockedDown() || u->isMaelstrommed() || u->isStasised() )
-			continue;
-		
-		if ( u->isIdle() ) {
-			// Order workers carrying a resource to return them to the center,
-			// otherwise find a mineral patch to harvest.
-			if ( u->isCarryingGas() || u->isCarryingMinerals() ) {
-				u->returnCargo();
-			}
-			else if ( !u->getPowerUp() ) { // The worker cannot harvest anything if it
-											 // is carrying a powerup such as a flag
-					// Harvest from the nearest mineral patch or gas refinery
-				if ( !u->gather( u->getClosestUnit( IsMineralField || IsRefinery )) ) {
-					// If the call fails, then print the last error message
-					Broodwar << Broodwar->getLastError() << std::endl;
-				}
-
-			} // closure: has no powerup
-		} // closure: if idle
-		*/
 	}
 	
-	/*Broodwar->drawTextScreen(20, 90 + yOffset, "Number of SCV in map [%d]", 
-		Text::White, scvMap->size()
-	);*/
 }
 
 unordered_map<TaskType, vector<Task>*>& ExampleAIModule::getTasks(){
