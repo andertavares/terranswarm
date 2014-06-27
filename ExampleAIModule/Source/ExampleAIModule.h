@@ -4,10 +4,12 @@
 #include <vector>
 #include <unordered_map>
 #include <list>
+#include "Parameters.h"
 #include "Task.h"
 #include "CommanderAgent.h"
 #include "MarineAgent.h"
 #include "SCVAgent.h"
+#include "MedicAgent.h"
 
 
 #define BASE_RADIUS 20 * TILE_SIZE
@@ -19,10 +21,20 @@ class SCVAgent; //forward decl. to prevent compile error
 
 typedef unordered_map<int, SCVAgent*> SCVMap;
 typedef unordered_map<int, MarineAgent*> MarineMap;
+typedef unordered_map<int, MedicAgent*> MedicMap;
 
 // Remember not to use "Broodwar" in any global class constructor!
 
 class ExampleAIModule : public BWAPI::AIModule {
+
+	//stores whether the game has lasted too long and should end as a draw
+	bool timeOver;
+
+	//relative path where the chromosome files are located
+	string workingDir;
+
+	//parameters that are used here and will be evolved by the GA
+	map<int, double> parameters;
 
 	//tasks that will have a single instance
 	Task* gatherMinerals;
@@ -30,10 +42,22 @@ class ExampleAIModule : public BWAPI::AIModule {
 	Task* buildSupplyDepot;
 	Task* explore;
 	Task* buildCommandCenter;
+	Task* buildVespeneGas;
+	Task* buildAcademy;
+	Task* trainMedic;
+	Task* researchAcademyStimpack;
+	Task* researchAcademyLongRange;
+	Task* researchAcademyOpticalFlare;
+	Task* buildBunker;
+
+	Unit ourComSat;
+
 	CommanderAgent* _commanderAgent;
 
 	//number of minerals found out of base range
 	//int mineralsOutOfBaseRange;
+
+	int lastScan;
 
 	//set of command centers
 	Unitset commandCenters;
@@ -59,9 +83,12 @@ class ExampleAIModule : public BWAPI::AIModule {
 	// Map of SVCs agents
 	SCVMap scvMap;
 	MarineMap marines; //stores the marines owned
+	MedicMap medics;
 
 	//is a supply depot scheduled to be built?
 	bool scheduledSupplyDepots;
+
+	int academyCount; //keeps track of the number of academies
 
 	void _drawStats(); //writes information texts on screen and draws some useful figures
 	void _drawExploredStats();
@@ -91,6 +118,8 @@ public:
 	ExampleAIModule();
 	~ExampleAIModule();
 
+	void revealHiddenUnits();
+
 	void updateTasks();
 	void updateRepair();
 	void updateAttack();
@@ -105,4 +134,15 @@ public:
 	unordered_map<int, SCVAgent*>& getSCVMap();
 	unordered_map<TaskType, vector<Task>*>& getTasks();
 
+	// Vespene gas
+	void updateBuildRefinery();
+	void updateBuildAcademy();
+	void updateTrainMedic();
+
+	void updateResearchLongRange();
+	void updateResearchStimPack();
+	void updateBuildBunker();
+	int calculateBunkersFromCommandCenter(BWAPI::Unit cmdCenter);
+	int generateRandomnteger(int nMin, int nMax);
+	
 };

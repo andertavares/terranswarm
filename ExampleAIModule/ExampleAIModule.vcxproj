@@ -14,7 +14,7 @@
     <ProjectGuid>{2E63AE74-758A-4607-9DE4-D28E814A6E13}</ProjectGuid>
     <RootNamespace>ExampleAIModule</RootNamespace>
     <Keyword>Win32Proj</Keyword>
-    <ProjectName>TerranSwarmAIModule</ProjectName>
+    <ProjectName>GAMedicAIModule</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -26,6 +26,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <UseOfAtl>false</UseOfAtl>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -46,7 +47,6 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)_release</TargetName>
-    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</GenerateManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -94,7 +94,10 @@
     <ClCompile Include="Source\CommanderAgent.cpp" />
     <ClCompile Include="Source\Dll.cpp" />
     <ClCompile Include="Source\ExampleAIModule.cpp" />
+    <ClCompile Include="Source\GeneticValues.cpp" />
     <ClCompile Include="Source\MarineAgent.cpp" />
+    <ClCompile Include="Source\MedicAgent.cpp" />
+    <ClCompile Include="Source\Parameters.cpp" />
     <ClCompile Include="Source\SCVAgent.cpp" />
     <ClCompile Include="Source\Task.cpp" />
     <ClCompile Include="Source\TaskAssociation.cpp" />
@@ -104,7 +107,10 @@
     <ClInclude Include="Source\AgentStates.h" />
     <ClInclude Include="Source\CommanderAgent.h" />
     <ClInclude Include="Source\ExampleAIModule.h" />
+    <ClInclude Include="Source\GeneticValues.h" />
     <ClInclude Include="Source\MarineAgent.h" />
+    <ClInclude Include="Source\MedicAgent.h" />
+    <ClInclude Include="Source\Parameters.h" />
     <ClInclude Include="Source\SCVAgent.h" />
     <ClInclude Include="Source\Task.h" />
     <ClInclude Include="Source\TaskAssociation.h" />

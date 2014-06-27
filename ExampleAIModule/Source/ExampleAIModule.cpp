@@ -4,21 +4,39 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <ctime>
 #include "ExampleAIModule.h"
 #include "Task.h"
 #include "CommanderAgent.h"
+#include "Parameters.h"
+#include "GeneticValues.h"
 
 #define EULER 2.71828182845904523536
+#define DEBUG_GA true
 
 using namespace BWAPI;
 using namespace Filter;
 
 
 ExampleAIModule::ExampleAIModule() {
-	//actual init is done in onStart()
+	//init of game structures is done in onStart()
+	lastScan = 0;
 	trainMarine = NULL;
 	gatherMinerals = NULL;
 	buildSupplyDepot = NULL;
+	ourComSat = NULL;
+	timeOver = false;
+	srand(time(0));
+
+	//sets the working dir according to path.cfg located in starcraft directory
+	ifstream infile("path.cfg");
+	stringstream buffer;
+	buffer << infile.rdbuf();
+	workingDir = buffer.str();
+
+	//loads the parameters
+	GeneticValues::initializeMap(workingDir);
+	parameters = GeneticValues::getMap();
 }
 
 ExampleAIModule::~ExampleAIModule(){
@@ -29,11 +47,11 @@ ExampleAIModule::~ExampleAIModule(){
 
 void ExampleAIModule::onStart() {
 	// Hello World!
-	Broodwar->sendText("TerranSwarm is online!");
-
+	Broodwar->sendText("GAMedic is online!");
+	Broodwar << "working dir:" << workingDir << endl;
 	// Print the map name.
 	// BWAPI returns std::string when retrieving a string, don't forget to add .c_str() when printing!
-	Broodwar << "The map is " << Broodwar->mapName() << "!" << std::endl;
+	//Broodwar << "The map is " << Broodwar->mapName() << "!" << std::endl;
 	
   
 	// Enable the UserInput flag, which allows us to control the bot and type messages.
@@ -46,7 +64,7 @@ void ExampleAIModule::onStart() {
 	// and reduce the bot's APM (Actions Per Minute).
 	Broodwar->setCommandOptimizationLevel(2);
 
-	Broodwar->setGUI(false); //disables gui drawing (better performance?)
+	Broodwar->setGUI(false); //disables gui drawing (better performance)
 	Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 	// Check if this is a replay
@@ -82,7 +100,7 @@ void ExampleAIModule::onStart() {
 		//initializes the map of task lists
 		//tasks are grouped by taskType
 		//insert all TaskTypes into map; all Types will point to empty list
-		for(int tt = TrainMarine; tt != GuardBase; ++tt){
+		for(int tt = TrainMarine; tt <= BuildComSat; tt++){
 			allTasks[static_cast<TaskType>(tt)] = new vector<Task>;
 		}
 
@@ -90,9 +108,21 @@ void ExampleAIModule::onStart() {
 		//TaskTypes with multiple instances will remain pointing to empty list (will be fulfilled on demand)
 		allTasks[TrainMarine]->push_back(Task(TrainMarine, .8f)); 
 		allTasks[GatherMinerals]->push_back(Task(GatherMinerals, .6f));
-		allTasks[BuildSupplyDepot]->push_back(Task(BuildSupplyDepot, 0));
-		allTasks[Explore]->push_back(Task(Explore, 0));
-		allTasks[BuildCommandCenter]->push_back(Task(BuildCommandCenter, 0));
+		allTasks[BuildSupplyDepot]->push_back(Task(BuildSupplyDepot, .0f));
+		allTasks[Explore]->push_back(Task(Explore, .0f));
+		allTasks[BuildCommandCenter]->push_back(Task(BuildCommandCenter, .0f));
+		allTasks[BuildAcademy]->push_back(Task(BuildAcademy, .0f));
+
+		// Vespene Gas
+		allTasks[BuildVespeneGas]->push_back(Task(BuildVespeneGas, .0f));
+		allTasks[TrainMedic]->push_back(Task(TrainMedic, .8f)); 
+		
+		// Upgrades
+		allTasks[ResearchAcademyLongRange]->push_back(Task(ResearchAcademyLongRange, .0f)); 
+		allTasks[ResearchAcademyStimPack]->push_back(Task(ResearchAcademyStimPack, .0f)); 
+
+		// New Buildings EXPERIMENTAL
+		allTasks[BuildBunker]->push_back(Task(BuildBunker, .0f)); 
 
 		//retrieves the single-instance tasks and stores them in pointers for easier remembering
 		trainMarine = &allTasks[TrainMarine]->at(0);
@@ -100,7 +130,17 @@ void ExampleAIModule::onStart() {
 		buildCommandCenter = &allTasks[BuildCommandCenter]->at(0);
 		buildSupplyDepot = &allTasks[BuildSupplyDepot]->at(0);
 		explore = &allTasks[Explore]->at(0);
+		
+		// single instance -- vespene Gas
+		buildVespeneGas = &allTasks[BuildVespeneGas]->at(0);
+		buildAcademy = &allTasks[BuildAcademy]->at(0);
+		trainMedic = &allTasks[TrainMedic]->at(0);
 
+		// single instance -- upgrades
+		researchAcademyLongRange = &allTasks[ResearchAcademyLongRange]->at(0);
+		researchAcademyStimpack = &allTasks[ResearchAcademyStimPack]->at(0);
+
+		buildBunker = &allTasks[BuildBunker]->at(0);
 	}
 
 	// Create the main agents
@@ -117,23 +157,52 @@ void ExampleAIModule::onEnd(bool isWinner) {
 		Broodwar->sendText("POWER OVERWHELMING!");
 	}
 
+	ofstream outputFile;
+	outputFile.open("C:\\gameResults.txt", ios::app);
+	outputFile << isWinner << endl;
+	outputFile.close();
+
 	Player me = Broodwar->self();
 	Player enemy = Broodwar->enemy();
 	//Broodwar->
 	//opens a file and writes the results
 	//file layout is: Map Duration Win? Units Structure Resources EnemyRace Units Structure Resources (enemy)
+	
+
+	//determines whether the game ended as victory, draw or defeat
+	string gameResult = "win";
+	if (! isWinner){
+		gameResult = (timeOver ? "draw" : "loss");
+	}
+
+	//writes the default results file
 	ofstream resultFile;
-	Broodwar->enableFlag(Flag::CompleteMapInformation);
+	Broodwar->enableFlag(Flag::CompleteMapInformation);	//attemp to obtain enemy score, but does not work
 	resultFile.open ("results.txt", std::ios_base::app);
-	resultFile <<  "TS," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << (isWinner ? "win" : "loss") << ",";
+	resultFile << "GA," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << gameResult << ",";
 	resultFile << me->getUnitScore() << "," << me->getBuildingScore() << "," << me->gatheredMinerals() + me->gatheredGas() << ",";
 	resultFile << enemy->getRace().getName() << "," << enemy->getUnitScore() << "," << enemy->getBuildingScore() << "," << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
 	resultFile.close();
 	Broodwar << "Results written" << endl;
+
+	//writes the fitness for the genetic algorithm
+	string fitnessFile = GeneticValues::getParamsFile() + ".fit";
+	ofstream fitFile(workingDir + "\\" + fitnessFile, ios_base::out);
+	int fitness = me->getUnitScore() + me->getBuildingScore() + me->gatheredMinerals() + me->gatheredGas();
+	if (timeOver) {
+		fitness += 20000;
+	}
+	else if (isWinner) {
+		fitness += 50000;
+	}
+
+	fitFile << fitness << endl;
+	fitFile.close();
+	
+
 }
 
 void ExampleAIModule::onFrame() {
-	//TODO: set rally point of barracks to the nearest command center
 	// Called once every game frame
 	// Return if the game is paused
 	if ( Broodwar->isPaused() )// || !Broodwar->self() )
@@ -152,6 +221,14 @@ void ExampleAIModule::onFrame() {
 		}
 		return;
 	}
+
+
+	//checks if game is lasting too long. If so, ends the game as a draw
+	if(Broodwar->elapsedTime() >= 3600){ //1h of duration
+		timeOver = true;
+		Broodwar->leaveGame();
+	}
+
 
 	_drawStats();
 
@@ -183,6 +260,21 @@ void ExampleAIModule::onFrame() {
 		allTasks[Explore]->push_back(Task(Explore, 0));
 		explore = &allTasks[Explore]->at(0);
 	}
+	// Vespene Gas
+	if(allTasks[BuildVespeneGas]->size() <= 0){
+		allTasks[BuildVespeneGas]->push_back(Task(BuildVespeneGas, 0));
+		buildVespeneGas = &allTasks[BuildVespeneGas]->at(0);
+	}
+	// Vespene Gas
+	if(allTasks[BuildAcademy]->size() <= 0){
+		allTasks[BuildAcademy]->push_back(Task(BuildAcademy, 0));
+		buildAcademy = &allTasks[BuildAcademy]->at(0);
+	}
+	// Upgrades
+	if(allTasks[ResearchAcademyLongRange]->size() <= 0){
+		allTasks[ResearchAcademyLongRange]->push_back(Task(ResearchAcademyLongRange, 0));
+		researchAcademyLongRange = &allTasks[ResearchAcademyLongRange]->at(0);
+	}
 	
 	//sets all rally points of barracks to the nearest command center
 	for(auto c = commandCenters.begin(); c != commandCenters.end(); c++){
@@ -207,7 +299,22 @@ void ExampleAIModule::onFrame() {
 		}
 	}
 
+	//builds com-sat if we have more than 15 minutes of game played
+	if(Broodwar->elapsedTime() / 60 >= 15){
+		if(ourComSat == NULL && 
+			Broodwar->self()->minerals() > UnitTypes::Terran_Comsat_Station.mineralPrice() &&
+			Broodwar->self()->gas() > UnitTypes::Terran_Comsat_Station.gasPrice()
+		){
+			//Broodwar->sendText("Wanna build ComSat!");
+			commandCenters[0]->buildAddon(UnitTypes::Terran_Comsat_Station); //builds comsat at 1st cmd center
+		}
+	}
 
+	//tries to reveal hidden units
+	//Broodwar->sendText << "will reveal" << endl;
+	revealHiddenUnits();
+
+	//Broodwar << "after trying to reveal" << endl;
 	updateTasks();
 
 	_commanderAgent->onFrame(allTasks, trainSCVIncentives);
@@ -215,6 +322,11 @@ void ExampleAIModule::onFrame() {
 	//iterates through all marines
 	for(auto marine = marines.begin(); marine != marines.end(); marine++){
 		marine->second->onFrame(allTasks, marines);
+	}
+
+	//iterates through all medics
+	for(auto medic = medics.begin(); medic != medics.end(); medic++){
+		medic->second->onFrame(allTasks);
 	}
 
 	// Iterate through all the SCV on the map
@@ -319,6 +431,9 @@ void ExampleAIModule::onUnitDiscover(Unit unit){
 		// Add marine to HashTable
 		marines[unit->getID()] = new MarineAgent(unit);
 	}
+	else if(unit->getPlayer() == Broodwar->self() && unit->getType() == UnitTypes::Terran_Medic){
+		medics[unit->getID()] = new MedicAgent(unit);
+	}
 
 	
 
@@ -362,21 +477,10 @@ void ExampleAIModule::onUnitCreate(BWAPI::Unit unit) {
 			Broodwar->sendText("%.2d:%.2d: %s creates a %s", minutes, seconds, unit->getPlayer()->getName().c_str(), unit->getType().c_str());
 		}
     }
-	/*else{
-		if(unit->getType() == UnitTypes::Terran_Command_Center){
-			Unitset visibleMinerals = Broodwar->getMinerals();
-			
-			//when base is created, check if it covers all accessible minerals
-			bool allVisible = true;
-			for(Unitset::iterator min = visibleMinerals.begin(); min != visibleMinerals.end(); ++min){
-				if(unit->getDistance(*min) < BASE_RADIUS){
-					//allVisible = false;
-					//break;
-					mineralsOutOfBaseRange--;
-				}
-			}
-		}
-	}*/
+	if (unit->getPlayer() == Broodwar->self() && unit->getType() == UnitTypes::Terran_Comsat_Station){
+		ourComSat = unit;
+	}
+
 }
 
 //BWAPI calls this when a unit dies or otherwise removed from the game (i.e. a mined out mineral patch)
@@ -394,6 +498,12 @@ void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit){
 			//Broodwar->sendText("cmdSize before: %d",commandCenters.size());
 			commandCenters.erase(unit);
 			//Broodwar->sendText("cmdSize AFTER: %d",commandCenters.size());
+		}
+		else if(unit->getType() == UnitTypes::Terran_Medic){
+			medics.erase(unit->getID());
+		}
+		else if (unit->getType() == UnitTypes::Terran_Comsat_Station){
+			ourComSat = NULL;
 		}
 	}
 	else {
@@ -437,6 +547,12 @@ void ExampleAIModule::updateTasks(){
 	updateTrainMarine();
 	updateTrainSCV();
 	updateExplore();
+	updateBuildRefinery();
+	updateBuildAcademy();
+	updateTrainMedic();
+	updateResearchLongRange();
+	updateResearchStimPack();
+	updateBuildBunker();
 }
 
 void ExampleAIModule::updateRepair(){
@@ -463,6 +579,58 @@ void ExampleAIModule::updateRepair(){
 			allTasks[Repair]->push_back(Task(Repair, incentive, bldg->getPosition()));
 		}
 	}
+}
+
+void ExampleAIModule::revealHiddenUnits(){
+
+	TechType scan = TechTypes::Scanner_Sweep;
+	int cooldown = Broodwar->getFrameCount() - lastScan;
+
+	// scan.getWeapon().damageCooldown()
+	//does not scan if there is no comsat, of energy is low, or cooldown has not been reached
+	if(ourComSat == NULL ||  ourComSat->getEnergy() < scan.energyCost() || cooldown < 160 ){ //scan sweep lasts about 160 frames
+		//Broodwar->sendText("NULL? %d, sc cooldown: %d, act cooldown: %d, cost:%d, energy:%d", ourComSat == NULL, scan.getWeapon().damageCooldown(), cooldown, scan.energyCost(), ourComSat->getEnergy());
+		return;
+	}
+
+	//Broodwar->sendText("will traverse", ourComSat == NULL);
+
+	Unitset allunits = Broodwar->getAllUnits();
+	for(auto unit = allunits.begin(); unit != allunits.end(); unit++){
+		if(unit->getPlayer() != Broodwar->self() && (unit->isCloaked() || unit->isBurrowed())){
+			//hidden unit detected, scan it!
+			ourComSat->useTech(scan, unit->getPosition());
+			lastScan = Broodwar->getFrameCount();
+		}
+	}
+
+	// Get random attack area to do a scan!
+	if(ourComSat->getEnergy() >= 170 && allTasks[Attack]->size() > 0){
+		vector<Task> *attackTaskVector = allTasks[Attack];
+		vector<Task>::iterator attackIt = (*attackTaskVector).begin();
+		std::advance( attackIt, generateRandomnteger(0, (*attackTaskVector).size()) );
+		ourComSat->useTech(scan, attackIt->getPosition());
+		lastScan = Broodwar->getFrameCount();
+		Broodwar << "Random attack position revealed!" << endl;
+	}
+
+	/*for(auto task = allTasks[Attack]->begin(); task != allTasks[Attack]->end(); task++){
+
+		if(Broodwar->isVisible(task->getPosition().x / TILE_SIZE , task->getPosition().y / TILE_SIZE)){
+			Unitset inRange = Broodwar->getUnitsInRadius(task->getPosition(),  UnitTypes::Terran_Marine.groundWeapon().maxRange(), Filter::IsEnemy);
+			//Broodwar->sendText("%d in range of attack task.", inRange.size());
+			
+			// Check if the unit can be reached by the marines
+			// Sometimes cloacked or burrowed units can be marked as enemy but it cannot be attacked
+			bool onlyCloackedUnits = true;
+			for(auto u = inRange.begin(); u != inRange.end(); ++u) {
+				if( (u->isCloaked() || u->isBurrowed()) && !u->isInvincible()){
+					onlyCloackedUnits = false;
+					break;
+				}
+			}
+		}
+	}*/
 }
 
 /**
@@ -544,7 +712,7 @@ void ExampleAIModule::updateAttack(){
 		//TODO: test is reachable 
 		Position foePos = foeUnit->getPosition();
 		if(! inRange && !foeUnit->isCloaked() && !foeUnit->isBurrowed() && !foeUnit->isInvincible() && Broodwar->isWalkable(foePos.x / 8, foePos.y / 8)){
-			Task* atk = new Task(Attack, .8f, foeUnit->getPosition());
+			Task* atk = new Task(Attack, parameters[S_ATTACK], foeUnit->getPosition());
 			allTasks[Attack]->push_back(*atk);
 			//Broodwar->sendText("Attack task added, pos=%d,%d // %d,%d ", unit->getPosition().x, unit->getPosition().y, atk->getPosition().x, atk->getPosition().y);
 		}
@@ -594,8 +762,9 @@ void ExampleAIModule::updateTrainMarine(){
 	}
 	else {
 		//if i have money, produce more
-		trainMarine->setIncentive(.8f);
+		trainMarine->setIncentive(parameters[S_TRAIN_MARINE]);
 	}
+	//trainMarine->setIncentive(.8f);
 }
 
 void ExampleAIModule::updateTrainSCV(){
@@ -605,8 +774,9 @@ void ExampleAIModule::updateTrainSCV(){
 		Unitset mineralsAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsMineralField);
 		Unitset scvAround = Broodwar->getUnitsInRadius(cmd->getPosition(), BASE_RADIUS, Filter::IsWorker && Filter::IsOwned);
 
-		trainSCVIncentives[*cmd] = max(0.0f, 1.0f - (scvAround.size() / (2.5f * mineralsAround.size())));
-		/* from medic-branch
+		trainSCVIncentives[*cmd] = max(0.0f, 1.0f - float(scvAround.size() / (parameters[S_TRAIN_SCV_DENOMINATOR] * mineralsAround.size())));
+		
+		/*
 		if(scvMap.size() < 110){
 			trainSCVIncentives[*cmd] = max(0.0f, 1.0f - (scvAround.size() / (2.5f * mineralsAround.size())));
 		}
@@ -615,7 +785,6 @@ void ExampleAIModule::updateTrainSCV(){
 		}*/
 
 	}
-	//Broodwar->getu
 }
 
 void ExampleAIModule::updateBuildCommandCenter(){
@@ -625,13 +794,6 @@ void ExampleAIModule::updateBuildCommandCenter(){
 		buildCommandCenter->setIncentive(0.0f);
 		return;
 	}
-
-	/*if(buildCommandCenter->getIncentive() > 0) {
-		if(scvMap[3] != NULL){
-			scvMap[3]->buildCommandCenter(discoveredMinerals, commandCenters);
-		}
-	}*/
-
 
 	//for every discovered mineral, check if it is in range of a command center
 	for(auto mPos = discoveredMineralPositions.begin(); mPos != discoveredMineralPositions.end(); ++mPos){
@@ -643,7 +805,7 @@ void ExampleAIModule::updateBuildCommandCenter(){
 			}
 		}
 		if (!reachable){
-			buildCommandCenter->setIncentive(0.8f);
+			buildCommandCenter->setIncentive(parameters[S_BUILD_CMD_CENTER]);
 			return;
 		}
 	}
@@ -660,7 +822,7 @@ void ExampleAIModule::updateBuildBarracks(){
 
 	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); c++){
 		int barracksNumber = calculateBarracksFromCommandCenter(Broodwar->getUnit(c->getID()));
-		float incentive =  max(0.0f, 1.0f - barracksNumber/3.0f);
+		float incentive =  max(0.0f, 1.0f - barracksNumber/float(parameters[S_BUILD_BARRACKS_DENOMINATOR]));
 
 		//sets incentive to ZERO if we have not enough minerals
 		if(Broodwar->self()->minerals() < UnitTypes::Terran_Barracks.mineralPrice()){
@@ -710,20 +872,6 @@ void ExampleAIModule::updateBuildSupplyDepot(){
 	//buildSupplyDepot->setIncentive(max(0.0f,1.0f - (dif/10.0f))); //linear decay
 	buildSupplyDepot->setIncentive(max(0.0f, pow(float(EULER),-dif/2.0f))); //exponential decay
 
-	/*
-	// TODO: Check if this is ok
-	UnitType supplyProviderType = UnitTypes::Terran_Supply_Depot;
-	if (  Broodwar->self()->incompleteUnitCount(supplyProviderType) > 0 ) {
-		//dif = dif/5.0; //atenuates the difference if a supply depot is being built
-		//buildSupplyDepot->setIncentive(0.0f);
-	}
-	else{
-		buildSupplyDepot->setIncentive(max(0.0f,1.0f - (dif/10.0f))); //linear decay
-		//buildSupplyDepot->setIncentive(max(0.0, pow(EULER,-dif))); //exponential decay
-	}
-	//allTasks[BuildSupplyDepot]->at(0).setIncentive(1.0f - (dif/10.0f));
-	//buildSupplyDepot->setIncentive(1.0f - (dif/10.0f)); //linear 'decay'
-	*/
 }
 
 void ExampleAIModule::updateExplore(){
@@ -824,16 +972,27 @@ void ExampleAIModule::createBarrackNearCommandCenter(Unit u) {
 void ExampleAIModule::_drawStats(){
 	// Display the game frame rate as text in the upper left area of the screen
 	Broodwar->drawTextScreen(290, 0,  "FPS: %d", Broodwar->getFPS() );
-	Broodwar->drawTextScreen(290, 15, "Average FPS: %f", Broodwar->getAverageFPS() );
-	Broodwar->drawTextScreen(290, 30, "Frame count: %d", Broodwar->getFrameCount() );
+	Broodwar->drawTextScreen(290, 15, "Average FPS: %f // Frame count: %d", Broodwar->getAverageFPS(), Broodwar->getFrameCount() );
 	Broodwar->drawTextScreen(290, 45, "Time: ~ %dh%dm%ds", Broodwar->elapsedTime() / 3600, Broodwar->elapsedTime() / 60, Broodwar->elapsedTime() % 60);
 	_drawExploredStats();
+
+	//display the parameters
+	if (DEBUG_GA){
+		int offset = 0;
+		for(int par = S_GATHER_MINERALS; par <= M_PACK_SIZE; par++){
+			Broodwar->drawTextScreen(400, offset,  "%s: %f", PARAMETER_NAMES[par], parameters[par] );
+			//allTasks[static_cast<TaskType>(tt)] = new vector<Task>;
+			offset += 11;
+		}
+
+	}
 
 	// display some debug info...
 	Broodwar->drawTextScreen(20, 0, "%cSupply Depot incentive = %.3f", 
 		Text::White, 
 		buildSupplyDepot->getIncentive()
 	); 
+
 
 	//Broodwar->sendText("%d", &allTasks[BuildSupplyDepot]->at(0) == buildSupplyDepot);
 
@@ -842,11 +1001,13 @@ void ExampleAIModule::_drawStats(){
 		explore->getIncentive()
 	);
 
-	Broodwar->drawTextScreen(20, 30, "%c#Marines: %d // #atk tasks: %d // Train incentive = %.3f", 
+	Broodwar->drawTextScreen(20, 30, "%c#Marines: %d // #atk tasks: %d // Train incentive = %.3f // #Medics :%d Incentive :%.3f", 
 		Text::White, 
 		marines.size(),
 		allTasks[Attack]->size(),
-		trainMarine->getIncentive()
+		trainMarine->getIncentive(),
+		medics.size(),
+		trainMedic->getIncentive()
 	);
 
 	Broodwar->drawTextScreen(20, 45, "%c#SCVs: %d // Mine incentive = %.3f", 
@@ -855,9 +1016,13 @@ void ExampleAIModule::_drawStats(){
 		gatherMinerals->getIncentive()
 	);
 
-	Broodwar->drawTextScreen(20, 60, "%cBuild CMD center incentive: %.3f", 
+	Broodwar->drawTextScreen(20, 60, "%cBuild CMD [%.3f] Academy [%.3f] Gas [%.3f] U-238 [%.3f] Stim [%.3f]", 
 		Text::White, 
-		buildCommandCenter->getIncentive()
+		buildCommandCenter->getIncentive(),
+		buildAcademy->getIncentive(),
+		buildVespeneGas->getIncentive(),
+		researchAcademyLongRange->getIncentive(),
+		researchAcademyStimpack->getIncentive()
 	);
 
 	Broodwar->drawTextScreen(20, 75, "%cRepair tasks: %d", 
@@ -958,4 +1123,227 @@ void ExampleAIModule::_drawExploredStats(){
 			}
 		}
 	}
+}
+
+/**
+  * Updates the incentive for the Task buildVespeneGas
+  **/
+void ExampleAIModule::updateBuildRefinery(){
+	
+	if (Broodwar->getFrameCount()/24 < 120) {
+		buildVespeneGas->setIncentive(0);
+		return;
+	}
+
+	if(Broodwar->self()->minerals() < UnitTypes::Terran_Refinery.mineralPrice()){
+		//not enough minerals, can't build more vespene gas
+		buildVespeneGas->setIncentive(0);
+		return;
+	}
+
+	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); c++){
+		Unitset units = Broodwar->getUnitsInRadius(c->getPosition(), BASE_RADIUS, Filter::IsResourceContainer);
+		bool constructVespene = false;
+		for (auto unit = units.begin(); unit != units.end(); unit++){
+			if(!unit->getType().isRefinery()){
+				constructVespene = true;
+				break;
+			}
+		}
+
+		if(constructVespene){
+			buildVespeneGas->setIncentive(1.0f);
+		}
+	}
+}
+
+/**
+  * Updates the incentive for the Task buildAcademy
+  **/
+void ExampleAIModule::updateBuildAcademy(){
+	
+	if(Broodwar->self()->minerals() < UnitTypes::Terran_Academy.mineralPrice()){
+		//not enough minerals, can't build more vespene gas
+		buildAcademy->setIncentive(0.0f);
+		return;
+	}
+
+	Unitset units = Broodwar->self()->getUnits();
+	bool hasAcademy = false;
+
+	//UnitType supplyProviderType = u->getType().getRace().getSupplyProvider();
+	//static int lastChecked = 0;
+
+	// If we are supply blocked and haven't tried constructing more recently
+	if (Broodwar->self()->incompleteUnitCount(UnitTypes::Terran_Academy) > 0) {
+		hasAcademy = true;
+	}
+
+	if(!hasAcademy){
+		for (Unitset::iterator unit = units.begin(); unit != units.end(); unit++){
+			if(unit->getType() == UnitTypes::Terran_Academy && unit->exists()){
+				hasAcademy = true;
+				break;
+			}
+		}
+	}
+
+	if(!hasAcademy){
+		//&& commandCenters.size() >= 2){
+		buildAcademy->setIncentive(.6f);
+	}
+	else{
+		buildAcademy->setIncentive(.0f);
+	}
+}
+
+void ExampleAIModule::updateTrainMedic(){
+	//tries to make a 12 marines per base (attempts to save some money to expansions)
+	int numberOfMedics = medics.size();
+	int numberOfMarines = max(1.0f, marines.size() + 0.0f);
+
+	/*if (Broodwar->self()->minerals() < 450 
+		&& commandCenters.size() < 2){
+		trainMedic->setIncentive(0.001f);
+	}
+	else {*/
+		//if((numberOfMarines / 4) > numberOfMedics && Broodwar->self()->gas() >= 25){
+	int expectedMedicNumbers = max(1.0f, float(numberOfMarines / parameters[S_TRAIN_MEDIC_RATIO]));
+			//trainMedic->setIncentive(max(0.2f, numberOfMedics / (expectedMedicNumbers) + 0.0f));
+			if(expectedMedicNumbers > numberOfMedics){
+				trainMedic->setIncentive(1.0f - (numberOfMedics / (expectedMedicNumbers) + 0.0f));
+			}
+			else{
+				trainMedic->setIncentive(.0f);
+			}
+		//}
+		//else{
+		//	trainMedic->setIncentive(.0f);
+		//}
+		
+	//}
+}
+
+void ExampleAIModule::updateResearchLongRange(){
+	
+	if (Broodwar->self()->getUpgradeLevel(UpgradeTypes::U_238_Shells) > 0) {
+		researchAcademyLongRange->setIncentive(0.0f);
+		return;
+	}
+
+	if(Broodwar->self()->minerals() < UpgradeTypes::U_238_Shells.mineralPrice() ||
+		Broodwar->self()->gas() < UpgradeTypes::U_238_Shells.gasPrice()){
+		//not enough minerals, can't build more vespene gas
+		researchAcademyLongRange->setIncentive(0.0f);
+		return;
+	}
+
+	Unitset units = Broodwar->self()->getUnits();
+	bool hasAcademy = false;
+
+	for (Unitset::iterator unit = units.begin(); unit != units.end(); unit++){
+		if(unit->getType() == UnitTypes::Terran_Academy && unit->exists()){
+			hasAcademy = true;
+			break;
+		}
+	}
+
+	if(hasAcademy && commandCenters.size() >= 2){
+		researchAcademyLongRange->setIncentive(.8f);
+	}
+	else{
+		researchAcademyLongRange->setIncentive(.0f);
+	}
+}
+
+void ExampleAIModule::updateResearchStimPack(){
+	TechType stim = TechTypes::Stim_Packs;
+
+	if (Broodwar->self()->hasResearched(stim)){
+		researchAcademyStimpack->setIncentive(0.0f);
+		return;
+	}
+	
+	if(Broodwar->self()->minerals() < stim.mineralPrice() || Broodwar->self()->gas() < stim.gasPrice()){
+		//not enough resources
+		researchAcademyStimpack->setIncentive(0.0f);
+		return;
+	}
+
+	Unitset units = Broodwar->self()->getUnits();
+	bool hasAcademy = false;
+
+
+	for (Unitset::iterator unit = units.begin(); unit != units.end(); unit++){
+		if(unit->getType() == UnitTypes::Terran_Academy && unit->exists()){
+			hasAcademy = true;
+			break;
+		}
+	}
+
+	if(hasAcademy){
+		researchAcademyStimpack->setIncentive(.8f);
+	}
+	else{
+		researchAcademyStimpack->setIncentive(.0f);
+	}
+}
+
+void ExampleAIModule::updateBuildBunker(){
+	//calculates the number of barracks around the command center
+	vector<Task>* newBunkersNeeded = new vector<Task>();
+
+	for (Unitset::iterator c = commandCenters.begin(); c != commandCenters.end(); c++){
+		int bunkerNumber = calculateBunkersFromCommandCenter(Broodwar->getUnit(c->getID()));
+		float incentive =  max(0.0f, 1.0f - bunkerNumber/1.0f);
+
+		//sets incentive to ZERO if we have not enough minerals
+		if(Broodwar->self()->minerals() < UnitTypes::Terran_Bunker.mineralPrice()){
+			incentive = 0.0f;
+		}
+
+		//updates the number of barracks around all command centers
+		//builtBarracks[*c] = barracksNumber;
+		//buildBarracksIncentives[*c] = incentive;
+
+		newBunkersNeeded->push_back(Task(BuildBunker, incentive, c->getPosition()));
+	}
+
+	allTasks[BuildBunker]->swap(*newBunkersNeeded);
+	delete newBunkersNeeded; //hope this doesn't invalidates the barracks :)
+}
+
+/**
+  * Counts the bunkers constructed or under construction around a command center
+  */
+int ExampleAIModule::calculateBunkersFromCommandCenter(Unit cmdCenter) {
+
+	//first: count built barracks around the command center
+	Position commandCenterPos = cmdCenter->getPosition();
+	
+	Unitset units = Broodwar->getUnitsInRadius(commandCenterPos, BASE_RADIUS);
+	int builtBunkers = 0;
+	for ( Unitset::iterator u = units.begin(); u != units.end(); ++u ) {
+		if ( u->getType() == UnitTypes::Terran_Bunker && u->isCompleted()) {
+			builtBunkers++;
+		}
+	}
+	
+	//second: count the SCVs constructing around the command center
+	int scheduledForConstruction = 0;
+	for(auto scv = scvMap.begin(); scv != scvMap.end(); scv++){
+		//if SCV is not constructing the barracks but is moving towards it...
+		if(scv->second->state == BUILDING_BUNKER && Position(scv->second->newBuildingLocation).getApproxDistance(commandCenterPos) < BASE_RADIUS ){
+			
+			Broodwar->drawCircleMap(scv->second->gameUnit->getPosition(),20,Color(Colors::Cyan));
+			scheduledForConstruction++;
+		}
+	}
+	//Broodwar->sendText("%d - %d",builtBarracks,scheduledForConstruction);
+	return builtBunkers + scheduledForConstruction;
+}
+
+int ExampleAIModule::generateRandomnteger(int nMin, int nMax)
+{
+    return nMin + (int)((double)rand() / (RAND_MAX+1) * (nMax-nMin+1));
 }

@@ -13,7 +13,14 @@ enum TaskType{
 	GatherMinerals,
 	Explore,
 	Attack,
-	GuardBase
+	GuardBase,
+	BuildVespeneGas,
+	BuildAcademy,
+	TrainMedic,
+	ResearchAcademyLongRange,
+	ResearchAcademyStimPack,
+	BuildBunker,
+	BuildComSat //this was making marines go explore weird places instead of attacking, why???
 };
 
 
