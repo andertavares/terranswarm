@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import sys
 import re
 
-rootdir = 'terran3/'
+rootdir = sys.argv[1]
 
 fitnessDict = dict()
 
@@ -34,6 +35,8 @@ to hold an array of values (the float values of the fitness).
 
 lastGeneration = fitnessDict.keys()[len(fitnessDict.keys()) -1]
 print "Last generation:", lastGeneration
+
+#lastGeneration = 36
 
 # TODO: Optimize for less uglyness
 
