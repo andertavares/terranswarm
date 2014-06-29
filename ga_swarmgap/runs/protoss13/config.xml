@@ -1,0 +1,23 @@
+<ga_swarmgap>
+<!-- removing elitism from protoss6-->
+    <io>
+        <output-dir value="protoss13" />
+    </io>
+
+	<parameters>
+		<popsize value='30' />
+		<elitism value='false' />
+		<tournament-size value='2' />
+		<p-crossover value='.9' />
+		<p-mutation value='.01' />
+		<generations value='100' />
+		
+		<reliab-threshold value='0.8' />
+        <p-eval-above-thresh value='0.1' />
+	</parameters>     
+	           
+	<externals>
+		<random-seed value='13' />
+		<repetitions value='1' />
+	</externals>            
+</ga_swarmgap>

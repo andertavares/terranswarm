@@ -1,0 +1,23 @@
+<ga_swarmgap>
+<!-- removing elitism from protoss12-->
+    <io>
+        <output-dir value="protoss15" />
+    </io>
+
+	<parameters>
+		<popsize value='30' />
+		<elitism value='false' />
+		<tournament-size value='5' />
+		<p-crossover value='.75' />
+		<p-mutation value='.005' />
+		<generations value='100' />
+		
+		<reliab-threshold value='0.8' />
+        <p-eval-above-thresh value='0.1' />
+	</parameters>     
+	           
+	<externals>
+		<random-seed value='15' />
+		<repetitions value='1' />
+	</externals>            
+</ga_swarmgap>
