@@ -1,0 +1,23 @@
+<ga_swarmgap>
+<!-- protoss12 with p-eal-above-thresh=1 i.e.: evaluate them all! -->
+    <io>
+        <output-dir value="protoss16" />
+    </io>
+
+	<parameters>
+		<popsize value='30' />
+		<elitism value='true' />
+		<tournament-size value='5' />
+		<p-crossover value='.75' />
+		<p-mutation value='.005' />
+		<generations value='100' />
+		
+		<reliab-threshold value='0.8' />
+        <p-eval-above-thresh value='1.0' />
+	</parameters>     
+	           
+	<externals>
+		<random-seed value='16' />
+		<repetitions value='1' />
+	</externals>            
+</ga_swarmgap>
