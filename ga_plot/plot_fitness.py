@@ -45,11 +45,8 @@ def do_plots(rootdir):
         plotY.append(np.mean(fitnessDict[key]))# sum(fitnessDict[key]) / float(len(fitnessDict[key])))
         #print key, '-->', sum(fitnessDict[key]) / float(len(fitnessDict[key]))
 
-    plt.plot(plotX, plotY, 'b')
-    plt.ylabel('Fitness value')
-    plt.xlabel('Generation Number')
+    plt.plot(plotX, plotY, 'b', label='mean')
     plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
-    #plt.show()
 
 
     plotX = []
@@ -59,11 +56,8 @@ def do_plots(rootdir):
         plotX.append(key)
         plotY.append(min(fitnessDict[key]))
 
-    plt.plot(plotX, plotY, 'r')
-    plt.ylabel('Fitness value (min)')
-    plt.xlabel('Generation Number')
+    plt.plot(plotX, plotY, 'r', label='min')
     plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
-    #plt.show()
 
     plotX = []
     plotY = []
@@ -72,10 +66,13 @@ def do_plots(rootdir):
         plotX.append(key)
         plotY.append(max(fitnessDict[key]))
 
-    plt.plot(plotX, plotY, 'g')
-    plt.ylabel('Fitness value (max)')
-    plt.xlabel('Generation Number')
+    plt.plot(plotX, plotY, 'g', label='max')
     plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
+
+    plt.ylabel('Fitness value')
+    plt.xlabel('Generation')
+    plt.axis([min(plotX), max(plotX), 0, 160000])
+    plt.legend(ncol=3)
     plt.show()
 
 if __name__ == '__main__':
