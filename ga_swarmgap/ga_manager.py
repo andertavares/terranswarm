@@ -165,7 +165,7 @@ def evaluate(population, generation, cfg):
         #if reliability is above threshold and probability of evaluation in this condition is not met:
         #we make random.random() > prob because prob refers to chance of evaluation of reliable individuals
         #and this test is for individuals who will NOT be evaluated
-        if p['reliability'] >= cfg.reliab_threshold and random.random() > cfg.p_eval_above_thresh:
+        if p['reliability'] > cfg.reliab_threshold and random.random() > cfg.p_eval_above_thresh:
             #create file with fitness, this individual won't be eval'ed
             #also, we create its chr_file with .lock extension, so that broodwar won't simulate it
             chr_file = open(os.path.join(write_dir, '%d.chr.lock' % i), 'w')
