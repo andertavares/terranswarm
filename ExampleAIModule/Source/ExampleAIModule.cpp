@@ -153,7 +153,7 @@ void ExampleAIModule::onEnd(bool isWinner) {
 
 	resultFile.open ("results.txt", std::ios_base::app);
 
-	resultFile << "FlagActive?" << Broodwar->isFlagEnabled(Flag::CompleteMapInformation) << " lastErr:" << Broodwar->getLastError().c_str() << endl;
+	//resultFile << "FlagActive?" << Broodwar->isFlagEnabled(Flag::CompleteMapInformation) << " lastErr:" << Broodwar->getLastError().c_str() << endl;
 	resultFile << "MD," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << (isWinner ? "win" : "loss") << ",";
 	resultFile << me->getUnitScore() + me->getKillScore() << "," << me->getBuildingScore() + me->getRazingScore() << "," << me->gatheredMinerals() + me->gatheredGas() << ",";
 	resultFile << enemy->getRace().getName() << "," << enemy->getUnitScore() + enemy->getKillScore() << "," << enemy->getBuildingScore() + enemy->getRazingScore() << "," << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
