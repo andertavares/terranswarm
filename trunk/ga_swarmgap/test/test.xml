@@ -5,6 +5,7 @@
     </io>
 
 	<parameters>
+        <enemy value='Zerg' />
 		<popsize value='30' />
 		<elitism value='true' />
 		<tournament-size value='5' />
