@@ -18,6 +18,7 @@ class Test(unittest.TestCase):
 
         self.assertEqual('testrun', config.output_dir)
 
+        self.assertEqual(None, config.enemy)
         self.assertEqual(.6, config.p_crossover)
         self.assertEqual(.001, config.p_mutation)
         self.assertEqual(30, config.generations)
@@ -36,6 +37,7 @@ class Test(unittest.TestCase):
 
         self.assertEqual('test', config.output_dir)
 
+        self.assertEqual('zerg', config.enemy)
         self.assertEqual(.9, config.p_crossover)
         self.assertEqual(.01, config.p_mutation)
         self.assertEqual(50, config.generations)

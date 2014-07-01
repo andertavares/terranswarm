@@ -35,6 +35,9 @@ class ConfigParser(object):
                 self.output_dir = io_element.get('value')
 
         for param_element in cfgtree.find('parameters'):
+            if param_element.tag == 'enemy':
+                self.enemy = param_element.get('value').lower() #transforms to lowercase
+
             if param_element.tag == 'p-crossover':
                 self.p_crossover = float(param_element.get('value'))
             
@@ -74,6 +77,7 @@ class ConfigParser(object):
     def _set_defaults(self):
         self.output_dir = 'testrun'
 
+        self.enemy = None
         self.p_crossover = .6
         self.p_mutation = .001
         self.generations = 30

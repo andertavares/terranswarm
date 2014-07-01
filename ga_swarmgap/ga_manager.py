@@ -79,20 +79,32 @@ def start(cfg_file):
     cfg = configparser.ConfigParser(cfg_file)
     random.seed(cfg.random_seed)
 
+    enemy = 'protoss'
+    if cfg.enemy is None:
+        print "WARNING: enemy race not specified. Assuming 'Protoss'"
+    else:
+        enemy = cfg.enemy
+
     #copies bwapi.ini from experiment dir to starcraft dir
+    sc_dir, cl_path = read_paths()
     try:
-        sc_dir, cl_path = read_paths()
-        exp_inipath = os.path.join(os.path.dirname(os.path.abspath(cfg_file)), 'bwapi.ini')
+        exp_inipath = os.path.join('setup', 'bwapi_%s.ini' % enemy)
         sc_inipath = os.path.join(sc_dir, 'bwapi-data', 'bwapi.ini')
         shutil.copyfile(exp_inipath, sc_inipath)
     except IOError:
-        print 'An error has occurred. Probably you don\'t have a bwapi.ini\n' \
-              'file in the same dir as the configuration .xml file.\n' \
-              'Please create a bwapi.ini file in \n' \
-              '%s \n' \
-              'with the configurations for starcraft execution (enemy_race, etc).' % exp_inipath
-
+        print 'An error has occurred. Could not copy %s \n' \
+              'to %s' % (exp_inipath, sc_inipath)
         exit()
+
+    #replaces BWAPI.dll with our hacked with enemy score retrieval
+    try:
+        our_dllpath = os.path.join('setup', 'BWAPI.dll')
+        sc_dllpath = os.path.join(sc_dir, 'bwapi-data', 'BWAPI.dll')
+        shutil.copyfile(our_dllpath, sc_dllpath)
+    except IOError:
+         print 'An error has occurred. Could not copy %s \n' \
+                'to %s' % (our_dllpath, sc_dllpath)
+         exit()
 
     #generates initial population
     old_pop = []
