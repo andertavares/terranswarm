@@ -1,16 +1,16 @@
 <ga_swarmgap>
-<!-- evaluating all individuals from toss8 in 50 generations-->
+
     <io>
         <output-dir value="protoss19" />
     </io>
 
 	<parameters>
         <enemy value="protoss" />
-		<popsize value='30' />
+		<popsize value='25' />
 		<elitism value='true' />
-		<tournament-size value='2' />
-		<p-crossover value='.9' />
-		<p-mutation value='.005' />
+		<tournament-size value='5' />
+		<p-crossover value='.75' />
+		<p-mutation value='.01' />
 		<generations value='50' />
 		
 		<reliab-threshold value='0.8' />
