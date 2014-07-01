@@ -71,7 +71,7 @@ def do_plots(rootdir):
 
     plt.ylabel('Fitness value')
     plt.xlabel('Generation')
-    plt.axis([min(plotX), max(plotX), 0, 160000])
+    plt.axis([min(plotX), max(plotX), 0, 3])
     plt.legend(ncol=3)
     plt.show()
 
