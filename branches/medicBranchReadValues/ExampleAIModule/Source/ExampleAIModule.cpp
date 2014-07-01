@@ -10,6 +10,7 @@
 #include "CommanderAgent.h"
 #include "Parameters.h"
 #include "GeneticValues.h"
+#include "util.h"
 
 #define EULER 2.71828182845904523536
 #define DEBUG_GA true
@@ -46,19 +47,16 @@ ExampleAIModule::~ExampleAIModule(){
 }
 
 void ExampleAIModule::onStart() {
+
+	startTime = currentDateTime();
 	// Hello World!
 	Broodwar->sendText("GAMedic is online!");
 	Broodwar << "working dir:" << workingDir << endl;
-	// Print the map name.
-	// BWAPI returns std::string when retrieving a string, don't forget to add .c_str() when printing!
-	//Broodwar << "The map is " << Broodwar->mapName() << "!" << std::endl;
-	
   
+
 	// Enable the UserInput flag, which allows us to control the bot and type messages.
 	Broodwar->enableFlag(Flag::UserInput);
 
-	// Uncomment the following line and the bot will know about everything through the fog of war (cheat).
-	//Broodwar->enableFlag(Flag::CompleteMapInformation);
 
 	// Set the command optimization level so that common commands can be grouped
 	// and reduce the bot's APM (Actions Per Minute).
@@ -149,6 +147,8 @@ void ExampleAIModule::onStart() {
 }
 
 void ExampleAIModule::onEnd(bool isWinner) {
+	endTime = currentDateTime();
+
 	// Called when the game ends
 	if (Broodwar->isReplay()){
 		return;
@@ -157,17 +157,10 @@ void ExampleAIModule::onEnd(bool isWinner) {
 		Broodwar->sendText("POWER OVERWHELMING!");
 	}
 
-	ofstream outputFile;
-	outputFile.open("C:\\gameResults.txt", ios::app);
-	outputFile << isWinner << endl;
-	outputFile.close();
-
 	Player me = Broodwar->self();
 	Player enemy = Broodwar->enemy();
-	//Broodwar->
 	//opens a file and writes the results
 	//file layout is: Map Duration Win? Units Structure Resources EnemyRace Units Structure Resources (enemy)
-	
 
 	//determines whether the game ended as victory, draw or defeat
 	string gameResult = "win";
@@ -177,26 +170,62 @@ void ExampleAIModule::onEnd(bool isWinner) {
 
 	//writes the default results file
 	ofstream resultFile;
-	Broodwar->enableFlag(Flag::CompleteMapInformation);	//attemp to obtain enemy score, but does not work
+	Broodwar->enableFlag(Flag::CompleteMapInformation);	//attemp to obtain enemy score, works with hacked BWAPI.dll
 	resultFile.open ("results.txt", std::ios_base::app);
-	resultFile << "FV," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << gameResult << ",";
+	resultFile << "RV," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << gameResult << ",";
 	resultFile << me->getUnitScore() + me->getKillScore() << "," << me->getBuildingScore() + me->getRazingScore() << "," << me->gatheredMinerals() + me->gatheredGas() << ",";
 	resultFile << enemy->getRace().getName() << "," << enemy->getUnitScore() + enemy->getKillScore() << "," << enemy->getBuildingScore() + enemy->getRazingScore() << "," << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
 	resultFile.close();
 	Broodwar << "Results written" << endl;
 
-	//writes the fitness for the genetic algorithm
-	string fitnessFile = GeneticValues::getParamsFile() + ".fit";
-	ofstream fitFile(workingDir + "\\" + fitnessFile, ios_base::out);
-	int fitness = me->getUnitScore() + me->getBuildingScore() + me->gatheredMinerals() + me->gatheredGas();
-	if (timeOver) {
+	//writes the result file for the genetic algorithm
+	string resFile = GeneticValues::getParamsFile() + ".res.xml";
+	ofstream statsFile(workingDir + "\\" + resFile, ios_base::out);
+
+	int myTotal = me->getUnitScore() + me->getKillScore() + me->getBuildingScore() + me->getRazingScore() + me->gatheredMinerals() + me->gatheredGas();
+	int enemyTotal = enemy->getUnitScore() + enemy->getKillScore() + enemy->getBuildingScore() + enemy->getRazingScore() + enemy->gatheredMinerals() + enemy->gatheredGas();
+
+	statsFile << "<results>" << endl <<
+		"\t<result value='" << gameResult << "'/>" << endl <<
+		"\t<start value='" << startTime << "'/>" << endl <<
+		"\t<end value='" << endTime << "'/>" << endl <<
+		"\t<frames value='" << Broodwar->getFrameCount() << "'/>" << endl <<
+		"\t<gameDuration value='" << Broodwar->elapsedTime() << "'/>" << endl <<
+		endl << "\t<player>" << endl <<
+		"\t\t<unitScore value='" << me->getUnitScore() << "'/>" << endl <<
+		"\t\t<killScore value='" << me->getKillScore() << "'/>" << endl <<
+		"\t\t<buildingScore value='" << me->getBuildingScore() << "'/>" << endl <<
+		"\t\t<razingScore value='" << me->getRazingScore() << "'/>" << endl <<
+		"\t\t<mineralScore value='" << me->gatheredMinerals() << "'/>" << endl <<
+		"\t\t<gasScore value='" << me->gatheredGas() << "'/>" << endl <<
+		"\t\t<totalScore value='" << myTotal << "'/>" << endl <<
+		"\t</player>" << endl <<
+		endl << "\t<enemy>" << endl <<
+		"\t\t<race value='" << enemy->getRace().getName() << "'/>" << endl <<
+		"\t\t<unitScore value='" << enemy->getUnitScore() << "'/>" << endl <<
+		"\t\t<unitScore value='" << enemy->getUnitScore() << "'/>" << endl <<
+		"\t\t<killScore value='" << enemy->getKillScore() << "'/>" << endl <<
+		"\t\t<buildingScore value='" << enemy->getBuildingScore() << "'/>" << endl <<
+		"\t\t<razingScore value='" << enemy->getRazingScore() << "'/>" << endl <<
+		"\t\t<mineralScore value='" << enemy->gatheredMinerals() << "'/>" << endl <<
+		"\t\t<gasScore value='" << enemy->gatheredGas() << "'/>" << endl <<
+		"\t\t<totalScore value='" << enemyTotal << "'/>" << endl <<
+		"\t</enemy>" << endl <<
+		endl << "\t<scoreRatio value='" << myTotal / float(enemyTotal) << "'/>" << endl <<
+		"</results>" << endl;
+	statsFile.close();
+
+	ofstream fitFile(workingDir + "\\" + GeneticValues::getParamsFile() + ".fit", ios_base::out);
+	float fitness = myTotal / float(enemyTotal);
+	/*if (timeOver) {
 		fitness += 20000;
 	}
 	else if (isWinner) {
 		fitness += 50000;
 	}
-
+	*/
 	fitFile << fitness << endl;
+	
 	fitFile.close();
 	
 
