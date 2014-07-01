@@ -6,6 +6,8 @@
 using namespace BWAPI;
 
 Task* weightedSelection(std::vector<TaskAssociation>& theTasks);
+const string currentDateTime();
+
 
 Position getPositionToScout();
 void goScout();
