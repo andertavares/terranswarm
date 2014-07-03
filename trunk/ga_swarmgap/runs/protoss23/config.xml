@@ -1,24 +1,24 @@
 <ga_swarmgap>
-<!-- Adding fitness estimation to protoss17 in 100 generations-->
+<!-- Adding fitness estimation to protoss17 in 200 generations and 25 population, increased threshold compared to toss21-->
     <io>
-        <output-dir value="protoss21" />
+        <output-dir value="protoss23" />
     </io>
 
 	<parameters>
 		<enemy value='protoss'/>
-		<popsize value='30' />
+		<popsize value='25' />
 		<elitism value='true' />
 		<tournament-size value='2' />
 		<p-crossover value='.9' />
 		<p-mutation value='.01' />
-		<generations value='100' />
+		<generations value='200' />
 		
-		<reliab-threshold value='0.8' />
+		<reliab-threshold value='0.9' />
         <p-eval-above-thresh value='0.1' />
 	</parameters>     
 	           
 	<externals>
-		<random-seed value='21' />
+		<random-seed value='23' />
 		<repetitions value='1' />
 	</externals>            
 </ga_swarmgap>
