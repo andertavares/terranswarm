@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import sys
 import re
+import shutil
 
 rootdir = sys.argv[1]
 
@@ -61,8 +62,13 @@ for subdir, dirs, files in os.walk(fitnessDict[lastGeneration]):
 			#print fitness, int(re.findall(r'\d+', file)[0]), fullPath
 
 print "Fitness value:", bestFitnessValue, "Position of fitness:", bestFitnessNumber, "\n"
-f = open(str(fitnessDict[lastGeneration])+"/"+str(bestFitnessNumber)+".chr.lock")
+bestFileName = str(fitnessDict[lastGeneration])+"/"+str(bestFitnessNumber)+".chr.lock"
+f = open(bestFileName)
 print "".join(f.readlines())
 f.close()
+
+dest = "c:/bestValues.txt"
+shutil.copyfile(bestFileName, dest)
+print '%s copied to %s' % (bestFileName, dest)
 #for key in fitnessDict.keys():
 #	print key, '-->', fitnessDict[key]
