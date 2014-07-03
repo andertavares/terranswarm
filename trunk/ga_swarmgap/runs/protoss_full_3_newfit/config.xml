@@ -1,0 +1,24 @@
+<ga_swarmgap>
+<!-- protoss18 with 100 generations -->
+    <io>
+        <output-dir value="protoss_full_3_newfit" />
+    </io>
+
+	<parameters>
+		<enemy value='protoss' />
+		<popsize value='30' />
+		<elitism value='true' />
+		<tournament-size value='2' />
+		<p-crossover value='.6' />
+		<p-mutation value='.005' />
+		<generations value='100' />
+		
+		<reliab-threshold value='1.0' />
+        <p-eval-above-thresh value='1.0' />
+	</parameters>     
+	           
+	<externals>
+		<random-seed value='22' />
+		<repetitions value='1' />
+	</externals>            
+</ga_swarmgap>
