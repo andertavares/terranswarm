@@ -69,6 +69,7 @@ def do_plots(rootdir):
     plt.plot(plotX, plotY, 'g', label='max')
     plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
 
+    plt.plot(plotX, [1] * len(plotX),'y--')#,label='equal')
     plt.ylabel('Fitness value')
     plt.xlabel('Generation')
     plt.axis([min(plotX), max(plotX), 0, 3])
