@@ -38,40 +38,22 @@ def do_plots(rootdir):
     plotX = []
     plotY = []
 
-    for key in fitnessDict.keys():
-        plotX.append(key)
-        plotY.append(np.mean(fitnessDict[key]))# sum(fitnessDict[key]) / float(len(fitnessDict[key])))
+    #for key in fitnessDict.keys():
+     #   plotX.append(key)
+      #  plotY.append(np.mean())# sum(fitnessDict[key]) / float(len(fitnessDict[key])))
         #print key, '-->', sum(fitnessDict[key]) / float(len(fitnessDict[key]))
 
-    plt.plot(plotX, plotY, 'b', label='mean')
-    plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
+    last_gen_data = fitnessDict[max(fitnessDict.keys())]
+    plt.boxplot(last_gen_data)#, 'b', label='mean')
+    plt.plot(1, np.mean(last_gen_data), 'b*', ms=15)
+    print np.mean(last_gen_data)
+    plt.ylabel('Fitness')
+    plt.show()
 
 
-    plotX = []
-    plotY = []
-
-    for key in fitnessDict.keys():
-        plotX.append(key)
-        plotY.append(min(fitnessDict[key]))
-
-    plt.plot(plotX, plotY, 'r', label='min')
-    plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
-
-    plotX = []
-    plotY = []
-
-    for key in fitnessDict.keys():
-        plotX.append(key)
-        plotY.append(max(fitnessDict[key]))
-
-    plt.plot(plotX, plotY, 'g', label='max')
-    plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
-
-    plt.plot(plotX, [1] * len(plotX),'y--')#,label='equal')
-    plt.ylabel('Fitness value')
-    plt.xlabel('Generation')
-    plt.axis([min(plotX), max(plotX), 0, 3])
-    plt.legend(ncol=3)
+    #plt.xlabel('Generation')
+    #plt.axis([min(plotX), max(plotX), 0, 3])
+    #plt.legend(ncol=3)
     plt.show()
 
 if __name__ == '__main__':
