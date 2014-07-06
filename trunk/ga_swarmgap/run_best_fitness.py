@@ -38,9 +38,16 @@ def go(cfg_file, num_matches):
 
     if os.path.exists(results_path):
 
-        print 'WARNING: a previous results.txt exists. It will be renamed to results_old.txt.\n' \
-              'A new results.txt will be created with the results will soon appear below.'
-        os.rename(results_path, os.path.join(sc_dir, 'results_old.txt'))
+        i = 1
+        while True:
+            tentative_bkp_name = 'results_old%d.txt' % i
+            if not os.path.exists(os.path.join(sc_dir, tentative_bkp_name)):
+                break
+            i += 1
+
+        print 'WARNING: a previous results.txt exists. It will be renamed to %s.\n' \
+              'A new results.txt will be created with the results will soon appear below.' % tentative_bkp_name
+        os.rename(results_path, os.path.join(sc_dir, tentative_bkp_name))
         open(results_path, 'w').close() #create empty results.txt file
 
     #calls chaoslauncher and monitors results.txt
@@ -130,6 +137,6 @@ def best_fitness_file(experiment_path):
 
 if __name__ == '__main__':
     cfg_file = sys.argv[1]
-    num_matches = sys.argv[2] if len(sys.argv) > 1 else 30
+    num_matches = sys.argv[2] if len(sys.argv) > 2 else 30
 
     go(cfg_file, int(num_matches))
