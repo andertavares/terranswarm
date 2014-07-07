@@ -1,0 +1,24 @@
+<ga_swarmgap>
+<!-- protoss7 with increased population size-->
+    <io>
+        <output-dir value="protoss25" />
+    </io>
+
+	<parameters>
+        <enemy value="protoss"/>
+		<popsize value='50' />
+		<elitism value='true' />
+		<tournament-size value='2' />
+		<p-crossover value='.9' />
+		<p-mutation value='.01' />
+		<generations value='100' />
+		
+		<reliab-threshold value='0.8' />
+        <p-eval-above-thresh value='1.0' />
+	</parameters>     
+	           
+	<externals>
+		<random-seed value='25' />
+		<repetitions value='1' />
+	</externals>            
+</ga_swarmgap>
