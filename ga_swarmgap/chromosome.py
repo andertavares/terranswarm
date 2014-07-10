@@ -127,15 +127,19 @@ class Chromosome(object):
     def size(self):
         return len(self._genes)
 
-    def from_array(self, arr):
+    @classmethod
+    def from_array(cls, arr):
         '''
         Sets the chromosome genes from an array. Elements *must* be in the order given by GENE_NAMES array
 
         :param arr:
         :return:
         '''
-        for i in range(0, len(self.GENE_NAMES)):
-            self._genes[self.GENE_NAMES[i]].set_value(arr[i])
+
+        return cls(arr)
+
+        #for i in range(0, len(cls.GENE_NAMES)):
+        #    cls._genes[cls.GENE_NAMES[i]].set_value(arr[i])
             #arr[i] = self._genes[self.GENE_NAMES[i]].value
 
 
@@ -168,4 +172,25 @@ class Chromosome(object):
         for i in range(len(self.GENE_NAMES)):
             the_string += "%d %s\n" % (i, self._genes[self.GENE_NAMES[i]].value)
 
-        return  the_string
+        return the_string
+
+    @classmethod
+    def from_file(cls, path_to_file):
+        '''
+        Returns a Chromosome object with the file contents. File format is the same
+        used by the C++ module:
+        0 value0
+        1 value1
+        ...
+        where 0, 1,..., n are the genes in 0th, 1th,etc. position of GENE_NAMES array
+
+        :return: Chromosome object
+        '''
+        chr_array = []
+
+        f = open(path_to_file)
+        for line in f.readlines():
+            index, value = line.split(' ')
+            chr_array.append(float(value)) #does not uses index, assuming that file comes with ordered genes
+
+        return Chromosome.from_array(chr_array)
