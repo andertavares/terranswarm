@@ -138,12 +138,6 @@ class Chromosome(object):
 
         return cls(arr)
 
-        #for i in range(0, len(cls.GENE_NAMES)):
-        #    cls._genes[cls.GENE_NAMES[i]].set_value(arr[i])
-            #arr[i] = self._genes[self.GENE_NAMES[i]].value
-
-
-
     def to_array(self):
         '''
         Returns the chromosome genes as an array. Gene order obeys the GENE_NAMES array
@@ -192,5 +186,7 @@ class Chromosome(object):
         for line in f.readlines():
             index, value = line.split(' ')
             chr_array.append(float(value)) #does not uses index, assuming that file comes with ordered genes
+
+        f.close()
 
         return Chromosome.from_array(chr_array)
