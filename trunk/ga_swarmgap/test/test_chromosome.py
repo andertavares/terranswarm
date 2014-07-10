@@ -149,7 +149,7 @@ class TestChromosome(unittest.TestCase):
         self.assertNotEqual(chromo_values, c.to_array())
 
         #fills chromosome with known values
-        c.from_array(chromo_values)
+        c = chromo.Chromosome.from_array(chromo_values)
 
         self.assertEqual(chromo_values, c.to_array())
 
@@ -174,6 +174,20 @@ class TestChromosome(unittest.TestCase):
         c = chromo.Chromosome(chromo_values)
         self.assertEqual(23, c.size)
         self.assertEqual(expected_string, c.to_file_string())
+
+    def test_from_file(self):
+        '''
+        Assumes that to_array is working
+
+        :return:
+        '''
+        chromo_values = [
+            0.4, 1, 0.65, 0.9, 3.5, 4.5, 0.35, 0.3, 0.35, 0.15, 0.05, 0.5, 0.55,
+            0.3, 0.9, 0.35, 0.9, 0.6, 0.45, 0.55, 0.85, 0.35, 12
+        ]
+        c = chromo.Chromosome.from_file('test/test.chr')
+
+        self.assertEqual(chromo_values, c.to_array())
 
 if __name__ == '__main__':
     unittest.main()

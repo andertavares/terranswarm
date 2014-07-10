@@ -97,9 +97,9 @@ class TestGeneticOperators(unittest.TestCase):
 
         c1, c2 = geneticoperators.crossover(p1, p2, 1.0)
 
-        #print c1['chromosome']._genes
         c1_values = c1['chromosome'].to_array()
         c2_values = c2['chromosome'].to_array()
+
         self.assertEqual(c1_values, [
             .8, 3, .15,
             .15, 3,
@@ -123,7 +123,6 @@ class TestGeneticOperators(unittest.TestCase):
             .5,
             8
         ])
-
 
     def test_mutation(self):
         #TODO: update this test
