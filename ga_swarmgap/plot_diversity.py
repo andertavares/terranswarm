@@ -28,7 +28,7 @@ def similarity_index(chr, population):
     :param chr:
     :return:
     '''
-    return sum([ga_manager.similarity(chr, other) for other in population if not chr == other])
+    return sum( [1 - ga_manager.similarity(chr, other) for other in population if not chr == other] )
 
 
 def do_plots(rootdir):
