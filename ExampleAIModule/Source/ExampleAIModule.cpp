@@ -162,12 +162,16 @@ void ExampleAIModule::onEnd(bool isWinner) {
 	//opens a file and writes the results
 	//file layout is: Map Duration Win? Units Structure Resources EnemyRace Units Structure Resources (enemy)
 
+	//counts total score
+	int myTotal = me->getUnitScore() + me->getKillScore() + me->getBuildingScore() + me->getRazingScore() + me->gatheredMinerals() + me->gatheredGas();
+	int enemyTotal = enemy->getUnitScore() + enemy->getKillScore() + enemy->getBuildingScore() + enemy->getRazingScore() + enemy->gatheredMinerals() + enemy->gatheredGas();
+
 	//determines whether the game ended as victory, draw or defeat
-	string gameResult = "win";
-	if (! isWinner){
+	string gameResult = (myTotal > enemyTotal ? "win" : "loss");
+	/*if (! isWinner){
 		gameResult = (timeOver ? "draw" : "loss");
 	}
-
+	*/
 	//writes the default results file
 	ofstream resultFile;
 	Broodwar->enableFlag(Flag::CompleteMapInformation);	//attemp to obtain enemy score, works with hacked BWAPI.dll
@@ -182,8 +186,7 @@ void ExampleAIModule::onEnd(bool isWinner) {
 	string resFile = GeneticValues::getParamsFile() + ".res.xml";
 	ofstream statsFile(workingDir + "\\" + resFile, ios_base::out);
 
-	int myTotal = me->getUnitScore() + me->getKillScore() + me->getBuildingScore() + me->getRazingScore() + me->gatheredMinerals() + me->gatheredGas();
-	int enemyTotal = enemy->getUnitScore() + enemy->getKillScore() + enemy->getBuildingScore() + enemy->getRazingScore() + enemy->gatheredMinerals() + enemy->gatheredGas();
+	
 
 	statsFile << "<results>" << endl <<
 		"\t<result value='" << gameResult << "'/>" << endl <<
