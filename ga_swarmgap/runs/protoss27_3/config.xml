@@ -1,12 +1,12 @@
 <ga_swarmgap>
-<!-- protoss17 with increased population size-->
+<!-- protoss26 with increased population size-->
     <io>
-        <output-dir value="protoss25" />
+        <output-dir value="protoss27_3" />
     </io>
 
 	<parameters>
         <enemy value="protoss"/>
-		<popsize value='50' />
+		<popsize value='150' />
 		<elitism value='true' />
 		<tournament-size value='2' />
 		<p-crossover value='.9' />
@@ -18,7 +18,7 @@
 	</parameters>     
 	           
 	<externals>
-		<random-seed value='25' />
+		<random-seed value='273' />
 		<repetitions value='1' />
 	</externals>            
 </ga_swarmgap>
