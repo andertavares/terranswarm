@@ -1,5 +1,5 @@
 '''
-Runs RandomMedicAIModule_release.dll in a specified # of matches against a specified enemy.
+Makes GAMedicReadValues play with the hand-configured chromosome.
 
 '''
 import configparser
@@ -14,8 +14,13 @@ import re
 def go(enemy, num_matches):
     sc_dir, cl_path = paths.read_paths()
 
+    best_file = 'setup/bestValues_manual.txt'
+    dest = "c:/bestValues.txt"
+    shutil.copyfile(best_file, dest)
+    print '%s copied to %s' % (best_file, dest)
+
     #puts the correct .ini into bwapi.ini
-    paths.inicopy('bwapi_randomMedic_%s.ini' % enemy)
+    paths.inicopy('bwapi_readValues_%s.ini' % enemy)
 
     #checks if result.txt file exists:
     results_path = os.path.join(sc_dir, 'results.txt')
@@ -48,8 +53,8 @@ def go(enemy, num_matches):
         if len(res_lines) >= num_matches:
             break
         time.sleep(1)
-    #terminates chaoslauncher
-    #  and starcraft
+        #print len(res_lines)
+    #terminates chaoslauncher and starcraft
     subprocess.call("taskkill /IM starcraft.exe")
     chaosLauncher.terminate()
 
