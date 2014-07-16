@@ -1,5 +1,5 @@
 <ga_swarmgap>
-<!-- evaluating all from protoss6 with 50 generations-->
+<!-- evaluating all from protoss6 with 100 generations-->
     <io>
         <output-dir value="protoss17" />
     </io>
