@@ -1,46 +1,24 @@
-\documentclass[conference]{IEEEtran}
+\documentclass[a4paper]{sbgames}
 \usepackage{cite}
 \usepackage[utf8]{inputenc}
 %\usepackage[latin1]{inputenc}  
 
-\ifCLASSINFOpdf
-  \usepackage[pdftex]{graphicx}
-  % declare the path(s) where your graphic files are
-  % \graphicspath{{../pdf/}{../jpeg/}}
-  % and their extensions so you won't have to specify these with
-  % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
-\else
-  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
-  % will default to the driver specified in the system graphics.cfg if no
-  % driver is specified.
-  % \usepackage[dvips]{graphicx}
-  % declare the path(s) where your graphic files are
-  % \graphicspath{{../eps/}}
-  % and their extensions so you won't have to specify these with
-  % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.eps}
-\fi
+\usepackage[pdftex]{graphicx}
 
 % *** MATH PACKAGES ***
-%
 \usepackage[cmex10]{amsmath}
 
 % *** SPECIALIZED LIST PACKAGES ***
-%
+\usepackage{algorithm}
 \usepackage{algorithmic}
-% You can use the algorithmic environment in-text or within a figure
-% environment to provide for a floating algorithm. Do NOT use the algorithm
-% floating environment provided by algorithm.sty (by the same authors) or
-% algorithm2e.sty (by Christophe Fiorio) as IEEE does not use dedicated
-% algorithm float types and packages that provide these will not provide
-% correct IEEE style captions.
 
 
+\usepackage{parskip}
 
+%% the 'caption' package provides a nicer-looking replacement
+\usepackage[labelfont=bf,textfont=it]{caption}
 % *** PDF, URL AND HYPERLINK PACKAGES ***
 \usepackage{url}
-
 %\usepackage{hyperref}
 
 % correct bad hyphenation here
@@ -61,43 +39,17 @@
 % A combination of FEA and Swarm intelligence for task allocation in an real time strategy game.
 
 
-% author names and affiliations
-% use a multiple column layout for up to three different
-% affiliations
-\author{\IEEEauthorblockN{Anderson R. Tavares}
-\IEEEauthorblockA{Departamento de Ci\^encia da Computa\c c\~ao\\
+\author{Anderson R. Tavares \\Hector Azpúrua \\Luiz Chaimowicz \\
+Departamento de Ci\^encia da Computa\c c\~ao\\
 Universidade Federal de Minas Gerais\\
-Belo Horizonte, Minas Gerais\\
-Email: anderson@dcc.ufmg.br}
-\and
-\IEEEauthorblockN{Hector Azpúrua}
-\IEEEauthorblockA{Departamento de Ci\^encia da Computa\c c\~ao\\
-Universidade Federal de Minas Gerais\\
-Belo Horizonte, Minas Gerais\\
-Email: hector@dcc.ufmg.br}
-\and
-\IEEEauthorblockN{Luiz Chaimowicz}
-\IEEEauthorblockA{Departamento de Ci\^encia da Computa\c c\~ao\\
-Universidade Federal de Minas Gerais\\
-Belo Horizonte, Minas Gerais\\
-Email: chaimo@dcc.ufmg.br}}
+Belo Horizonte, Minas Gerais }
+\contactinfo{\{anderson,hector,chaimo\}@dcc.ufmg.br
+}
 
-% for over three affiliations, or if they all won't fit within the width
-% of the page, use this alternative format:
-% 
-%\author{\IEEEauthorblockN{Michael Shell\IEEEauthorrefmark{1},
-%Homer Simpson\IEEEauthorrefmark{2},
-%James Kirk\IEEEauthorrefmark{3}, 
-%Montgomery Scott\IEEEauthorrefmark{3} and
-%Eldon Tyrell\IEEEauthorrefmark{4}}
-%\IEEEauthorblockA{\IEEEauthorrefmark{1}School of Electrical and Computer Engineering\\
-%Georgia Institute of Technology,
-%Atlanta, Georgia 30332--0250\\ Email: see http://www.michaelshell.org/contact.html}
-%\IEEEauthorblockA{\IEEEauthorrefmark{2}Twentieth Century Fox, Springfield, USA\\
-%Email: homer@thesimpsons.com}
-%\IEEEauthorblockA{\IEEEauthorrefmark{3}Starfleet Academy, San Francisco, California 96678-2391\\
-%Telephone: (800) 555--1212, Fax: (888) 555--1212}
-%\IEEEauthorblockA{\IEEEauthorrefmark{4}Tyrell Inc., 123 Replicant Street, Los Angeles, California 90210--4321}}
+\keywords{Task allocation, Evolutionary algorithms, Real-time strategy}
+
+
+ 
 
 \newcommand{\agentset}{\mathcal{I}}
 \newcommand{\taskset}{\mathcal{J}}
@@ -135,26 +87,13 @@ Real time strategy games are complex scenarios where multiple agents must be coo
 
 
 
-
-% For peer review papers, you can put extra information on the cover
-% page as needed:
-% \ifCLASSOPTIONpeerreview
-% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
-% \fi
-%
-% For peerreview papers, this IEEEtran command inserts a page break and
-% creates the second title. It will be ignored for other modes.
-\IEEEpeerreviewmaketitle
-
-
-
 \section{Introduction}
 \label{sec:intro}
-Agent coordination in complex scenarios involve the optimized usage of the resources that each agent has to accomplish a global goal. Complex scenarios can be understood as those in which there is a set of agents that must perform multiple tasks in an dynamic environment, where existing tasks can disappear and new tasks can arise. Rescue operations in disaster situations \cite{Kitano2000} and the control of a team of agents in real time strategy games are examples of complex scenarios \cite{Weber+2011}.
+Agent coordination in complex scenarios involve the optimized usage of the resources that each agent has to accomplish a global goal. Complex scenarios can be understood as those in which there is a set of agents that must perform multiple tasks in an dynamic environment, where existing tasks can disappear and new tasks can arise. Rescue operations in disaster situations \cite{Kitano2000} and the control of a team of agents in real time strategy games \cite{Weber+2011} are examples of complex scenarios.
 
 In complex scenarios, a natural way to organize the work between agents is to decompose the goal in tasks. Therefore, task allocation becomes an important part of the coordination problem \cite{Ferreira+2008ccmms}. 
 
-In this work we present an approach for task allocation that uses a genetic algorithm to adjust the parameters of Swarm-GAP, a scalable algorithm for task allocation based on swarm intelligence \cite{Ferreira+2008ccmms}. We test this approach in a complex task allocation scenario provided by a real time strategy game, namely, StarCraft: BroodWar\footnote{StarCraft: BroodWar is a trademark of Blizzard Entertainment}. Our fitness function is based in match results, which are computationally expensive to compute. Thus, we employ methods to estimate fitness instead of actually evaluating it, in order to accelerate the execution of the genetic algorithm.
+In this work we present an approach for task allocation that uses a genetic algorithm to adjust the parameters of Swarm-GAP, a probabilistic, scalable algorithm for task allocation based on swarm intelligence \cite{Ferreira+2008ccmms}. We test this approach in a complex task allocation scenario provided by a real time strategy game, namely, StarCraft: BroodWar\footnote{StarCraft: BroodWar is a trademark of Blizzard Entertainment}. Our fitness function is based in the score obtained in a match. The fitness function is noisy, because Swarm-GAP uses a probabilistic approach to task allocation and matches in StarCraft are very unlikely to have the same outcome. To deal with noise, we increase the number of individuals per generation in the genetic algorithm. Besides, the fitness function is computationally expensive to compute as the entire match has to be played in order to calculate the score. Thus, we employ methods to estimate fitness instead of actually evaluating it, in order to accelerate the execution of the genetic algorithm. 
 
 Our results show that ...
 
@@ -170,7 +109,7 @@ The remaining of this paper is organized as follows: ...
 
 Task allocation is concerned with the assignment of tasks to agents in order to maximize a global metric of performance, usually related to the skills of the agents at performing each task type. In dynamic environments, the task allocation problem can be modeled as an instance of E-GAP (Extended Generalized Assignment Problem) \cite{Scerri+2005}. E-GAP is an generalization of the GAP (Generalized Assignment Problem), which is NP-complete \cite{Shmoys&Tardos1993}. 
 
-The E-GAP can be formalized as follows: let $\taskset$ be the set of tasks and $\agentset$ the set of agents. Each agent $i \in \agentset$ possui $\agtres{i}$ resources to perform tasks. Each task $j \in \taskset$ consumes $\rescspt{i}{j}$ resources of agent $i$, when it performs the task. Each agent $i$ has a capability $\agtcap{i}{j} \in [0,1]$ to perform task $j$. Capability can be regarded as the skill of the agent to perform the task. %A value of $\agtcap{i}{j}$ close to $1$ means that $i$ performs $j$ with high speed or quality.
+The E-GAP can be formalized as follows: let $\taskset$ be the set of tasks and $\agentset$ the set of agents. Each agent $i \in \agentset$ has $\agtres{i}$ resources to perform tasks. Each task $j \in \taskset$ consumes $\rescspt{i}{j}$ resources of agent $i$, when it performs the task. Each agent $i$ has a capability $\agtcap{i}{j} \in [0,1]$ to perform task $j$. Capability can be regarded as the skill of the agent to perform the task. %A value of $\agtcap{i}{j}$ close to $1$ means that $i$ performs $j$ with high speed or quality.
 
 An allocation matrix $A_{|\agentset| \times |\taskset|}$ has its elements $a_{ij}$ set to $1$ if agent $i$ performs task $j$, and 0 otherwise. In this model, only one agent can perform a given task instance. %according to Equation \ref{eq:egap-allocation}:
 
@@ -195,7 +134,7 @@ An allocation matrix $A_{|\agentset| \times |\taskset|}$ has its elements $a_{ij
 % \forall \enspace j \in \taskset, \sum_{i \in \agentset} a_{ij} \leq 1
 % \end{split}
 % \end{equation}
-In E-GAP, the total reward $W$ is calculated as the sum of the rewards of the agents along $t$ timesteps. In one timestep, the reward is calculated considering the capability of the agents to perform the tasks they were assigned. A delay cost $d_j^t$ is applyed as a penalty for not allocating task $j$ in timestep $t$. The calculation of reward along the timesteps captures the dynamics of the environment. E-GAP also considers task interdependence, but this aspect will not be investigated in this work. 
+In E-GAP, the total reward $W$ is calculated as the sum of the rewards of the agents along $t$ timesteps. In one timestep, the reward is calculated considering the capability of the agents to perform the tasks they were assigned. A delay cost $d_j^t$ is applyed as a penalty for not allocating task $j$ in timestep $t$. The calculation of reward along the timesteps captures the dynamics of the environment. That is, the reward in a given timestep depends on the tasks and agents that exist in that timestep. E-GAP also considers task interdependence, but this aspect will not be investigated in this work. 
 
 The goal in E-GAP is to maximize the total reward $W$ given by Eq. \ref{eq:egap-total-reward}. Note that terms who are indexed by the timestep $t$ might vary from one timestep to another. For example, new tasks can arise, the resources of the agents might be reduced, etc.
 %A Eq. \ref{eq:egap-total-reward} possui semelhança com a Eq. \ref{eq:gap-optimal}, 
@@ -233,11 +172,11 @@ In swarms, due to polymorphism, individuals may be more able to perform certain 
 \respthresh{i}{j} = 1 - \agtcap{i}{j}
 \end{equation}
 
-The goal of Swarm-GAP, according to \cite{Ferreira+2008ccmms}, is to allow agents to individually decide which task they will engage in a simple and efficient way, minimizing computational effort and communication between agents. With Swarm-GAP, agents communicate via a token based protocol. When a given agent perceives new tasks, it creates a token with these tasks. The agent can receive tokens from other agents too. Either way, the holder of a token has the right to decide which tasks of the token it will engage. The token with the remaining tasks are passed to a random agent that has not held the token before. This is formalized in Alg. 1, which is executed by each agent independently.
+The goal of Swarm-GAP, according to \cite{Ferreira+2008ccmms}, is to allow agents to individually decide which task they will engage in a simple and efficient way, minimizing computational effort and communication between agents. With Swarm-GAP, agents communicate via a token based protocol. When a given agent perceives new tasks, it creates a token with these tasks. The agent can receive tokens from other agents too. Either way, the holder of a token has the right to decide in which tasks of the token it will engage. The token with the remaining tasks are passed to a random agent that has not held the token before. This is formalized in Alg. 1, which is executed by each agent independently.
 
 %TODO: enhance algorithm formatation
 
-\begin{figure}[ht]
+\begin{algorithm}[ht]
 \begin{algorithmic}
 \STATE When tasks are perceived: $token \gets$ \{perceived tasks\}
 \STATE When message is received: $token \gets$ \{received token\}
@@ -252,10 +191,10 @@ The goal of Swarm-GAP, according to \cite{Ferreira+2008ccmms}, is to allow agent
 
 \STATE Send $token$ to random agent that didn't see the token before
 \end{algorithmic}
-\caption{Swarm-GAP algorithm}
-\end{figure}
+\caption{Swarm-GAP}
+\end{algorithm}
 
-Although the execution of Swarm-GAP is simple, it is necessary to adjust all parameters, i.e., we need to model the stimuli $\stimulus{j}$ for each task, the resources $\agtres{i}$ that each agent has, as well as the capability $\agtcap{i}{j}$ and task cost $c_{ij}$ for each agent and task. To find a combination of these parameters that yields a good performance of Swarm-GAP can be very time-consuming if the scenario has several different types of agents and tasks. 
+Although the execution of Swarm-GAP is simple, a good performance requires a good adjustment of all parameters, i.e., we need to model the stimuli $\stimulus{j}$ for each task, the resources $\agtres{i}$ that each agent has, as well as the capability $\agtcap{i}{j}$ and task cost $c_{ij}$ for each agent and task. To find a combination of these parameters that yields a good performance of Swarm-GAP can be very time-consuming if the scenario has several different types of agents and tasks. 
 %\subsection{Genetic algorithm}
 %label{sec:ga}
 
@@ -265,13 +204,16 @@ Although the execution of Swarm-GAP is simple, it is necessary to adjust all par
 \subsection{Task allocation in complex scenarios}
 \label{sec:related_ta}
 
-An approximate and decentralized algorithm for the task allocation problem in complex scenarios is LA-DCOP \cite{Scerri+2005}, where the modeling of the task allocation problem as E-GAP is introduced. In LA-DCOP, agents communicate and achieve coordination through a token-based protocol. Agents perceive tasks on the environment and create a token containing the tasks. The token holder, based in a global threshold, decide which tasks it should engage. The token with the remaining tasks are communicated to other agents. In LA-DCOP, agents must allocate tasks in order to maximize the sum of its capabilities, respecting their resource limitations. This can be reduced to the binary knapsack problem (BKP), which is NP-complete. Therefore, the efficiency and efficacy of LA-DCOP depend on the method that solve the (BKP). Each agent solves several instances of the BKP during the complete process of allocation.
+An approximate and decentralized algorithm for the task allocation problem in complex scenarios is LA-DCOP \cite{Scerri+2005}, where the modeling of the task allocation problem as E-GAP is introduced. In LA-DCOP, agents communicate and achieve coordination through a token-based protocol. Agents perceive tasks on the environment and create a token containing the tasks. The token holder, based in a global threshold, decide which tasks it should engage. The token with the remaining tasks are communicated to other agents. In LA-DCOP, agents must allocate tasks in order to maximize the sum of its capabilities, respecting their resource limitations. This can be reduced to the binary knapsack problem (BKP), which is NP-complete. Therefore, the efficiency and efficacy of LA-DCOP depend on the method that solve the BKP. Each agent solves several instances of the BKP during the complete process of allocation.
 
 Note that LA-DCOP and Swarm-GAP are very similar regarding the token-based protocol for coordination. The difference in both algorithms lies in the way the agents allocate tasks. In LA-DCOP, the process corresponds to solving an instance of the BKP whereas in Swarm-GAP, agents allocate tasks in a probabilistic fashion inspired by the division of labor in social insects.
 
 The task allocation problem can also be modeled through the formalism of coalition formation. In this formalism, a coalition structure\footnote{A coalition structure is a partition of the set of agents. Each subset of the partition is a coalition.} is determined and coalitions of agents are assigned to tasks. An approach that uses this formalism is presented in \cite{Khan+2010}. The work presents a methodology to model the coalition formation problem as a Markov Decision Process (MDP). Initially, the generated MDP has a intractable state-action space. The authors present a method for parallel partition of the generated MDP. With this approach, efficient MDP algorithms can be applied. In fact, authors apply this methodology to problems with hundreds of agents and tasks. However, in \cite{Khan+2010}, experiments are performed with homogeneous agents and they must deal with a single task type, i.e., simulated firefighting.
 
 Branch-and-bound fast-max-sum (BnB FMS) is an anytime algorithm presented in \cite{Macarthur+2011} that advances the state-of-the-art regarding task allocation in large-scale scenarios. BnB FMS searches the coalition structure that maximizes a global utility, that considers the contribution of each agent in its coalition when it performs a set of tasks. The search space explored by the algorithm is pruned through the reduction of the  number of tasks and coalitions that need to be evaluated. The used pruning techniques keep the correctness and robustness of the algorithm when the environment is dynamic. Performed experiments showed that BnB FMS reaches a global utility 23\% higher than previous state-of-the-art algorithms, with 31\% less computing time and 25\% less messages than other algorithms.
+
+\subsection{Artificial intelligence in RTS games}
+\label{sec:related_iagames}
 
 There are works where evolutionary algorithms are applied to real time strategy games, such as \cite{Lin&Ting2011} and \cite{Rathe&Boe2012} but, in these works, the focus is on micromanagement of units. Micromanagement consists of unit positioning, target selection and retreat during battles. In the present work, the focus is task allocation which is related to macromanagement, that is, what task each agent should engage whereas micromanagement is concerned with how the tasks should be done.
 
@@ -405,9 +347,7 @@ In Starcraft, there are three races with different characteristics, according to
 %\label{fig_sim}
 %\end{figure*}
 %
-% Note that often IEEE papers with subfigures do not employ subfigure
-% captions (using the optional argument to \subfloat), but instead will
-% reference/describe all of them (a), (b), etc., within the main caption.
+
 
 
 % An example of a floating table. Note that, for IEEE style tables, the 
@@ -460,28 +400,12 @@ The authors would like to thank...
 
 % references section
 
-% can use a bibliography generated by BibTeX as a .bbl file
-% BibTeX documentation can be easily obtained at:
-% http://www.ctan.org/tex-archive/biblio/bibtex/contrib/doc/
-% The IEEEtran BibTeX style support page is at:
-% http://www.michaelshell.org/tex/ieeetran/bibtex/
-%\bibliographystyle{IEEEtran}
-% argument is your BibTeX string definitions and bibliography database(s)
-%\bibliography{IEEEabrv,../bib/paper}
 %
 % <OR> manually copy in the resultant .bbl file
 % set second argument of \begin to the number of references
 % (used to reserve space for the reference number labels box)
-\bibliographystyle{IEEEtran}
+\bibliographystyle{sbgames}
 \bibliography{references}
-
-%\begin{thebibliography}{1}
-%
-%\bibitem{IEEEhowto:kopka}
-%H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
-%  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
-%
-%\end{thebibliography}
 
 
 
