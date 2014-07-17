@@ -46,7 +46,6 @@ def do_plots(rootdir):
     last_gen_data = fitnessDict[max(fitnessDict.keys())]
     plt.boxplot(last_gen_data)#, 'b', label='mean')
     plt.plot(1, np.mean(last_gen_data), 'b*', ms=15)
-    print np.mean(last_gen_data)
     plt.ylabel('Fitness')
     plt.show()
 
