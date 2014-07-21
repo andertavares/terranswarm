@@ -54,6 +54,7 @@ for subdir, dirs, files in os.walk(fitnessDict[lastGeneration]):
 		if fileExtension == ".fit" :
 			f = open(fullPath)
 			fitness = float("".join(f.readlines()))
+			print fitness
 			f.close()
 			if (fitness > bestFitnessValue):
 				bestFitnessValue = fitness
