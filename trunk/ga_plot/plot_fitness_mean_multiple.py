@@ -4,7 +4,7 @@ import os
 import re
 import sys
 
-def do_plots(rootdirArray):
+def do_plots(rootdirArray, color='r', theLabel='Mean', show=True):
     '''
     The dict dirArray contains a entry of every folder and inside it there is another
     dict (the previous fitnessDict) that uses the integer number of the generation as the key
@@ -14,7 +14,7 @@ def do_plots(rootdirArray):
     dirArray = dict()
     for folderName in rootdirArray:
 
-        #print "Working on:", folderName
+        print "Working on:", folderName
 
         dirArray[folderName] = dict()
     
@@ -40,7 +40,7 @@ def do_plots(rootdirArray):
 
                         dirArray[folderName][generationNumber].append(fitness)
 
-    print dirArray
+    #print dirArray
 
     '''
     # This is for DEBUG
@@ -69,19 +69,20 @@ def do_plots(rootdirArray):
 
         plotY.append(meanValues / len(rootdirArray))
 
-    plt.plot(plotX, plotY, 'r', label='Mean')
-    plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
+    plt.plot(plotX, plotY, color, label=theLabel)
+    #plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
 
     plt.plot(plotX, [1] * len(plotX),'y--')#,label='equal')
     plt.ylabel('Fitness value')
     plt.xlabel('Generation')
     plt.axis([min(plotX), max(plotX), 0, 3])
     plt.legend(ncol=3)
-    plt.show()
+    if show:
+        plt.show()
 
 if __name__ == '__main__':
     if(len(sys.argv) <= 1):
         print "    There must be at least one folder path as argument"
-        print "    Example: python prot_fitness_mean_multiple.py prot1 prot2 prot3"
+        print "    Example: python plot_fitness_mean_multiple.py prot1 prot2 prot3"
     else:
         do_plots(sys.argv[1:])
