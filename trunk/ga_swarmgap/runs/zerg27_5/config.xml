@@ -1,0 +1,24 @@
+<ga_swarmgap>
+<!-- analog to protoss27 -->
+    <io>
+        <output-dir value="zerg27_5" />
+    </io>
+
+	<parameters>
+        <enemy value="zerg"/>
+		<popsize value='150' />
+		<elitism value='true' />
+		<tournament-size value='2' />
+		<p-crossover value='.9' />
+		<p-mutation value='.01' />
+		<generations value='100' />
+		
+		<reliab-threshold value='0.8' />
+        <p-eval-above-thresh value='1.0' />
+	</parameters>     
+	           
+	<externals>
+		<random-seed value='275' />
+		<repetitions value='1' />
+	</externals>            
+</ga_swarmgap>
