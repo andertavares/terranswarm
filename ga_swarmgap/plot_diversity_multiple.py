@@ -33,8 +33,10 @@ def similarity_index(chr, population):
 
 def do_plots(dir_array):
     #parallel_universes is a list of dicts, each dict stores information about a different experiment
+    #palallel_universes will contain the different 'histories of mankind' ;)
     parallel_universes = []
 
+    print 'Collecting chromosome data.'
     for rootdir in dir_array:
         # history_of_mankind is a dict, key is the generation number and value is an array of chromosomes
         history_of_mankind = dict()
@@ -59,24 +61,29 @@ def do_plots(dir_array):
                             history_of_mankind[generationNumber] = []
 
                         history_of_mankind[generationNumber].append(chr)
-            parallel_universes.append(history_of_mankind)
+        parallel_universes.append(history_of_mankind)
+        print '%s data collected' % rootdir
 
     plotX = []
     plotY = []
 
-    for generation in history_of_mankind.keys():
-        population = history_of_mankind[generation]
+    print 'Data from %d generations are to be averaged accross %d experiments' % (len(parallel_universes[0].keys()), len(parallel_universes))
+
+    for generation in parallel_universes[0].keys():
+        populations = [history_of_mankind[generation] for history_of_mankind in parallel_universes]
 
         plotX.append(generation)
-        plotY.append(np.mean([similarity_index(c, population) for c in population]))
-        print 'Generation %d analysed.' % generation
+        #point in Y axis is the mean of similarity index accross the same generation in different experiments
+        plotY.append( np.mean([np.mean([similarity_index(c, population) for c in population]) for population in populations]) )
+        sys.stdout.write('\rGeneration %d analysed.' % generation)
 
     plt.plot(plotX, plotY, 'b', label='mean sim')
-    plt.ylabel('Mean similarity index')
+    plt.ylabel('PDI')
     plt.xlabel('Generation')
     plt.show()
+    print '\nDONE.'
     #plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
 
 
 if __name__ == '__main__':
-    do_plots(sys.argv[1])
+    do_plots(sys.argv[1:])
