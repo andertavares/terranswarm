@@ -83,6 +83,30 @@ def do_plots(rootdirArray, color='r', theLabel='Mean', show=True):
 if __name__ == '__main__':
     if(len(sys.argv) <= 1):
         print "    There must be at least one folder path as argument"
-        print "    Example: python plot_fitness_mean_multiple.py prot1 prot2 prot3"
+        print "    The paths must be grouped between commas as 'prot1 prot2 , terran1 terran2' "
+        print "    Example: python plot_fitness_mean_multiple.py prot1 prot2 , terran3 terran4 , zerg5 zerg6"
     else:
-        do_plots(sys.argv[1:])
+        colors = ["c","m","y","k","w","b","g","r"]
+        folderLists = []
+        counter = 0
+
+        folderLists.append([])
+
+        for path in sys.argv[1:]:
+            if(path == ","):
+                folderLists.append([])
+                counter += 1
+            else:
+                folderLists[counter].append(path)
+
+        print folderLists
+
+        for folders in folderLists:
+            if(len(folders) > 0):
+                raceName = " ".join(re.findall("[a-zA-Z]+", folders[0]))
+                raceName = raceName.title()
+                do_plots(folders, color=colors.pop(), theLabel=raceName, show=False)
+            else:
+                print "Folder list with an invalid format, please check the parameters"
+
+        plt.show()
