@@ -76,6 +76,7 @@ def do_plots(dir_array):
         #point in Y axis is the mean of similarity index accross the same generation in different experiments
         plotY.append( np.mean([np.mean([similarity_index(c, population) for c in population]) for population in populations]) )
         sys.stdout.write('\rGeneration %d analysed.' % generation)
+        sys.stdout.flush()
 
     plt.plot(plotX, plotY, 'b', label='mean sim')
     plt.ylabel('PDI')
@@ -83,6 +84,7 @@ def do_plots(dir_array):
     plt.show()
     print '\nDONE.'
     #plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
+
 
 
 if __name__ == '__main__':
