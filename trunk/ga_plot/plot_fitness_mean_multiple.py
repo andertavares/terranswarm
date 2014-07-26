@@ -4,7 +4,7 @@ import os
 import re
 import sys
 
-def do_plots(rootdirArray, color='r', theLabel='Mean', show=True):
+def do_plots(rootdirArray, color='r', theLabel='Mean', show=True, lineWidth=1.0):
     '''
     The dict dirArray contains a entry of every folder and inside it there is another
     dict (the previous fitnessDict) that uses the integer number of the generation as the key
@@ -69,7 +69,7 @@ def do_plots(rootdirArray, color='r', theLabel='Mean', show=True):
 
         plotY.append(meanValues / len(rootdirArray))
 
-    plt.plot(plotX, plotY, color, label=theLabel)
+    plt.plot(plotX, plotY, color, label=theLabel, linewidth=lineWidth)
     #plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
 
     plt.plot(plotX, [1] * len(plotX),'y--')#,label='equal')
@@ -101,12 +101,30 @@ if __name__ == '__main__':
 
         print folderLists
 
+        # Pre-calculations to define plot parameters
+        raceNamePlotParameters = dict()
         for folders in folderLists:
             if(len(folders) > 0):
                 raceName = " ".join(re.findall("[a-zA-Z]+", folders[0]))
                 raceName = raceName.title()
-                do_plots(folders, color=colors.pop(), theLabel=raceName, show=False)
+                if raceName not in raceNamePlotParameters:
+                    raceNamePlotParameters[raceName] = { 'color':colors.pop(), 'runCounter':0 }
+                    print "Selected color for ", raceName, "is", raceNamePlotParameters[raceName]['color']
+
+        for folders in folderLists:
+            if(len(folders) > 0):
+                raceName = " ".join(re.findall("[a-zA-Z]+", folders[0]))
+                raceName = raceName.title()
+                if(raceNamePlotParameters[raceName]['runCounter'] == 0):
+                    do_plots(folders, color=raceNamePlotParameters[raceName]['color'], theLabel=raceName, show=False)
+                else:
+                    updatedRaceName  = raceName
+                    updatedRaceName += " est. fit."
+                    color = raceNamePlotParameters[raceName]['color'] + ":"
+                    do_plots(folders, color=color, theLabel=updatedRaceName, show=False, lineWidth=1.4)
+                raceNamePlotParameters[raceName]['runCounter'] += 1
             else:
                 print "Folder list with an invalid format, please check the parameters"
 
+        plt.legend(loc=4,ncol=2)
         plt.show()
