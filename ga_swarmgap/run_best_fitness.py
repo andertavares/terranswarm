@@ -27,9 +27,9 @@ def go(cfg_file, num_matches):
     best_file = best_fitness_file(experiment_path)
 
     dest = "c:/bestValues.txt"
-	copy_dest = experiment_path + "\\bestValues.txt" #file containing the values from the best game
+    copy_dest = experiment_path + "\\bestValues.txt" #file containing the values from the best game
     shutil.copyfile(best_file, dest)
-    shutil.copyfile(best_file, copy)
+    shutil.copyfile(best_file, copy_dest)
     print '%s copied to %s, to be executed by MedicReadValues' % (best_file, dest)
     print '%s copied to %s, as a copy.' % (best_file, dest)
 
