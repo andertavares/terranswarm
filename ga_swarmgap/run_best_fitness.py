@@ -27,28 +27,17 @@ def go(cfg_file, num_matches):
     best_file = best_fitness_file(experiment_path)
 
     dest = "c:/bestValues.txt"
+	copy_dest = experiment_path + "\\bestValues.txt" #file containing the values from the best game
     shutil.copyfile(best_file, dest)
-    print '%s copied to %s' % (best_file, dest)
+    shutil.copyfile(best_file, copy)
+    print '%s copied to %s, to be executed by MedicReadValues' % (best_file, dest)
+    print '%s copied to %s, as a copy.' % (best_file, dest)
 
     #puts the correct .ini into bwapi.ini
     paths.inicopy('bwapi_readValues_%s.ini' % enemy)
 
-    #checks if result.txt file exists:
     results_path = os.path.join(sc_dir, 'results.txt')
-
-    if os.path.exists(results_path):
-
-        i = 1
-        while True:
-            tentative_bkp_name = 'results_old%d.txt' % i
-            if not os.path.exists(os.path.join(sc_dir, tentative_bkp_name)):
-                break
-            i += 1
-
-        print 'WARNING: a previous results.txt exists. It will be renamed to %s.\n' \
-              'A new results.txt will be created with the results will soon appear below.' % tentative_bkp_name
-        os.rename(results_path, os.path.join(sc_dir, tentative_bkp_name))
-        open(results_path, 'w').close() #create empty results.txt file
+    open(results_path, 'w').close() #create empty results.txt file
 
     #calls chaoslauncher and monitors results.txt
     chaosLauncher = subprocess.Popen([cl_path])
@@ -68,8 +57,27 @@ def go(cfg_file, num_matches):
     #terminates chaoslauncher and starcraft
     subprocess.call("taskkill /IM starcraft.exe")
     chaosLauncher.terminate()
+    rfile.close()
 
-    print 'Matches finished. Check the results in %s file.' % results_path
+    #checks if result.txt file exists:
+    new_results_path = os.path.join(experiment_path, 'results.txt')
+
+    if os.path.exists(new_results_path):
+
+        i = 1
+        while True:
+            tentative_bkp_name = 'results_old%d.txt' % i
+            if not os.path.exists(os.path.join(experiment_path, tentative_bkp_name)):
+                break
+            i += 1
+
+        print '\nWARNING: a previous results.txt exists. It will be renamed to %s.\n' \
+              'A new results.txt will be created with the results will soon appear below.\n' % tentative_bkp_name
+        os.rename(new_results_path, os.path.join(experiment_path, tentative_bkp_name)) #renames the old results.txt file
+    
+    os.rename(results_path, new_results_path) #moves results.txt from Starcraft directory to experiment directory
+     
+    print 'Matches finished. Check the results in %s file.' % new_results_path
 
 
 def best_fitness_file(experiment_path):
