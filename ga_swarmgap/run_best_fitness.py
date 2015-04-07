@@ -144,7 +144,14 @@ def best_fitness_file(experiment_path):
 
 
 if __name__ == '__main__':
-    cfg_file = sys.argv[1]
-    num_matches = sys.argv[2] if len(sys.argv) > 2 else 30
 
-    go(cfg_file, int(num_matches))
+    num_configs = len(sys.argv) - 1
+    num_matches = int(sys.argv[len(sys.argv) - 1])
+
+    print "%d" %num_configs
+    print "%d" %num_matches
+    print "%s" %sys.argv[1]
+
+    for n in range (1, num_configs):
+        go(sys.argv[n], num_matches)
+        time.sleep(5)
