@@ -6,12 +6,34 @@ import os
 import sys
 import paths
 import shutil
+import configparser
 import ga_manager as ga
 
 def runGA(config_file):
-    print ('Genetic algorithm for SwarmGAP in Starcraft started.')
-    ga.start(config_file)
-    print ('DONE.')
+    """
+    Runs one instance of the genetic algorithm
+    :param config_file: (str) path to a .xml configuration file
+    :return:
+    """
+
+    config = configparser.ConfigParser(config_file)
+    print 'GA for SwarmGAP in Starcraft started. Config: %s' % config_file
+    print 'Configurations:'
+
+    print 'Output dir: %s '% config.output_dir
+    print 'Enemy: %s' % config.enemy
+    print 'p_crossover:%s' % config.p_crossover
+    print 'p_mutation: %s'% config.p_mutation
+    print 'Generations: %s'% config.generations
+    print 'pop. size: %s' % config.popsize
+    print 'Tournament size: %s' % config.tournament_size
+    print 'Elitism? %s' % config.elitism
+    print 'Reliab. threshold: %s' % config.reliab_threshold
+    print 'p_eval_above_threshold: %s' % config.p_eval_above_thresh
+    print 'Random seed: %s' % config.random_seed
+
+    ga.start(config)
+    print 'DONE.'
 
 
 

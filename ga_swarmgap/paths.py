@@ -62,6 +62,18 @@ def ai_module_path():
     return os.path.join(sc_dir, 'bwapi-data', 'AI', 'GAMedicAIModule_release.dll')
 
 
+def experiment_output_path(cfg_object):
+    """
+    Returns the full path to the experiment's output path specified
+    in the config object
+    :param cfg_object: ConfigParser
+    :return: str
+    """
+    sc_dir, cl_path = read_paths()
+
+    return os.path.join(sc_dir, cfg_object.output_dir)
+
+
 def ai_module_exists():
     """
     Returns whether GAMedicAIModule_release.dll exists in <starcraft/bwapi-data/AI directory

@@ -72,8 +72,13 @@ def similarity(child, parent):
     return 1 - (partial / chr_length)
 
 
-def start(cfg_file):
-    cfg = configparser.ConfigParser(cfg_file)
+def start(cfg):
+    """
+    Starts the genetic algorithm with configurations given by cfg object
+    :param cfg: an instance of ConfigParser
+    :return:
+    """
+
     random.seed(cfg.random_seed)
 
     enemy = 'protoss'
@@ -231,7 +236,7 @@ def evaluate(population, generation, cfg):
     time.sleep(5)
 
     for f in fit_files:
-        print f
+        #print f
         path_parts = f.split(os.sep)
         fname = path_parts[-1] #after the last slash we have the file name
         fname_parts = fname.split('.')
