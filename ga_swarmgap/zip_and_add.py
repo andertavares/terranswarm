@@ -37,12 +37,14 @@ def zip_and_add(config_file, no_pull=False, no_add=False, no_commit=False):
     #performs a git pull
     if not no_pull:
         subprocess.call(['git', 'pull', 'origin', 'master'])
+        print 'pull attempted'
 
     #performs a git add
     if not no_add:
         subprocess.call(['git', 'add', copied_zip_path])
+        print 'Attemped to add files to git'
 
-    #performs a git commit
-    if not no_commit:
-
-        subprocess.call(['git', 'commit', '-m', 'Result file %s' % copied_zip_path])
+        #performs a git commit
+        if not no_commit:
+            subprocess.call(['git', 'commit', '-m', 'Result file %s' % copied_zip_path])
+            print 'git commit attempted, you must push manually'
