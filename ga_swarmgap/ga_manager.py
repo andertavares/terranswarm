@@ -4,6 +4,7 @@ import shutil
 import distutils.dir_util
 import random
 import copy
+import paths
 import geneticoperators as genops
 import chromosome as chromo
 import subprocess
@@ -12,10 +13,6 @@ import glob
 
 import configparser
 from chromosome import Chromosome
-
-#CHAOSLAUNCHER = "C:\Program Files (x86)\BWAPI\Chaoslauncher\Chaoslauncher.exe"
-#STARCRAFT_PATH = 'C:/Program Files/Starcraft_old/'
-
 
 def estimate_fitness(c, p1, p2):
     '''
@@ -75,8 +72,13 @@ def similarity(child, parent):
     return 1 - (partial / chr_length)
 
 
-def start(cfg_file):
-    cfg = configparser.ConfigParser(cfg_file)
+def start(cfg):
+    """
+    Starts the genetic algorithm with configurations given by cfg object
+    :param cfg: an instance of ConfigParser
+    :return:
+    """
+
     random.seed(cfg.random_seed)
 
     enemy = 'protoss'
@@ -86,7 +88,7 @@ def start(cfg_file):
         enemy = cfg.enemy
 
     #copies bwapi.ini from experiment dir to starcraft dir
-    sc_dir, cl_path = read_paths()
+    sc_dir, cl_path = paths.read_paths()
     try:
         exp_inipath = os.path.join('setup', 'bwapi_%s.ini' % enemy)
         sc_inipath = os.path.join(sc_dir, 'bwapi-data', 'bwapi.ini')
@@ -164,7 +166,7 @@ def evaluate(population, generation, cfg):
 
     '''
 
-    sc_dir, cl_path = read_paths()
+    sc_dir, cl_path = paths.read_paths()
 
     #create dir g# in output_path
     write_dir = os.path.join(sc_dir, cfg.output_dir, 'g%d' % generation)
@@ -234,7 +236,7 @@ def evaluate(population, generation, cfg):
     time.sleep(5)
 
     for f in fit_files:
-        print f
+        #print f
         path_parts = f.split(os.sep)
         fname = path_parts[-1] #after the last slash we have the file name
         fname_parts = fname.split('.')
@@ -244,21 +246,3 @@ def evaluate(population, generation, cfg):
         fit_value = float(open(f).read().strip())
         #print 'Fitness for individual %d= %d ' % (indiv_index, fit_value)
         population[indiv_index]['fitness'] = fit_value
-
-
-def read_paths():
-    #read from paths.ini
-    paths = open('paths.ini', 'r').read()
-
-    sc_dir = re.match(r'.*starcraft_dir.?=.?"(.*?)"', paths, re.M | re.I | re.DOTALL).group(1)
-    #sc_dir = sc_match_obj.group(1)
-
-    cl_path = re.match(r'.*chaoslauncher_path.?=.?"(.*?)"', paths, re.M | re.I | re.DOTALL).group(1)
-
-    if not os.path.exists(sc_dir):
-        raise RuntimeError('Directory to Starcraft was not found. paths.ini says: %s' % sc_dir)
-
-    if not os.path.exists(cl_path):
-        raise RuntimeError('Chaoslauncher executable was not found. paths.ini says: %s' % cl_path)
-
-    return (sc_dir, cl_path)

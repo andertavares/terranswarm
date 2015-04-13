@@ -121,57 +121,57 @@ for char in f.read():
 
 
 print "\nGeneral Values"
-print "\t number of games: %d" %games
-print "\t wins:   %d" %wins
-print "\t losses: %d" %loss
-print "\t avgFitness: %f" %(fitness / games)
+print "\t number of games: %d" % games
+print "\t wins:   %d" % wins
+print "\t losses: %d" % loss
+print "\t avgFitness: %f" % (fitness / games)
 
 print "\nTime Values"
 if (wins > 0) :
-    print "\t avgWinTime : %d" %(winTime / wins)
+    print "\t avgWinTime : %d" % (winTime / wins)
 
 if (loss > 0) :
-    print "\t avgLossTime: %d\n" %(lossTime / loss)
-print "\t fastest win : %d" %fastWin
-print "\t fastest loss: %d" %fastLoss
-print "\t slowest win : %d" %slowWin
-print "\t slowest loss: %d" %slowLoss
+    print "\t avgLossTime: %d\n" % (lossTime / loss)
+print "\t fastest win : %d" % fastWin
+print "\t fastest loss: %d" % fastLoss
+print "\t slowest win : %d" % slowWin
+print "\t slowest loss: %d" % slowLoss
 
 print "\nScore Values"
 if (wins>0):
     print "\t Wins:"
-    print "\t    avgBotUnitScore: %f" %(winBotUnitValue / wins)
-    print "\t    avgBotConsScore: %f" %(winBotConsValue / wins)
-    print "\t    avgBotRescScore: %f" %(winBotRescValue / wins)
-    print "\n\t    avgEnmUnitScore: %f" %(winEnmUnitValue / wins)
-    print "\t    avgEnmConsScore: %f" %(winEnmConsValue / wins)
-    print "\t    avgEnmRescScore: %f" %(winEnmRescValue / wins)
+    print "\t    avgBotUnitScore: %f" % (winBotUnitValue / wins)
+    print "\t    avgBotConsScore: %f" % (winBotConsValue / wins)
+    print "\t    avgBotRescScore: %f" % (winBotRescValue / wins)
+    print "\n\t    avgEnmUnitScore: %f" % (winEnmUnitValue / wins)
+    print "\t    avgEnmConsScore: %f" % (winEnmConsValue / wins)
+    print "\t    avgEnmRescScore: %f" % (winEnmRescValue / wins)
 if (loss>0):
     print "\n\t Losses:"
-    print "\t    avgBotUnitScore: %f" %(lossBotUnitValue / loss)
-    print "\t    avgBotConsScore: %f" %(lossBotConsValue / loss)
-    print "\t    avgBotRescScore: %f" %(lossBotRescValue / loss)
-    print "\n\t    avgEnmUnitScore: %f" %(lossEnmUnitValue / loss)
-    print "\t    avgEnmConsScore: %f" %(lossEnmConsValue / loss)
-    print "\t    avgEnmRescScore: %f" %(lossEnmRescValue / loss)
+    print "\t    avgBotUnitScore: %f" % (lossBotUnitValue / loss)
+    print "\t    avgBotConsScore: %f" % (lossBotConsValue / loss)
+    print "\t    avgBotRescScore: %f" % (lossBotRescValue / loss)
+    print "\n\t    avgEnmUnitScore: %f" % (lossEnmUnitValue / loss)
+    print "\t    avgEnmConsScore: %f" % (lossEnmConsValue / loss)
+    print "\t    avgEnmRescScore: %f" % (lossEnmRescValue / loss)
 print "\n\t Overall:"
-print "\t    avgBotUnitScore: %f" %((winBotUnitValue + lossBotUnitValue) / (wins +loss))
-print "\t    avgBotConsScore: %f" %((winBotConsValue + lossBotConsValue) / (wins +loss))
-print "\t    avgBotRescScore: %f" %((winBotRescValue + lossBotRescValue) / (wins +loss))
-print "\n\t    avgEnmUnitScore: %f" %((winEnmUnitValue + lossEnmUnitValue) / (wins +loss))
-print "\t    avgEnmConsScore: %f" %((winEnmConsValue + lossEnmConsValue) / (wins +loss))
-print "\t    avgEnmRescScore: %f" %((winEnmRescValue + lossEnmRescValue) / (wins +loss))
+print "\t    avgBotUnitScore: %f" % ((winBotUnitValue + lossBotUnitValue) / (wins + loss))
+print "\t    avgBotConsScore: %f" % ((winBotConsValue + lossBotConsValue) / (wins + loss))
+print "\t    avgBotRescScore: %f" % ((winBotRescValue + lossBotRescValue) / (wins + loss))
+print "\n\t    avgEnmUnitScore: %f" % ((winEnmUnitValue + lossEnmUnitValue) / (wins + loss))
+print "\t    avgEnmConsScore: %f" % ((winEnmConsValue + lossEnmConsValue) / (wins + loss))
+print "\t    avgEnmRescScore: %f" % ((winEnmRescValue + lossEnmRescValue) / (wins + loss))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+print "The following is a spreadsheet-friendly output of the fields (scores are printed first for wins, then for losses)."
+print ">>>REPLACE SPACES BY TABS BEFORE PASTING IN A SPREADSHEET!<<<"
+print "wins,losses,%wins,%losses,avgFitness,avgWinTime,avgLossTime,_blank_,avgBotUnitScore,avgBotConsScore,avgBotResScore,_blank,avgEnmUnitScore,avgEnmConsScore,avgEnmRescScore,_blank"
+print ("%d %d %f %f %f %f %f  %f %f %f  %f %f %f  %f %f %f  %f %f %f " %
+    (
+        wins, loss, (float(wins)/(wins+loss)), (float(loss)/(wins+loss)),
+        (fitness / games), (winTime / wins), (lossTime / loss), (winBotUnitValue / wins),
+        (winBotConsValue / wins), (winBotRescValue / wins), (winEnmUnitValue / wins),
+        (winEnmConsValue / wins), (winEnmRescValue / wins),
+        (lossBotUnitValue / loss), (lossBotConsValue / loss), (lossBotRescValue / loss),
+        (lossEnmUnitValue / loss), (lossEnmConsValue / loss), (lossEnmRescValue / loss)
+    )).replace('.', ',') #spreadsheet is using comma as decimal separator...
