@@ -163,9 +163,10 @@ print "\t    avgEnmConsScore: %f" % ((winEnmConsValue + lossEnmConsValue) / (win
 print "\t    avgEnmRescScore: %f" % ((winEnmRescValue + lossEnmRescValue) / (wins + loss))
 
 
-print "The following is a tab-spaced, spreadsheet-friendly output of the fields (scores are printed first for wins, then for losses):"
-print "wins,losses,%wins,%losses,avgFitness,avgWinTime,avgLossTime,avgBotUnitScore,avgBotConsScore,avgBotResScore,avgEnmUnitScore,avgEnmConsScore,avgEnmRescScore"
-print ("%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f" %
+print "The following is a spreadsheet-friendly output of the fields (scores are printed first for wins, then for losses)."
+print ">>>REPLACE SPACES BY TABS BEFORE PASTING IN A SPREADSHEET!<<<"
+print "wins,losses,%wins,%losses,avgFitness,avgWinTime,avgLossTime,_blank_,avgBotUnitScore,avgBotConsScore,avgBotResScore,_blank,avgEnmUnitScore,avgEnmConsScore,avgEnmRescScore,_blank"
+print ("%d %d %f %f %f %f %f  %f %f %f  %f %f %f  %f %f %f  %f %f %f " %
     (
         wins, loss, (float(wins)/(wins+loss)), (float(loss)/(wins+loss)),
         (fitness / games), (winTime / wins), (lossTime / loss), (winBotUnitValue / wins),
