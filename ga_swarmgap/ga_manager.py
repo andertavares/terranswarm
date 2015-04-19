@@ -10,6 +10,7 @@ import chromosome as chromo
 import subprocess
 import time
 import glob
+import xml
 
 import configparser
 from chromosome import Chromosome
@@ -154,6 +155,72 @@ def start(cfg):
         #prepares for the next generation
         old_pop = new_pop
 
+def score_fit(f, population,cfg):
+    #print f
+    path_parts = f.split(os.sep)
+    fname = path_parts[-1] #after the last slash we have the file name
+    fname_parts = fname.split('.')
+    indiv_index = int(fname_parts[0]) #index of the individual is the part in file name before the first dot
+    
+    fit_value = float(open(f).read().strip())
+    #print 'Fitness for individual %d= %d ' % (indiv_index, fit_value)
+    population[indiv_index]['fitness'] = fit_value
+
+def time_fit(f, population, cfg):
+    #print f
+    path_parts = f.split(os.sep)
+    fname = path_parts[-1] #after the last slash we have the file name
+    fname_parts = fname.split('.')
+    indiv_index = int(fname_parts[0]) #index of the individual is the part in file name before the first dot
+
+
+    #get xml file path
+    xml_path = ""
+    for n in range(0, len(path_parts) -1):
+        xml_path = xml_path + path_parts[n] + "\\"
+    xml_path = xml_path + fname_parts[0] + ".chr.res.xml" #index of the individual is the part in file name before the first dot
+
+    #load xml tree
+    xml_file = xml.etree.ElementTree.parse(xml_path).getroot()
+
+    #get fitness for time
+    fit_value = float(xml_file.find('timeFitness').get('value'))
+    
+    fit_file = open(f, 'w')
+    #print fitness
+    fit_file.write(str(fit_value))
+    fit_file.close()
+   
+    population[indiv_index]['fitness'] = fit_value
+
+def unit_fit(f, population, cfg):
+    #print f
+    path_parts = f.split(os.sep)
+    fname = path_parts[-1] #after the last slash we have the file name
+    fname_parts = fname.split('.')
+    indiv_index = int(fname_parts[0]) #index of the individual is the part in file name before the first dot
+
+
+    #get xml file path
+    xml_path = ""
+    for n in range(0, len(path_parts) -1):
+        xml_path = xml_path + path_parts[n] + "\\"
+    xml_path = xml_path + fname_parts[0] + ".chr.res.xml" #index of the individual is the part in file name before the first dot
+
+    #load xml tree
+    xml_file = xml.etree.ElementTree.parse(xml_path).getroot()
+
+    #get average units during game
+    unitsAvg = int(xml_file.find('unitsAverage').get('value'))
+    fit_value = float(unitsAvg / 130.0)
+    
+    fit_file = open(f, 'w')
+    #print fitness
+    fit_file.write(str(fit_value))
+    fit_file.close()
+   
+    population[indiv_index]['fitness'] = fit_value
+
 
 def evaluate(population, generation, cfg):
     '''
@@ -236,13 +303,4 @@ def evaluate(population, generation, cfg):
     time.sleep(5)
 
     for f in fit_files:
-        #print f
-        path_parts = f.split(os.sep)
-        fname = path_parts[-1] #after the last slash we have the file name
-        fname_parts = fname.split('.')
-        indiv_index = int(fname_parts[0]) #index of the individual is the part in file name before the first dot
-
-
-        fit_value = float(open(f).read().strip())
-        #print 'Fitness for individual %d= %d ' % (indiv_index, fit_value)
-        population[indiv_index]['fitness'] = fit_value
+        score_fit(f, population, cfg)
