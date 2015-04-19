@@ -18,10 +18,12 @@
 using namespace BWAPI;
 using namespace Filter;
 
+unsigned int unitsPerFrame;
 
 ExampleAIModule::ExampleAIModule() {
 	//init of game structures is done in onStart()
 	lastScan = 0;
+	unitsPerFrame=0;
 	trainMarine = NULL;
 	gatherMinerals = NULL;
 	buildSupplyDepot = NULL;
@@ -184,6 +186,14 @@ void ExampleAIModule::onEnd(bool isWinner) {
 
 	int myTotal = me->getUnitScore() + me->getKillScore() + me->getBuildingScore() + me->getRazingScore() + me->gatheredMinerals() + me->gatheredGas();
 	int enemyTotal = enemy->getUnitScore() + enemy->getKillScore() + enemy->getBuildingScore() + enemy->getRazingScore() + enemy->gatheredMinerals() + enemy->gatheredGas();
+	unitsPerFrame = unitsPerFrame / Broodwar->getFrameCount();
+
+	// fit from http://sbgames.org/sbgames2012/proceedings/papers/computacao/comp-full_08.pdf
+    float timeFit;
+	if(isWinner)
+        timeFit = 1.0 - Broodwar->elapsedTime() / 7200.0;
+    else
+		timeFit = Broodwar->elapsedTime() / 7200.0;
 
 	statsFile << "<results>" << endl <<
 		"\t<result value='" << gameResult << "'/>" << endl <<
@@ -212,6 +222,8 @@ void ExampleAIModule::onEnd(bool isWinner) {
 		"\t\t<totalScore value='" << enemyTotal << "'/>" << endl <<
 		"\t</enemy>" << endl <<
 		endl << "\t<scoreRatio value='" << myTotal / float(enemyTotal) << "'/>" << endl <<
+		"\t<timeFitness value='" << timeFit << "'/>" << endl <<
+		"\t<unitsAverage value='" << unitsPerFrame << "'/>" << endl <<
 		"</results>" << endl;
 	statsFile.close();
 
@@ -250,6 +262,8 @@ void ExampleAIModule::onFrame() {
 		}
 		return;
 	}
+
+	unitsPerFrame += Broodwar->self()->allUnitCount();
 
 
 	//checks if game is lasting too long. If so, ends the game as a draw
@@ -390,7 +404,7 @@ void ExampleAIModule::onFrame() {
 		} // closure: if idle
 		*/
 	}
-	
+		
 	/*Broodwar->drawTextScreen(20, 90 + yOffset, "Number of SCV in map [%d]", 
 		Text::White, scvMap->size()
 	);*/
