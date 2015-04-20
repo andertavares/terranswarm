@@ -155,71 +155,48 @@ def start(cfg):
         #prepares for the next generation
         old_pop = new_pop
 
-def score_fit(f, population,cfg):
-    #print f
-    path_parts = f.split(os.sep)
-    fname = path_parts[-1] #after the last slash we have the file name
-    fname_parts = fname.split('.')
-    indiv_index = int(fname_parts[0]) #index of the individual is the part in file name before the first dot
-    
-    fit_value = float(open(f).read().strip())
-    #print 'Fitness for individual %d= %d ' % (indiv_index, fit_value)
-    population[indiv_index]['fitness'] = fit_value
+def score_fit(xml_file):
+    return float(xml_file.find('scoreRatio').get('value'))
 
-def time_fit(f, population, cfg):
-    #print f
-    path_parts = f.split(os.sep)
-    fname = path_parts[-1] #after the last slash we have the file name
-    fname_parts = fname.split('.')
-    indiv_index = int(fname_parts[0]) #index of the individual is the part in file name before the first dot
+def time_fit(xml_file):
+    return float(xml_file.find('timeFitness').get('value'))
 
-
-    #get xml file path
-    xml_path = ""
-    for n in range(0, len(path_parts) -1):
-        xml_path = xml_path + path_parts[n] + "\\"
-    xml_path = xml_path + fname_parts[0] + ".chr.res.xml" #index of the individual is the part in file name before the first dot
-
-    #load xml tree
-    xml_file = xml.etree.ElementTree.parse(xml_path).getroot()
-
-    #get fitness for time
-    fit_value = float(xml_file.find('timeFitness').get('value'))
-    
-    fit_file = open(f, 'w')
-    #print fitness
-    fit_file.write(str(fit_value))
-    fit_file.close()
-   
-    population[indiv_index]['fitness'] = fit_value
-
-def unit_fit(f, population, cfg):
-    #print f
-    path_parts = f.split(os.sep)
-    fname = path_parts[-1] #after the last slash we have the file name
-    fname_parts = fname.split('.')
-    indiv_index = int(fname_parts[0]) #index of the individual is the part in file name before the first dot
-
-
-    #get xml file path
-    xml_path = ""
-    for n in range(0, len(path_parts) -1):
-        xml_path = xml_path + path_parts[n] + "\\"
-    xml_path = xml_path + fname_parts[0] + ".chr.res.xml" #index of the individual is the part in file name before the first dot
-
-    #load xml tree
-    xml_file = xml.etree.ElementTree.parse(xml_path).getroot()
-
-    #get average units during game
+def unit_fit(xml_file):
     unitsAvg = int(xml_file.find('unitsAverage').get('value'))
-    fit_value = float(unitsAvg / 130.0)
-    
-    fit_file = open(f, 'w')
-    #print fitness
-    fit_file.write(str(fit_value))
-    fit_file.close()
-   
+    return float(unitsAvg / 130.0)
+        
+def calculate_fitness(f, population, cfg, mode):
+    #print f
+    path_parts = f.split(os.sep)
+    fname = path_parts[-1] #after the last slash we have the file name
+    fname_parts = fname.split('.')
+    indiv_index = int(fname_parts[0]) #index of the individual is the part in file name before the first dot
+
+    #get xml file path
+    xml_path = ""
+    for n in range(0, len(path_parts) -1):
+        xml_path = xml_path + path_parts[n] + "\\"
+    xml_path = xml_path + fname_parts[0] + ".chr.res.xml" #index of the individual is the part in file name before the first dot
+
+    if(os.path.exists(xml_path)): #check if there is a played game
+        #load xml tree
+        xml_file = xml.etree.ElementTree.parse(xml_path).getroot()
+        if(mode=="score"):
+            fit_value = score_fit(xml_file)
+        elif(mode=="unit"):
+            fit_value = unit_fit(xml_file)
+        elif(mode=="time"):
+            fit_value = time_fit(xml_file)
+
+        fit_file = open(f, 'w')
+        #print fitness
+        fit_file.write(str(fit_value))
+        fit_file.close()
+    else: #get estimated value from fit file
+        fit_value = float(open(f).read().strip())
+
     population[indiv_index]['fitness'] = fit_value
+
 
 
 def evaluate(population, generation, cfg):
@@ -303,4 +280,4 @@ def evaluate(population, generation, cfg):
     time.sleep(5)
 
     for f in fit_files:
-        score_fit(f, population, cfg)
+        calculate_fitness(f, population, cfg, "score")
