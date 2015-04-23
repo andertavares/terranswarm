@@ -7,7 +7,7 @@ import subprocess
 import configparser
 
 
-def zip_and_add(config_file, commit_mode, no_pull=False, no_add=False, no_commit=False):
+def zip_and_add(config_file, commit_mode, no_pull=False, no_add=False, no_commit=False, no_set_user=False):
     """
     Zips the files in output directory specified in config_file,
     copies it to our results/ directory and adds it to git and performs a commit.
@@ -48,6 +48,14 @@ def zip_and_add(config_file, commit_mode, no_pull=False, no_add=False, no_commit
 
             # performs a git commit
             if not no_commit:
+
+                # sets user.name and user.email
+                if not no_set_user:
+                    subprocess.call(['git', 'config', 'user.name', '"GA Results"'])
+                    subprocess.call(['git', 'config', 'user.email', 'results@ga.com'])
+                    print 'Git user.name and user.email have been set as GA Results and results@ga.com'
+
+                # effectively commits
                 subprocess.call(['git', 'commit', '-m', 'Result file %s' % copied_zip_path])
                 print 'git commit attempted, you must push manually'
 
@@ -84,10 +92,13 @@ if __name__ == "__main__":
     parser.add_argument('--no-commit', action='store_true', default=False,
                        help='Does not perform a commit (automatically activated with --no-add).')
 
+    parser.add_argument('--no-set-user', action='store_true', default=False,
+                       help='Does not perform git config user.name and user.email (automatically activated with --no-add and --no-commit).')
+
     parser.add_argument('-m', '--commit-mode', type=str, default='git',
                        help='Commit mode (use svn or git commands), default=git')
 
     args = parser.parse_args()
    
     for cfg in args.config:
-        zip_and_add(cfg, args.commit_mode, args.no_pull, args.no_add, args.no_commit)
+        zip_and_add(cfg, args.commit_mode, args.no_pull, args.no_add, args.no_commit, args.no_set_user)
