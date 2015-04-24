@@ -6,38 +6,45 @@ Created on Feb 1, 2013
 import os
 import xml.etree.ElementTree as ET
 
+
 def str_to_bool(value):
     if value in ['True', 'true']:
         return True
     return False
-    
+
+
 class ConfigParser(object):
-    '''
+    """
     Parses the .xml file with the configs
     
-    '''
+    """
+
+    #constants for the types of fitness functions
+    SCORE_RATIO = 'score_ratio'
+    TIME_BASED = 'time_based'
+    UNIT_BASED = 'unit_based'
+    VICTORY_RATIO = 'victory_ratio'
+
     def __init__(self, cfgpath):
-        '''
+        """
         Constructor
 
-        '''
+        """
         self._set_defaults()
 
         #list of possible types of fitness functions
-        self.possible_fitness = ['score_ratio', 'time_based', 'unit_based', 'victory_ratio']
+        self.possible_fitness = [self.SCORE_RATIO, self.TIME_BASED,
+                                 self.UNIT_BASED, self.VICTORY_RATIO]
         
         self.cfgdir = os.path.dirname(os.path.realpath(cfgpath))
         cfgtree = ET.parse(cfgpath)
         
-        
-        #print 'Config file parsing started...'
-
         for io_element in cfgtree.find('io'):
 
             if io_element.tag == 'output-dir':
                 self.output_dir = io_element.get('value')
 
-        if cfgtree.find('fitness'): #prevents error with old configs without <fitness> tag
+        if cfgtree.find('fitness') is not None: #prevents error with old configs without <fitness> tag
             for fitness_element in cfgtree.find('fitness'):
                 if fitness_element.tag == 'function':
                     self.function = fitness_element.get('value').lower()

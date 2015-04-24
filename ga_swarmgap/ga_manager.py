@@ -88,6 +88,11 @@ def start(cfg):
     else:
         enemy = cfg.enemy
 
+    # decides which function will be called to evaluate the population
+    eval_population_function = evaluate
+    if cfg.function == cfg.VICTORY_RATIO:
+        eval_population_function = evaluate_victory_ratio
+
     # copies bwapi.ini from experiment dir to starcraft dir
     sc_dir, cl_path = paths.read_paths()
     try:
@@ -116,14 +121,14 @@ def start(cfg):
         old_pop.append({'chromosome': Chromosome(), 'fitness': 1, 'reliability': 0})
 
     # evaluates the 1st generation
-    print 'Evaluating generation #1'
-    evaluate(old_pop, 1, cfg)
+    print 'Evaluating generation #1 of %s' % cfg.output_dir
+    eval_population_function(old_pop, 1, cfg)
 
-    for i in range(1, cfg.generations):  #starts from 1 because 1st generation (index 0) was evaluated already
+    for i in range(1, cfg.generations):  # starts from 1 because 1st generation (index 0) was evaluated already
         new_pop = []
 
         if cfg.elitism:
-            #adds the best individual from previous population
+            # adds the best individual from previous population
             new_pop.append(genops.elite(old_pop))
 
         while len(new_pop) < cfg.popsize:
@@ -132,28 +137,28 @@ def start(cfg):
             genops.mutation(c1, cfg.p_mutation)
             genops.mutation(c2, cfg.p_mutation)
 
-            #estimates fitness of children
+            # estimates fitness of children
             c1['fitness'] = estimate_fitness(c1, p1, p2)
             c2['fitness'] = estimate_fitness(c2, p1, p2)
 
-            #calculates reliability of children
+            # calculates reliability of children
             c1['reliability'] = reliability(c1, p1, p2)
             c2['reliability'] = reliability(c2, p1, p2)
 
-            #adds children to the new population
-            #because of elitism, we test if second child can be added
-            #otherwise, new population size can be 1 + old pop. size
+            # adds children to the new population
+            # because of elitism, we test if second child can be added
+            # otherwise, new population size can be 1 + old pop. size
             new_pop.append(c1)
-            if (len(new_pop) < cfg.popsize):
+            if len(new_pop) < cfg.popsize:
                 new_pop.append(c2)
 
+        # new population built, now evaluates it. Generation number is i+1
+        # evaluate means calling the population evaluation function
+        print '\nEvaluating generation #%d of %s' % ((i+1), cfg.output_dir)
+        #evaluate(new_pop, i+1, cfg)
+        eval_population_function(new_pop, i+1, cfg)
 
-        #new population built, now evaluates it. Generation number is i+1
-        print 'Evaluating generation #%d' % (i+1)
-        evaluate(new_pop, i+1, cfg)
-
-        #prepares for the next generation
-        old_pop = new_pop
+        old_pop = new_pop  # prepares for the next generation
 
 
 def score_fit(xml_file):
@@ -182,28 +187,29 @@ def calculate_fitness(f, population, cfg, mode):
         xml_path = xml_path + path_parts[n] + "\\"
     xml_path = xml_path + fname_parts[0] + ".chr.res.xml" #index of the individual is the part in file name before the first dot
 
-    if(os.path.exists(xml_path)): #check if there is a played game
+    if os.path.exists(xml_path): #check if there is a played game
         #load xml tree
-        xml_file = xml.etree.ElementTree.parse(xml_path).getroot()
-        if(mode=="score"):
-            fit_value = score_fit(xml_file)
-        elif(mode=="unit"):
-            fit_value = unit_fit(xml_file)
-        elif(mode=="time"):
-            fit_value = time_fit(xml_file)
+        xml_tree = xml.etree.ElementTree.parse(xml_path).getroot()
+        if mode == cfg.SCORE_RATIO:
+            fit_value = score_fit(xml_tree)
+        elif mode == cfg.UNIT_BASED:
+            fit_value = unit_fit(xml_tree)
+        elif mode == cfg.TIME_BASED:
+            fit_value = time_fit(xml_tree)
 
         fit_file = open(f, 'w')
         #print fitness
         fit_file.write(str(fit_value))
         fit_file.close()
-    else: #get estimated value from fit file
+
+    else: #get estimated value from .fit file
         fit_value = float(open(f).read().strip())
 
     population[indiv_index]['fitness'] = fit_value
 
 
 def evaluate_victory_ratio(population, generation, cfg):
-    '''
+    """
     Evaluates fitness of population members whose reliability values are below
     the threshold, USING VICTORY RATIO AS FITNESS FUNCTION
     :param population: the array with the population
@@ -211,28 +217,30 @@ def evaluate_victory_ratio(population, generation, cfg):
     :param cfg: the configparser object
     :return:
 
-    '''
+    """
     import xml.etree.ElementTree as ET
-    
-    #pattern to create .chr file: first %d for individual index; 
-    #second %d for match number
+
+    # pattern to create .chr file: first %d for individual index;
+    # second %d for match number
     chr_file_pattern = '%d-rep-%d'    
     
     sc_dir, cl_path = paths.read_paths()
 
-    #create dir g# in output_path
+    # create dir g# in output_path
     write_dir = os.path.join(sc_dir, cfg.output_dir, 'g%d' % generation)
     distutils. dir_util.mkpath(write_dir)
 
     for index in range(0, len(population)):
         p = population[index]
 
-        #if reliability is above threshold and probability of evaluation in this condition is not met:
-        #we make random.random() > prob because prob refers to chance of evaluation of reliable individuals
-        #and this test is for individuals who will NOT be evaluated
+        '''
+        if reliability is above threshold and probability of evaluation in this condition is not met:
+        we make random.random() > prob because prob refers to chance of evaluation of reliable individuals
+        and this test is for individuals who will NOT be evaluated
+        '''
         if p['reliability'] > cfg.reliab_threshold and random.random() > cfg.p_eval_above_thresh:
-            #create file with fitness, this individual won't be eval'ed
-            #also, we create its chr_file with .lock extension, so that broodwar won't simulate it
+            # create file with fitness, this individual won't be eval'ed
+            # also, we create its chr_file with .lock extension, so that broodwar won't simulate it
             chr_file = open(os.path.join(write_dir, '%d.chr.lock' % index), 'w')
             fit_file = open(os.path.join(write_dir, '%d.fit' % index), 'w')
 
@@ -247,7 +255,7 @@ def evaluate_victory_ratio(population, generation, cfg):
 
             # creates multiple files for the same individual, one for each match it will play
             for match in range(cfg.num_matches):
-                chr_file = open(os.path.join(write_dir, '%d-rep%d.chr' % (index, match)), 'w')
+                chr_file = open(os.path.join(write_dir, '%d-rep-%d.chr' % (index, match)), 'w')
                 chr_file.write(p['chromosome'].to_file_string())
                 chr_file.close()
 
@@ -274,7 +282,7 @@ def evaluate_victory_ratio(population, generation, cfg):
         chaosLauncher = subprocess.Popen([cl_path])
         cl_called = True
 
-    #watch directory to see if all .res.xml files were generated
+    # watch directory to see if all .res.xml files were generated
     while True:
         #result_files_pattern = os.path.join(write_dir, "*.fit")
         result_files = glob.glob(result_files_pattern)
@@ -283,7 +291,7 @@ def evaluate_victory_ratio(population, generation, cfg):
         #print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
         time.sleep(1)
 
-    #finishes this execution of chaoslauncher and starcraft
+    # finishes this execution of chaoslauncher and starcraft
     subprocess.call("taskkill /IM starcraft.exe")
     if(cl_called):
         chaosLauncher.terminate()
@@ -296,25 +304,22 @@ def evaluate_victory_ratio(population, generation, cfg):
     its victory ratio in a number of matches.
     '''
     for index, individual in enumerate(population):
-        if individual['reliability'] < 1: #assuming that individuals w/ reliab < 1 were NOT EVALUATED
+        if individual['reliability'] < 1: # assuming that individuals w/ reliab < 1 were NOT EVALUATED
             continue
-        else:
-            #read all files and calculate victory ratio
-            
-            files_pattern = os.path.join(write_dir, "%d-res-*.res.xml" % index)
+        else:  # read all files and calculate victory ratio
+            files_pattern = os.path.join(write_dir, "%d-rep-*.res.xml" % index)
             files = glob.glob(files_pattern)
             victories = 0
-            
             for f in files:
                 xml_tree = ET.parse(f).getroot()
                 if xml_tree.find('result').get('value') == 'win':
                     victories += 1
 
             individual['fitness'] = float(victories) / cfg.num_matches
-            
+
 
 def evaluate(population, generation, cfg):
-    '''
+    """
     Evaluates fitness of population members whose reliability values are below
     the threshold
     :param population: the array with the population
@@ -322,11 +327,11 @@ def evaluate(population, generation, cfg):
     :param cfg: the configparser object
     :return:
 
-    '''
+    """
 
     sc_dir, cl_path = paths.read_paths()
 
-    #create dir g# in output_path
+    # create dir g# in output_path
     write_dir = os.path.join(sc_dir, cfg.output_dir, 'g%d' % generation)
     distutils. dir_util.mkpath(write_dir)
 
@@ -394,4 +399,4 @@ def evaluate(population, generation, cfg):
     time.sleep(5)
 
     for f in fit_files:
-        calculate_fitness(f, population, cfg, "score")
+        calculate_fitness(f, population, cfg, cfg.function)
