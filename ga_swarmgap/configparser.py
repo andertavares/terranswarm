@@ -37,11 +37,12 @@ class ConfigParser(object):
             if io_element.tag == 'output-dir':
                 self.output_dir = io_element.get('value')
 
-        for fitness_element in cfgtree.find('fitness'):
-            if fitness_element.tag == 'function':
-                self.function = fitness_element.get('value').lower()
-                if self.function not in self.possible_fitness:
-                    raise ValueError('Fitness function %s invalid' % self.function)
+        if cfgtree.find('fitness'): #prevents error with old configs without <fitness> tag
+            for fitness_element in cfgtree.find('fitness'):
+                if fitness_element.tag == 'function':
+                    self.function = fitness_element.get('value').lower()
+                    if self.function not in self.possible_fitness:
+                        raise ValueError('Fitness function %s invalid' % self.function)
 
             #number of matches in victory_ratio function
             if fitness_element.tag == 'num_matches':
