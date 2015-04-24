@@ -15,7 +15,12 @@
 		
 		<reliab-threshold value='0.6' />
         <p-eval-above-thresh value='0.1' />
-	</parameters>     
+	</parameters>
+
+    <fitness>
+        <function value="victory_ratio" />
+        <num_matches value="5" />
+    </fitness>
 	           
 	<externals>
 		<random-seed value='6' />

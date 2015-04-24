@@ -22,6 +22,9 @@ class ConfigParser(object):
 
         '''
         self._set_defaults()
+
+        #list of possible types of fitness functions
+        self.possible_fitness = ['score_ratio', 'time_based', 'unit_based', 'victory_ratio']
         
         self.cfgdir = os.path.dirname(os.path.realpath(cfgpath))
         cfgtree = ET.parse(cfgpath)
@@ -33,6 +36,16 @@ class ConfigParser(object):
 
             if io_element.tag == 'output-dir':
                 self.output_dir = io_element.get('value')
+
+        for fitness_element in cfgtree.find('fitness'):
+            if fitness_element.tag == 'function':
+                self.function = fitness_element.get('value').lower()
+                if self.function not in self.possible_fitness:
+                    raise ValueError('Fitness function %s invalid' % self.function)
+
+            #number of matches in victory_ratio function
+            if fitness_element.tag == 'num_matches':
+                self.num_matches = int(fitness_element.get('value'))
 
         for param_element in cfgtree.find('parameters'):
             if param_element.tag == 'enemy':
@@ -86,6 +99,9 @@ class ConfigParser(object):
         self.tournament_size = 2
         self.reliab_threshold = 0.6
         self.p_eval_above_thresh = 0.05
+
+        self.function = 'score_ratio'
+        self.num_matches = 1
         
         self.random_seed = 1
         self.repetitions = 1

@@ -3,7 +3,10 @@
 	</io>
 	
 	<parameters>
-	</parameters>     
+	</parameters>
+
+    <fitness>
+    </fitness>
 	           
 	<externals>
 	</externals>            
