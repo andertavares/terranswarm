@@ -155,11 +155,14 @@ def start(cfg):
         #prepares for the next generation
         old_pop = new_pop
 
+
 def score_fit(xml_file):
     return float(xml_file.find('scoreRatio').get('value'))
 
+
 def time_fit(xml_file):
     return float(xml_file.find('timeFitness').get('value'))
+
 
 def unit_fit(xml_file):
     unitsAvg = int(xml_file.find('unitsAverage').get('value'))
@@ -198,6 +201,99 @@ def calculate_fitness(f, population, cfg, mode):
     population[indiv_index]['fitness'] = fit_value
 
 
+def evaluate_victory_ratio(population, generation, cfg):
+    '''
+    Evaluates fitness of population members whose reliability values are below
+    the threshold, USING VICTORY RATIO AS FITNESS FUNCTION
+    :param population: the array with the population
+    :param generation: the number of this generation
+    :param cfg: the configparser object
+    :return:
+
+    '''
+
+    sc_dir, cl_path = paths.read_paths()
+
+    #create dir g# in output_path
+    write_dir = os.path.join(sc_dir, cfg.output_dir, 'g%d' % generation)
+    distutils. dir_util.mkpath(write_dir)
+
+
+    for individual in range(0, len(population)):
+        p = population[individual]
+
+        #if reliability is above threshold and probability of evaluation in this condition is not met:
+        #we make random.random() > prob because prob refers to chance of evaluation of reliable individuals
+        #and this test is for individuals who will NOT be evaluated
+        if p['reliability'] > cfg.reliab_threshold and random.random() > cfg.p_eval_above_thresh:
+            #create file with fitness, this individual won't be eval'ed
+            #also, we create its chr_file with .lock extension, so that broodwar won't simulate it
+            chr_file = open(os.path.join(write_dir, '%d.chr.lock' % individual), 'w')
+            fit_file = open(os.path.join(write_dir, '%d.fit' % individual), 'w')
+
+            chr_file.write(p['chromosome'].to_file_string())
+            chr_file.close()
+
+            fit_file.write(str(p['fitness']))
+            fit_file.close()
+        else:
+            # as this individual will be evaluated, we set its reliability to 1 a priori
+            p['reliability'] = 1
+
+            # creates multiple files for the same individual, one for each match it will play
+            for match in range(cfg.num_matches):
+                chr_file = open(os.path.join(write_dir, '%d-rep%d.chr' % (individual, match) ), 'w')
+                chr_file.write(p['chromosome'].to_file_string())
+                chr_file.close()
+
+        #creates a file with the reliability of this individual
+        misc_file = open(os.path.join(write_dir, '%d.misc' % individual), 'w')
+        misc_file.write(str(p['reliability']))
+        misc_file.close()
+
+    #creates path.cfg on SC directory in order to orientate c++ where to find the chromosome files
+    pfile = open(os.path.join(sc_dir, 'path.cfg'), 'w')
+    pfile.write(write_dir)
+    pfile.close()
+
+    #calls chaoslauncher, which will run the game for each missing .fit file in the last generation it finds
+    print 'starting simulations...'
+
+    #calls chaoslauncher if not all result files were generated #TODO: make this prettier
+    result_files_pattern = os.path.join(write_dir, "*.res.xml")
+    result_files = glob.glob(result_files_pattern)
+
+    cl_called = False
+
+    if len(result_files) / cfg.num_matches < cfg.popsize:
+        chaosLauncher = subprocess.Popen([cl_path])
+        cl_called = True
+
+    #watch directory to see if all .fit files were generated
+    while True:
+        #result_files_pattern = os.path.join(write_dir, "*.fit")
+        result_files = glob.glob(result_files_pattern)
+        if len(result_files) / cfg.num_matches >= cfg.popsize:
+            break
+        #print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
+        time.sleep(1)
+
+    #finishes this execution of chaoslauncher and starcraft
+    subprocess.call("taskkill /IM starcraft.exe")
+    if(cl_called):
+        chaosLauncher.terminate()
+
+    print 'Simulations finished. Collecting fitness information'
+    time.sleep(5)
+
+    '''
+    TODO: implement the following: read all result files of an individual and calculate
+    its victory ratio in a number of matches. The code that follows is the old fitness
+    calculation
+
+    for f in result_files:
+        calculate_fitness(f, population, cfg, "score")
+    '''
 
 def evaluate(population, generation, cfg):
     '''
