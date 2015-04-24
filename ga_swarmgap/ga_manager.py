@@ -211,7 +211,12 @@ def evaluate_victory_ratio(population, generation, cfg):
     :return:
 
     '''
-
+    import xml.etree.ElementTree as ET
+    
+    #pattern to create .chr file: first %d for individual index; 
+    #second %d for match number
+    chr_file_pattern = '%d-rep-%d'    
+    
     sc_dir, cl_path = paths.read_paths()
 
     #create dir g# in output_path
@@ -242,7 +247,7 @@ def evaluate_victory_ratio(population, generation, cfg):
 
             # creates multiple files for the same individual, one for each match it will play
             for match in range(cfg.num_matches):
-                chr_file = open(os.path.join(write_dir, '%d-rep%d.chr' % (individual, match) ), 'w')
+                chr_file = open(os.path.join(write_dir, chr_file_pattern % (individual, match) ), 'w')
                 chr_file.write(p['chromosome'].to_file_string())
                 chr_file.close()
 
@@ -269,7 +274,7 @@ def evaluate_victory_ratio(population, generation, cfg):
         chaosLauncher = subprocess.Popen([cl_path])
         cl_called = True
 
-    #watch directory to see if all .fit files were generated
+    #watch directory to see if all .res.xml files were generated
     while True:
         #result_files_pattern = os.path.join(write_dir, "*.fit")
         result_files = glob.glob(result_files_pattern)
@@ -287,13 +292,26 @@ def evaluate_victory_ratio(population, generation, cfg):
     time.sleep(5)
 
     '''
-    TODO: implement the following: read all result files of an individual and calculate
-    its victory ratio in a number of matches. The code that follows is the old fitness
-    calculation
-
-    for f in result_files:
-        calculate_fitness(f, population, cfg, "score")
+    For all individuals, read all result files and calculates
+    its victory ratio in a number of matches.
     '''
+    for index, individual in enumerate(population):
+        if individual['reliability'] < 1: #assuming that individuals w/ reliab < 1 were NOT EVALUATED
+            continue
+        else:
+            #read all files and calculate victory ratio
+            
+            files_pattern = os.path.join(write_dir, "%d-res-*.res.xml" % index)
+            files = glob.glob(files_pattern)
+            victories = 0
+            
+            for f in files:
+                xml_tree = ET.parse(f).getroot()
+                if xml_tree.find('result').get('value') == 'win':
+                    victories += 1
+
+            individual['fitness'] = float(victories) / cfg.num_matches
+            
 
 def evaluate(population, generation, cfg):
     '''
