@@ -16,14 +16,14 @@ import configparser
 from chromosome import Chromosome
 
 def estimate_fitness(c, p1, p2):
-    '''
+    """
     Estimates fitness of a child (c), based on the parents (p1, p2) data
     :param c: the child
     :param p1: a parent
     :param p2: the other parent
     :return: the estimated fitness
 
-    '''
+    """
 
     #creates aliases for the variables that enter the equation
     s1, s2 = similarity(p1, c), similarity(p2, c)
@@ -34,31 +34,31 @@ def estimate_fitness(c, p1, p2):
 
 
 def reliability(c, p1, p2):
-    '''
+    """
     Returns the reliability of a child given its parents
     :param c: the child
     :param p1: a parent
     :param p2: the other parent
     :return: the calculated reliability
 
-    '''
+    """
 
-    #calculates the similarities between the child and the two parents
+    # calculates the similarities between the child and the two parents
     s1, s2 = similarity(p1, c), similarity(p2, c)
     r1, r2 = p1['reliability'], p2['reliability']
 
-    #uses reliability equation to calculate reliability
+    # uses reliability equation to calculate reliability
     return ((s1*r1)**2 + (s2*r2)**2) / float(s1*r1 + s2*r2)
 
 
 def similarity(child, parent):
-    '''
+    """
     Returns the similarity between a child and a parent
     :param child:
     :param parent:
     :return: the similarity value in [0..1]
 
-    '''
+    """
     chr_length = child['chromosome'].size
 
     parent_array = parent['chromosome']._genes
@@ -88,7 +88,7 @@ def start(cfg):
     else:
         enemy = cfg.enemy
 
-    #copies bwapi.ini from experiment dir to starcraft dir
+    # copies bwapi.ini from experiment dir to starcraft dir
     sc_dir, cl_path = paths.read_paths()
     try:
         exp_inipath = os.path.join('setup', 'bwapi_%s.ini' % enemy)
@@ -99,7 +99,7 @@ def start(cfg):
               'to %s' % (exp_inipath, sc_inipath)
         exit()
 
-    #replaces BWAPI.dll with our hacked with enemy score retrieval
+    # replaces BWAPI.dll with our hacked with enemy score retrieval
     try:
         our_dllpath = os.path.join('setup', 'BWAPI.dll')
         sc_dllpath = os.path.join(sc_dir, 'bwapi-data', 'BWAPI.dll')
@@ -109,13 +109,13 @@ def start(cfg):
                 'to %s' % (our_dllpath, sc_dllpath)
          exit()
 
-    #generates initial population
+    # generates initial population
     old_pop = []
     for p in range(0, cfg.popsize):
-        #sets fitness to 1 because population will be evaluated right after this loop
+        # sets fitness to 1 because population will be evaluated right after this loop
         old_pop.append({'chromosome': Chromosome(), 'fitness': 1, 'reliability': 0})
 
-    #evaluates the 1st generation
+    # evaluates the 1st generation
     print 'Evaluating generation #1'
     evaluate(old_pop, 1, cfg)
 
@@ -167,7 +167,8 @@ def time_fit(xml_file):
 def unit_fit(xml_file):
     unitsAvg = int(xml_file.find('unitsAverage').get('value'))
     return float(unitsAvg / 130.0)
-        
+
+
 def calculate_fitness(f, population, cfg, mode):
     #print f
     path_parts = f.split(os.sep)
@@ -223,9 +224,8 @@ def evaluate_victory_ratio(population, generation, cfg):
     write_dir = os.path.join(sc_dir, cfg.output_dir, 'g%d' % generation)
     distutils. dir_util.mkpath(write_dir)
 
-
-    for individual in range(0, len(population)):
-        p = population[individual]
+    for index in range(0, len(population)):
+        p = population[index]
 
         #if reliability is above threshold and probability of evaluation in this condition is not met:
         #we make random.random() > prob because prob refers to chance of evaluation of reliable individuals
@@ -233,8 +233,8 @@ def evaluate_victory_ratio(population, generation, cfg):
         if p['reliability'] > cfg.reliab_threshold and random.random() > cfg.p_eval_above_thresh:
             #create file with fitness, this individual won't be eval'ed
             #also, we create its chr_file with .lock extension, so that broodwar won't simulate it
-            chr_file = open(os.path.join(write_dir, '%d.chr.lock' % individual), 'w')
-            fit_file = open(os.path.join(write_dir, '%d.fit' % individual), 'w')
+            chr_file = open(os.path.join(write_dir, '%d.chr.lock' % index), 'w')
+            fit_file = open(os.path.join(write_dir, '%d.fit' % index), 'w')
 
             chr_file.write(p['chromosome'].to_file_string())
             chr_file.close()
@@ -247,24 +247,24 @@ def evaluate_victory_ratio(population, generation, cfg):
 
             # creates multiple files for the same individual, one for each match it will play
             for match in range(cfg.num_matches):
-                chr_file = open(os.path.join(write_dir, chr_file_pattern % (individual, match) ), 'w')
+                chr_file = open(os.path.join(write_dir, '%d-rep%d.chr' % (index, match)), 'w')
                 chr_file.write(p['chromosome'].to_file_string())
                 chr_file.close()
 
-        #creates a file with the reliability of this individual
-        misc_file = open(os.path.join(write_dir, '%d.misc' % individual), 'w')
+        # creates a file with the reliability of this individual
+        misc_file = open(os.path.join(write_dir, '%d.misc' % index), 'w')
         misc_file.write(str(p['reliability']))
         misc_file.close()
 
-    #creates path.cfg on SC directory in order to orientate c++ where to find the chromosome files
+    # creates path.cfg on SC directory in order to orientate c++ where to find the chromosome files
     pfile = open(os.path.join(sc_dir, 'path.cfg'), 'w')
     pfile.write(write_dir)
     pfile.close()
 
-    #calls chaoslauncher, which will run the game for each missing .fit file in the last generation it finds
+    # calls chaoslauncher, which will run the game for each missing .fit file in the last generation it finds
     print 'starting simulations...'
 
-    #calls chaoslauncher if not all result files were generated #TODO: make this prettier
+    # calls chaoslauncher if not all result files were generated #TODO: make this prettier
     result_files_pattern = os.path.join(write_dir, "*.res.xml")
     result_files = glob.glob(result_files_pattern)
 
