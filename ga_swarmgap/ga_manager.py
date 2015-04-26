@@ -166,7 +166,21 @@ def score_fit(xml_file):
 
 
 def time_fit(xml_file):
-    return float(xml_file.find('timeFitness').get('value'))
+    """
+    Fitness based on match duration (assuming max duration of 3600 sec.)
+    :param xml_file:
+    :return:
+    """
+    result = xml_file.find('result').get('value')
+    duration = xml_file.find('gameDuration').get('value')
+
+    time_fitness = 0.0
+    if result == 'win':
+        time_fitness = 1.0 - (duration / 7200.0)
+    else:
+        time_fitness = duration / 7200.0
+
+    return time_fitness
 
 
 def unit_fit(xml_file):
