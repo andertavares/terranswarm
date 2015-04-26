@@ -172,7 +172,7 @@ def time_fit(xml_file):
     :return:
     """
     result = xml_file.find('result').get('value')
-    duration = xml_file.find('gameDuration').get('value')
+    duration = int(xml_file.find('gameDuration').get('value'))
 
     time_fitness = 0.0
     if result == 'win':
@@ -220,7 +220,7 @@ def calculate_fitness(f, population, cfg, mode):
         fit_value = float(open(f).read().strip())
 
     population[indiv_index]['fitness'] = fit_value
-
+    print 'index %d: %.3f' % (indiv_index, population[indiv_index]['fitness'])
 
 def evaluate_victory_ratio(population, generation, cfg):
     """
