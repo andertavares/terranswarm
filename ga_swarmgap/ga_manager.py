@@ -110,9 +110,19 @@ def start(cfg):
         sc_dllpath = os.path.join(sc_dir, 'bwapi-data', 'BWAPI.dll')
         shutil.copyfile(our_dllpath, sc_dllpath)
     except IOError:
-         print 'An error has occurred. Could not copy %s \n' \
+        print 'An error has occurred. Could not copy %s \n' \
                 'to %s' % (our_dllpath, sc_dllpath)
-         exit()
+        exit()
+		 
+	# copies GAMedicAIModule_release.dll to <starcraft>/bwapi-data/AI
+    try:
+        our_ai_dllpath = os.path.join('setup', 'GAMedicAIModule_release.dll')
+        sc_ai_dllpath = os.path.join(sc_dir, 'bwapi-data', 'AI', 'GAMedicAIModule_release.dll')
+        shutil.copyfile(our_ai_dllpath, sc_ai_dllpath)
+    except IOError:
+        print 'An error has occurred. Could not copy %s \n' \
+                'to %s' % (our_ai_dllpath, sc_ai_dllpath)
+        exit()
 
     # generates initial population
     old_pop = []
