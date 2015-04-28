@@ -4,7 +4,7 @@ import zipfile
 
 ##Global Variables
 
-def runReadRes(filePath):
+def runReadRes(filePath, numFiles):
     fileName, fileExtension = os.path.splitext(filePath)
 
     if(fileExtension==".zip"):
@@ -129,53 +129,49 @@ def runReadRes(filePath):
                         lossEnmConsValue = lossEnmConsValue + float(word)
                 word = ""
 
+    if(numFiles < 3):
+        print "\nGeneral Values"
+        print "\t number of games: %d" % games
+        print "\t wins:   %d" % wins
+        print "\t losses: %d" % loss
+        print "\t avgFitness: %f" % (fitness / games)
 
-    print "\nGeneral Values"
-    print "\t number of games: %d" % games
-    print "\t wins:   %d" % wins
-    print "\t losses: %d" % loss
-    print "\t avgFitness: %f" % (fitness / games)
+        print "\nTime Values"
+        if (wins > 0) :
+            print "\t avgWinTime : %d" % (winTime / wins)
 
-    print "\nTime Values"
-    if (wins > 0) :
-        print "\t avgWinTime : %d" % (winTime / wins)
+        if (loss > 0) :
+            print "\t avgLossTime: %d\n" % (lossTime / loss)
+        print "\t fastest win : %d" % fastWin
+        print "\t fastest loss: %d" % fastLoss
+        print "\t slowest win : %d" % slowWin
+        print "\t slowest loss: %d" % slowLoss
 
-    if (loss > 0) :
-        print "\t avgLossTime: %d\n" % (lossTime / loss)
-    print "\t fastest win : %d" % fastWin
-    print "\t fastest loss: %d" % fastLoss
-    print "\t slowest win : %d" % slowWin
-    print "\t slowest loss: %d" % slowLoss
+        print "\nScore Values"
+        if (wins>0):
+            print "\t Wins:"
+            print "\t    avgBotUnitScore: %f" % (winBotUnitValue / wins)
+            print "\t    avgBotConsScore: %f" % (winBotConsValue / wins)
+            print "\t    avgBotRescScore: %f" % (winBotRescValue / wins)
+            print "\n\t    avgEnmUnitScore: %f" % (winEnmUnitValue / wins)
+            print "\t    avgEnmConsScore: %f" % (winEnmConsValue / wins)
+            print "\t    avgEnmRescScore: %f" % (winEnmRescValue / wins)
+        if (loss>0):
+            print "\n\t Losses:"
+            print "\t    avgBotUnitScore: %f" % (lossBotUnitValue / loss)
+            print "\t    avgBotConsScore: %f" % (lossBotConsValue / loss)
+            print "\t    avgBotRescScore: %f" % (lossBotRescValue / loss)
+            print "\n\t    avgEnmUnitScore: %f" % (lossEnmUnitValue / loss)
+            print "\t    avgEnmConsScore: %f" % (lossEnmConsValue / loss)
+            print "\t    avgEnmRescScore: %f" % (lossEnmRescValue / loss)
+        print "\n\t Overall:"
+        print "\t    avgBotUnitScore: %f" % ((winBotUnitValue + lossBotUnitValue) / (wins + loss))
+        print "\t    avgBotConsScore: %f" % ((winBotConsValue + lossBotConsValue) / (wins + loss))
+        print "\t    avgBotRescScore: %f" % ((winBotRescValue + lossBotRescValue) / (wins + loss))
+        print "\n\t    avgEnmUnitScore: %f" % ((winEnmUnitValue + lossEnmUnitValue) / (wins + loss))
+        print "\t    avgEnmConsScore: %f" % ((winEnmConsValue + lossEnmConsValue) / (wins + loss))
+        print "\t    avgEnmRescScore: %f" % ((winEnmRescValue + lossEnmRescValue) / (wins + loss))
 
-    print "\nScore Values"
-    if (wins>0):
-        print "\t Wins:"
-        print "\t    avgBotUnitScore: %f" % (winBotUnitValue / wins)
-        print "\t    avgBotConsScore: %f" % (winBotConsValue / wins)
-        print "\t    avgBotRescScore: %f" % (winBotRescValue / wins)
-        print "\n\t    avgEnmUnitScore: %f" % (winEnmUnitValue / wins)
-        print "\t    avgEnmConsScore: %f" % (winEnmConsValue / wins)
-        print "\t    avgEnmRescScore: %f" % (winEnmRescValue / wins)
-    if (loss>0):
-        print "\n\t Losses:"
-        print "\t    avgBotUnitScore: %f" % (lossBotUnitValue / loss)
-        print "\t    avgBotConsScore: %f" % (lossBotConsValue / loss)
-        print "\t    avgBotRescScore: %f" % (lossBotRescValue / loss)
-        print "\n\t    avgEnmUnitScore: %f" % (lossEnmUnitValue / loss)
-        print "\t    avgEnmConsScore: %f" % (lossEnmConsValue / loss)
-        print "\t    avgEnmRescScore: %f" % (lossEnmRescValue / loss)
-    print "\n\t Overall:"
-    print "\t    avgBotUnitScore: %f" % ((winBotUnitValue + lossBotUnitValue) / (wins + loss))
-    print "\t    avgBotConsScore: %f" % ((winBotConsValue + lossBotConsValue) / (wins + loss))
-    print "\t    avgBotRescScore: %f" % ((winBotRescValue + lossBotRescValue) / (wins + loss))
-    print "\n\t    avgEnmUnitScore: %f" % ((winEnmUnitValue + lossEnmUnitValue) / (wins + loss))
-    print "\t    avgEnmConsScore: %f" % ((winEnmConsValue + lossEnmConsValue) / (wins + loss))
-    print "\t    avgEnmRescScore: %f" % ((winEnmRescValue + lossEnmRescValue) / (wins + loss))
-
-
-    print "The following is a spreadsheet-friendly output of the fields (scores are printed first for wins, then for losses)."
-    print ">>>REPLACE SPACES BY TABS BEFORE PASTING IN A SPREADSHEET!<<<"
-    print "wins,losses,%wins,%losses,avgFitness,avgWinTime,avgLossTime,_blank_,avgBotUnitScore,avgBotConsScore,avgBotResScore,_blank,avgEnmUnitScore,avgEnmConsScore,avgEnmRescScore,_blank"
     output_data = ("%d %d %f%% %f%% %f %f %f  %f %f %f  %f %f %f  %f %f %f  %f %f %f \n" %
         (
             wins, loss, (float(wins)/(wins+loss))*100, (float(loss)/(wins+loss))*100,
@@ -186,7 +182,6 @@ def runReadRes(filePath):
             (lossEnmUnitValue / loss), (lossEnmConsValue / loss), (lossEnmRescValue / loss)
         )).replace('.',',')
 
-    print output_data
     output_data = output_data.replace(' ','\t')
     return output_data
 
@@ -196,6 +191,7 @@ if __name__ == "__main__":
     output = open('resultsEval.txt', 'w')
     numFiles = len(sys.argv)
     for i in range (1, numFiles):
-        data = runReadRes(sys.argv[i])
+        print 'Evaluating %s' %sys.argv[i]
+        data = runReadRes(sys.argv[i], numFiles)
         output.write(data)
     output.close()
