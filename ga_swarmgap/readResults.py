@@ -1,8 +1,17 @@
 import sys
-
+import os
+import zipfile
 
 ##Global Variables
-f = open(sys.argv[1])
+
+fileName, fileExtension = os.path.splitext(sys.argv[1])
+
+if(fileExtension==".zip"):
+    archive = zipfile.ZipFile(sys.argv[1], 'r')
+    f = archive.open('results.txt')
+else:
+    f = open(sys.argv[1])
+
 word = ""
 count= 0
 games = 0
