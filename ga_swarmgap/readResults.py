@@ -172,7 +172,8 @@ def runReadRes(filePath, numFiles):
         print "\t    avgEnmConsScore: %f" % ((winEnmConsValue + lossEnmConsValue) / (wins + loss))
         print "\t    avgEnmRescScore: %f" % ((winEnmRescValue + lossEnmRescValue) / (wins + loss))
 
-    output_data = ("%d %d %f%% %f%% %f %f %f  %f %f %f  %f %f %f  %f %f %f  %f %f %f \n" %
+    if(wins>0 and loss>0):
+        output_data = ("%d %d %f%% %f%% %f %f %f  %f %f %f  %f %f %f  %f %f %f  %f %f %f \n" %
         (
             wins, loss, (float(wins)/(wins+loss))*100, (float(loss)/(wins+loss))*100,
             (fitness / games), (winTime / wins), (lossTime / loss), (winBotUnitValue / wins),
@@ -181,6 +182,23 @@ def runReadRes(filePath, numFiles):
             (lossBotUnitValue / loss), (lossBotConsValue / loss), (lossBotRescValue / loss),
             (lossEnmUnitValue / loss), (lossEnmConsValue / loss), (lossEnmRescValue / loss)
         )).replace('.',',')
+    elif(wins>0):
+        output_data = ("%d %d %f%% %f%% %f %f   %f %f %f  %f %f %f         \n" %
+        (
+            wins, loss, (float(wins)/(wins+loss))*100, (float(loss)/(wins+loss))*100,
+            (fitness / games), (winTime / wins),  (winBotUnitValue / wins),
+            (winBotConsValue / wins), (winBotRescValue / wins), (winEnmUnitValue / wins),
+            (winEnmConsValue / wins), (winEnmRescValue / wins)
+        )).replace('.',',')
+    else:
+        output_data = ("%d %d %f%% %f%% %f  %f          %f %f %f  %f %f %f \n" %
+        (
+            wins, loss, (float(wins)/(wins+loss))*100, (float(loss)/(wins+loss))*100,
+            (fitness / games), (lossTime / loss),
+            (lossBotUnitValue / loss), (lossBotConsValue / loss), (lossBotRescValue / loss),
+            (lossEnmUnitValue / loss), (lossEnmConsValue / loss), (lossEnmRescValue / loss)
+        )).replace('.',',')
+
 
     output_data = output_data.replace(' ','\t')
     return output_data
