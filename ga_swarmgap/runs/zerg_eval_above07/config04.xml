@@ -1,0 +1,24 @@
+<ga_swarmgap>
+
+    <io>
+        <output-dir value="zerg_eval04-07" />
+    </io>
+
+	<parameters>
+        <enemy value="zerg"/>
+		<popsize value='30' />
+		<elitism value='true' />
+		<tournament-size value='2' />
+		<p-crossover value='.9' />
+		<p-mutation value='.01' />
+		<generations value='50' />
+		
+		<reliab-threshold value='0.5' />
+        <p-eval-above-thresh value='0.4' />
+	</parameters>     
+	           
+	<externals>
+		<random-seed value='07' />
+		<repetitions value='1' />
+	</externals>            
+</ga_swarmgap>
