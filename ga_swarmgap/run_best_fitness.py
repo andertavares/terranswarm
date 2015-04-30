@@ -33,13 +33,23 @@ def go(cfg_file, num_matches):
     print '%s copied to %s, to be executed by MedicReadValues' % (best_file, dest)
     print '%s copied to %s, as a copy.' % (best_file, copy_dest)
 
-    #puts the correct .ini into bwapi.ini
+    # puts the correct .ini into bwapi.ini
     paths.inicopy('bwapi_readValues_%s.ini' % enemy)
+	
+	# copies setup/GAMedicReadValues_release.dll to <starcraft>/bwapi-data/AI
+    try:
+        our_ai_dllpath = os.path.join('setup', 'GAMedicReadValues_release.dll')
+        sc_ai_dllpath = os.path.join(sc_dir, 'bwapi-data', 'AI', 'GAMedicReadValues_release.dll')
+        shutil.copyfile(our_ai_dllpath, sc_ai_dllpath)
+    except IOError:
+        print 'An error has occurred. Could not copy %s \n' \
+                'to %s' % (our_ai_dllpath, sc_ai_dllpath)
+        exit()
 
     results_path = os.path.join(sc_dir, 'results.txt')
     open(results_path, 'w').close() #create empty results.txt file
 
-    #calls chaoslauncher and monitors results.txt
+    # calls chaoslauncher and monitors results.txt
     chaosLauncher = subprocess.Popen([cl_path])
     last_read = 0
     while True:
