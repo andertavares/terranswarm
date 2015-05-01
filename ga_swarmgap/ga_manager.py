@@ -196,7 +196,13 @@ def time_fit(xml_file):
 def unit_fit(xml_file):
     unitsAvg = int(xml_file.find('unitsAverage').get('value'))
     return float(unitsAvg / 130.0)
-
+	
+def unit_score_fit(xml_file):
+    """
+    Fitness based on the unit score from within the game.
+    Player_{unit score} / enemy_{unit_score}
+    """
+    return float(xml_file.find('player').find('unitScore').get('value')) / float(xml_file.find('enemy').find('unitScore').get('value'))
 
 def calculate_fitness(f, population, cfg, mode):
     #print f
@@ -220,6 +226,8 @@ def calculate_fitness(f, population, cfg, mode):
             fit_value = unit_fit(xml_tree)
         elif mode == cfg.TIME_BASED:
             fit_value = time_fit(xml_tree)
+        elif mode == cfg.UNIT_SCORE:
+            fit_value = unit_score_fit(xml_tree)
 
         fit_file = open(f, 'w')
         #print fitness
