@@ -24,7 +24,7 @@ def go(cfg_file, num_matches):
 
     experiment_path = os.path.join(sc_dir, cfg.output_dir)
 
-    best_file = best_fitness_file(experiment_path)
+    best_file = best_fitness_file(experiment_path, cfg.function)
 
     dest = "c:/bestValues.txt"
     copy_dest = experiment_path + "\\bestValues.txt" #file containing the values from the best game
@@ -33,13 +33,23 @@ def go(cfg_file, num_matches):
     print '%s copied to %s, to be executed by MedicReadValues' % (best_file, dest)
     print '%s copied to %s, as a copy.' % (best_file, copy_dest)
 
-    #puts the correct .ini into bwapi.ini
+    # puts the correct .ini into bwapi.ini
     paths.inicopy('bwapi_readValues_%s.ini' % enemy)
+	
+	# copies setup/GAMedicReadValues_release.dll to <starcraft>/bwapi-data/AI
+    try:
+        our_ai_dllpath = os.path.join('setup', 'GAMedicReadValues_release.dll')
+        sc_ai_dllpath = os.path.join(sc_dir, 'bwapi-data', 'AI', 'GAMedicReadValues_release.dll')
+        shutil.copyfile(our_ai_dllpath, sc_ai_dllpath)
+    except IOError:
+        print 'An error has occurred. Could not copy %s \n' \
+                'to %s' % (our_ai_dllpath, sc_ai_dllpath)
+        exit()
 
     results_path = os.path.join(sc_dir, 'results.txt')
     open(results_path, 'w').close() #create empty results.txt file
 
-    #calls chaoslauncher and monitors results.txt
+    # calls chaoslauncher and monitors results.txt
     chaosLauncher = subprocess.Popen([cl_path])
     last_read = 0
     while True:
@@ -80,12 +90,13 @@ def go(cfg_file, num_matches):
     print 'Matches finished. Check the results in %s file.' % new_results_path
 
 
-def best_fitness_file(experiment_path):
-    '''
+def best_fitness_file(experiment_path, fitness_function):
+    """
     Function from ga_plot/get_best_fitness
     :param experiment_path:
+    :param fitness_function: depending on the used function, must look for different .chr file
     :return:
-    '''
+    """
 
     rootdir = experiment_path
 
@@ -93,21 +104,22 @@ def best_fitness_file(experiment_path):
 
     for subdir, dirs, files in os.walk(rootdir):
 
-        for file in files:
-            fileName, fileExtension = os.path.splitext(file)
-            fullPath = os.path.join(subdir, file)
+        for fname in files:
+            #print files
+            fileName, fileExtension = os.path.splitext(fname)
+            fullPath = os.path.join(subdir, fname)
             baseGeneration = os.path.basename(subdir)
 
             if baseGeneration != "":
                 generationNumber = int(re.findall(r'\d+', baseGeneration)[0])
 
-                if fileExtension == ".fit" :
-                        f = open(fullPath)
-                        fitness = float("".join(f.readlines()))
-                        f.close()
-                        #print '\t', generationNumber, file , fitness
+                if re.search(r'\d+\.fit$', fname) or re.search(r'\d+\.chr\.fit$', fname):
+                    f = open(fullPath)
+                    fitness = float("".join(f.readlines()))
+                    f.close()
+                    #print '\t', generationNumber, file , fitness
 
-                        fitnessDict[generationNumber] = subdir
+                    fitnessDict[generationNumber] = subdir
 
     '''
     The dict fitnessDict uses the integer number of the generation as the key
@@ -124,22 +136,26 @@ def best_fitness_file(experiment_path):
 
     for subdir, dirs, files in os.walk(fitnessDict[lastGeneration]):
 
-        for file in files:
-            fileName, fileExtension = os.path.splitext(file)
-            fullPath = os.path.join(subdir, file)
+        for fname in files:
+            fileName, fileExtension = os.path.splitext(fname)
+            fullPath = os.path.join(subdir, fname)
             baseGeneration = os.path.basename(subdir)
 
-            if fileExtension == ".fit" :
+            if re.search(r'\d+\.fit$', fname) or re.search(r'\d+\.chr\.fit$', fname):
                 f = open(fullPath)
                 fitness = float("".join(f.readlines()))
                 f.close()
                 if (fitness > bestFitnessValue):
                     bestFitnessValue = fitness
-                    bestFitnessNumber = int(re.findall(r'\d+', file)[0])
+                    bestFitnessNumber = int(re.findall(r'\d+', fname)[0])
                     #print bestFitnessValue, bestFitnessNumber, file
                 #print fitness, int(re.findall(r'\d+', file)[0]), fullPath
 
     bestFileName = str(fitnessDict[lastGeneration])+"/"+str(bestFitnessNumber)+".chr.lock"
+
+    if fitness_function == configparser.ConfigParser.VICTORY_RATIO:
+        bestFileName = os.path.join(str(fitnessDict[lastGeneration]), '%d-rep-0.chr.lock' % bestFitnessNumber)
+
     return bestFileName
 
 

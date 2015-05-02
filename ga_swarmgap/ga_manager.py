@@ -110,9 +110,19 @@ def start(cfg):
         sc_dllpath = os.path.join(sc_dir, 'bwapi-data', 'BWAPI.dll')
         shutil.copyfile(our_dllpath, sc_dllpath)
     except IOError:
-         print 'An error has occurred. Could not copy %s \n' \
+        print 'An error has occurred. Could not copy %s \n' \
                 'to %s' % (our_dllpath, sc_dllpath)
-         exit()
+        exit()
+		 
+	# copies GAMedicAIModule_release.dll to <starcraft>/bwapi-data/AI
+    try:
+        our_ai_dllpath = os.path.join('setup', 'GAMedicAIModule_release.dll')
+        sc_ai_dllpath = os.path.join(sc_dir, 'bwapi-data', 'AI', 'GAMedicAIModule_release.dll')
+        shutil.copyfile(our_ai_dllpath, sc_ai_dllpath)
+    except IOError:
+        print 'An error has occurred. Could not copy %s \n' \
+                'to %s' % (our_ai_dllpath, sc_ai_dllpath)
+        exit()
 
     # generates initial population
     old_pop = []
@@ -186,7 +196,13 @@ def time_fit(xml_file):
 def unit_fit(xml_file):
     unitsAvg = int(xml_file.find('unitsAverage').get('value'))
     return float(unitsAvg / 130.0)
-
+	
+def unit_score_fit(xml_file):
+    """
+    Fitness based on the unit score from within the game.
+    Player_{unit score} / enemy_{unit_score}
+    """
+    return float(xml_file.find('player').find('unitScore').get('value')) / float(xml_file.find('enemy').find('unitScore').get('value'))
 
 def calculate_fitness(f, population, cfg, mode):
     #print f
@@ -210,6 +226,8 @@ def calculate_fitness(f, population, cfg, mode):
             fit_value = unit_fit(xml_tree)
         elif mode == cfg.TIME_BASED:
             fit_value = time_fit(xml_tree)
+        elif mode == cfg.UNIT_SCORE:
+            fit_value = unit_score_fit(xml_tree)
 
         fit_file = open(f, 'w')
         #print fitness
@@ -331,6 +349,11 @@ def evaluate_victory_ratio(population, generation, cfg):
 
             individual['fitness'] = float(victories) / cfg.num_matches
 
+            # writes the fitness in a .fit file to orientate run_best_fitness
+            fit_file_name = os.path.join(write_dir, '%d.fit' % index)  # name: <index>.fit
+            fit_file = open(fit_file_name, 'w')
+            fit_file.write(str(individual['fitness']))
+            fit_file.close()
 
 def evaluate(population, generation, cfg):
     """
