@@ -349,6 +349,11 @@ def evaluate_victory_ratio(population, generation, cfg):
 
             individual['fitness'] = float(victories) / cfg.num_matches
 
+            # writes the fitness in a .fit file to orientate run_best_fitness
+            fit_file_name = os.path.join(write_dir, '%d.fit' % index)  # name: <index>.fit
+            fit_file = open(fit_file_name, 'w')
+            fit_file.write(str(individual['fitness']))
+            fit_file.close()
 
 def evaluate(population, generation, cfg):
     """
