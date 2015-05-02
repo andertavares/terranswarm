@@ -1,0 +1,24 @@
+<ga_swarmgap>
+
+    <io>
+        <output-dir value="protoss_eval03-30" />
+    </io>
+
+	<parameters>
+        <enemy value="protoss"/>
+		<popsize value='30' />
+		<elitism value='true' />
+		<tournament-size value='2' />
+		<p-crossover value='.9' />
+		<p-mutation value='.01' />
+		<generations value='50' />
+		
+		<reliab-threshold value='0.5' />
+        <p-eval-above-thresh value='0.3' />
+	</parameters>     
+	           
+	<externals>
+		<random-seed value='30' />
+		<repetitions value='1' />
+	</externals>            
+</ga_swarmgap>

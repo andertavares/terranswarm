@@ -31,6 +31,8 @@ def runGA(config_file):
     print 'Reliab. threshold: %s' % config.reliab_threshold
     print 'p_eval_above_threshold: %s' % config.p_eval_above_thresh
     print 'Random seed: %s' % config.random_seed
+    print 'Fitness function: %s' % config.function
+
 
     ga.start(config)
     print 'DONE.'

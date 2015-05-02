@@ -11,6 +11,7 @@ Created on Sep 22, 2013
 import unittest
 import configparser
 
+
 class Test(unittest.TestCase):
 
     def test_defaults(self):
@@ -27,6 +28,9 @@ class Test(unittest.TestCase):
         self.assertEqual(2, config.tournament_size)
         self.assertEqual(.6, config.reliab_threshold)
         self.assertEqual(.05, config.p_eval_above_thresh)
+
+        self.assertEqual('score_ratio', config.function)
+        self.assertEqual(1, config.num_matches)
 
         self.assertEqual(1, config.random_seed)
         self.assertEqual(1, config.repetitions)
@@ -46,6 +50,9 @@ class Test(unittest.TestCase):
         self.assertEqual(5, config.tournament_size)
         self.assertEqual(.6, config.reliab_threshold)
         self.assertEqual(.1, config.p_eval_above_thresh)
+
+        self.assertEqual('victory_ratio', config.function)
+        self.assertEqual(5, config.num_matches)
 
         self.assertEqual(6, config.random_seed)
         self.assertEqual(1, config.repetitions)
