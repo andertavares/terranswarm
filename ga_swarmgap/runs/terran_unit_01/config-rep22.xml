@@ -1,7 +1,7 @@
 <ga_swarmgap>
 
     <io>
-        <output-dir value="terran_time-rep22" />
+        <output-dir value="terran_unit_score-rep22" />
     </io>
 
 	<parameters>

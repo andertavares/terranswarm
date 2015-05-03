@@ -1,7 +1,7 @@
 <ga_swarmgap>
 
     <io>
-        <output-dir value="protoss_time-rep20" />
+        <output-dir value="protoss_unit_score-rep20" />
     </io>
 
 	<parameters>
