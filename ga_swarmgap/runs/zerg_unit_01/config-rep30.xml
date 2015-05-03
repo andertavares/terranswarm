@@ -1,7 +1,7 @@
 <ga_swarmgap>
 
     <io>
-        <output-dir value="zerg_time-rep30" />
+        <output-dir value="zerg_unit_score-rep30" />
     </io>
 
 	<parameters>
