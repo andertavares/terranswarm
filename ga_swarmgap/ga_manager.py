@@ -204,6 +204,14 @@ def unit_score_fit(xml_file):
     """
     return float(xml_file.find('player').find('unitScore').get('value')) / float(xml_file.find('enemy').find('unitScore').get('value'))
 
+def building_score_ratio(xml_file):
+    """
+    Calculates the ratio of the score component relative to buildings
+    :param xml_file:
+    :return: building_score of player / building_score of enemy
+    """
+    return float(xml_file.find('player').find('buildingScore').get('value')) / float(xml_file.find('enemy').find('buildingScore').get('value'))
+
 def calculate_fitness(f, population, cfg, mode):
     #print f
     path_parts = f.split(os.sep)
@@ -222,12 +230,18 @@ def calculate_fitness(f, population, cfg, mode):
         xml_tree = xml.etree.ElementTree.parse(xml_path).getroot()
         if mode == cfg.SCORE_RATIO:
             fit_value = score_fit(xml_tree)
+
         elif mode == cfg.UNIT_BASED:
             fit_value = unit_fit(xml_tree)
+
         elif mode == cfg.TIME_BASED:
             fit_value = time_fit(xml_tree)
+
         elif mode == cfg.UNIT_SCORE:
             fit_value = unit_score_fit(xml_tree)
+
+        elif mode == cfg.BUILDING_SCORE_RATIO:
+            fit_value = building_score_ratio(xml_tree)
 
         fit_file = open(f, 'w')
         #print fitness
@@ -238,7 +252,7 @@ def calculate_fitness(f, population, cfg, mode):
         fit_value = float(open(f).read().strip())
 
     population[indiv_index]['fitness'] = fit_value
-    print 'index %d: %.3f' % (indiv_index, population[indiv_index]['fitness'])
+    print 'index %d: %.3f' % (indiv_index, population[indiv_index]['fitness']) #TODO: remove after testing
 
 def evaluate_victory_ratio(population, generation, cfg):
     """
