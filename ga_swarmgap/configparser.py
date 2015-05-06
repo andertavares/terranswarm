@@ -37,7 +37,7 @@ class ConfigParser(object):
         #list of possible types of fitness functions
         self.possible_fitness = [self.SCORE_RATIO, self.TIME_BASED,
                                  self.UNIT_BASED, self.VICTORY_RATIO,
-								 self.UNIT_SCORE]
+								 self.UNIT_SCORE, self.BUILDING_SCORE_RATIO]
         
         self.cfgdir = os.path.dirname(os.path.realpath(cfgpath))
         cfgtree = ET.parse(cfgpath)
