@@ -196,7 +196,8 @@ def time_fit(xml_file):
 def unit_fit(xml_file):
     unitsAvg = int(xml_file.find('unitsAverage').get('value'))
     return float(unitsAvg / 130.0)
-	
+
+
 def unit_score_fit(xml_file):
     """
     Fitness based on the unit score from within the game.
@@ -210,6 +211,7 @@ def unit_score_fit(xml_file):
 
     return float(my_unit_score) / enemy_unit_score
 
+
 def building_score_ratio(xml_file):
     """
     Calculates the ratio of the score component relative to buildings
@@ -222,6 +224,7 @@ def building_score_ratio(xml_file):
     enemy_bldg_score = int(xml_file.find('enemy').find('buildingScore').get('value')) + \
         int(xml_file.find('enemy').find('razingScore').get('value'))
     return float(my_bldg_score) / enemy_bldg_score
+
 
 def calculate_fitness(f, population, cfg, mode):
     #print f
