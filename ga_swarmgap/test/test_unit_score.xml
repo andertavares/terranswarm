@@ -1,0 +1,28 @@
+<ga_swarmgap>
+
+    <io>
+        <output-dir value="test_unit_score" />
+    </io>
+
+	<parameters>
+		<enemy value="zerg"/>
+		<popsize value='2' />
+		<elitism value='false' />
+		<tournament-size value='2' />
+		<p-crossover value='.9' />
+		<p-mutation value='.01' />
+		<generations value='2' />
+		
+		<reliab-threshold value='0.5' />
+		<p-eval-above-thresh value='1.0' />
+	</parameters>
+
+	<fitness>
+		<function value='unit_score' />
+	</fitness>     
+	           
+	<externals>
+		<random-seed value='134' />
+		<repetitions value='1' />
+	</externals>            
+</ga_swarmgap>
