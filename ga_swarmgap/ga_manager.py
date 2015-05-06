@@ -202,7 +202,13 @@ def unit_score_fit(xml_file):
     Fitness based on the unit score from within the game.
     Player_{unit score} / enemy_{unit_score}
     """
-    return float(xml_file.find('player').find('unitScore').get('value')) / float(xml_file.find('enemy').find('unitScore').get('value'))
+    my_unit_score = int(xml_file.find('player').find('unitScore').get('value')) + \
+    int(xml_file.find('player').find('killScore').get('value'))
+
+    enemy_unit_score = int(xml_file.find('enemy').find('unitScore').get('value')) + \
+        int(xml_file.find('enemy').find('killScore').get('value'))
+
+    return float(my_unit_score) / enemy_unit_score
 
 def building_score_ratio(xml_file):
     """
@@ -210,7 +216,12 @@ def building_score_ratio(xml_file):
     :param xml_file:
     :return: building_score of player / building_score of enemy
     """
-    return float(xml_file.find('player').find('buildingScore').get('value')) / float(xml_file.find('enemy').find('buildingScore').get('value'))
+    my_bldg_score = int(xml_file.find('player').find('buildingScore').get('value')) + \
+        int(xml_file.find('player').find('razingScore').get('value'))
+
+    enemy_bldg_score = int(xml_file.find('enemy').find('buildingScore').get('value')) + \
+        int(xml_file.find('enemy').find('razingScore').get('value'))
+    return float(my_bldg_score) / enemy_bldg_score
 
 def calculate_fitness(f, population, cfg, mode):
     #print f
