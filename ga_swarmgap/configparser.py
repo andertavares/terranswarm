@@ -25,6 +25,7 @@ class ConfigParser(object):
     UNIT_BASED = 'unit_based'
     VICTORY_RATIO = 'victory_ratio'
     UNIT_SCORE = 'unit_score'
+    BUILDING_SCORE_RATIO = 'building_score_ratio'
 
     def __init__(self, cfgpath):
         """
@@ -36,7 +37,7 @@ class ConfigParser(object):
         #list of possible types of fitness functions
         self.possible_fitness = [self.SCORE_RATIO, self.TIME_BASED,
                                  self.UNIT_BASED, self.VICTORY_RATIO,
-								 self.UNIT_SCORE]
+								 self.UNIT_SCORE, self.BUILDING_SCORE_RATIO]
         
         self.cfgdir = os.path.dirname(os.path.realpath(cfgpath))
         cfgtree = ET.parse(cfgpath)
@@ -50,6 +51,7 @@ class ConfigParser(object):
             for fitness_element in cfgtree.find('fitness'):
                 if fitness_element.tag == 'function':
                     self.function = fitness_element.get('value').lower()
+
                     if self.function not in self.possible_fitness:
                         raise ValueError('Fitness function %s invalid' % self.function)
 
