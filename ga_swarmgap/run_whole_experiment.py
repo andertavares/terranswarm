@@ -67,7 +67,7 @@ def monitor_once():
     for err_file in error_files:
         if os.stat(os.path.join(error_dir, err_file)).st_size > max_size:
             big_error = True
-            big_file = os.path.join(error_dir, error_files[n])
+            big_file = os.path.join(error_dir, err_file)
             break
 
     #check if both SC and CL are running (or neither)
