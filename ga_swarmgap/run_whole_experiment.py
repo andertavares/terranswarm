@@ -54,7 +54,7 @@ def monitor_once():
     """
     This function is an attempt to solve the sc-start-kill confusion
     """
-    print 'monitoring once...'
+    #print 'monitoring once...'
     time.sleep(3) #check every 10s
 
     sc_dir, cl_path = paths.read_paths()
