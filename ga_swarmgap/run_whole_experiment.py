@@ -55,7 +55,7 @@ def monitor_once():
     This function is an attempt to solve the sc-start-kill confusion
     """
     #print 'monitoring once...'
-    time.sleep(3) #check every 10s
+    #time.sleep(3) #check every 10s
 
     sc_dir, cl_path = paths.read_paths()
     error_dir = os.path.join(sc_dir, "Errors")  #get path to Error dir
