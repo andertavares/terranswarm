@@ -1,0 +1,16 @@
+{{extend 'layout.html'}}
+
+<!--
+<h1>This is the test/experiment_form.html template</h1>
+{{=BEAUTIFY(response._vars)}}
+-->
+
+<center>
+<br /><br /><br />
+<h1>Web Form</h1>
+<br />
+<h2>Inputs:</h2>
+{{=form}}
+<h2>Submitted variables:</h2>
+{{=BEAUTIFY(request.vars)}}
+</center>
