@@ -11,6 +11,7 @@ import subprocess
 import time
 import glob
 import xml
+import run_whole_experiment as rwe
 
 import configparser
 from chromosome import Chromosome
@@ -266,7 +267,8 @@ def calculate_fitness(f, population, cfg, mode):
         fit_value = float(open(f).read().strip())
 
     population[indiv_index]['fitness'] = fit_value
-    print 'index %d: %.3f' % (indiv_index, population[indiv_index]['fitness']) #TODO: remove after testing
+    #print 'index %d: %.3f' % (indiv_index, population[indiv_index]['fitness'])
+
 
 def evaluate_victory_ratio(population, generation, cfg):
     """
@@ -350,10 +352,13 @@ def evaluate_victory_ratio(population, generation, cfg):
             break
         #print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
         time.sleep(1)
+        if not rwe.monitor_once(): #problem... relaunch starcraft
+            chaosLauncher = subprocess.Popen([cl_path])
+
 
     # finishes this execution of chaoslauncher and starcraft
     subprocess.call("taskkill /IM starcraft.exe")
-    if(cl_called):
+    if cl_called:
         chaosLauncher.terminate()
 
     print 'Simulations finished. Collecting fitness information'
@@ -382,6 +387,7 @@ def evaluate_victory_ratio(population, generation, cfg):
             fit_file = open(fit_file_name, 'w')
             fit_file.write(str(individual['fitness']))
             fit_file.close()
+
 
 def evaluate(population, generation, cfg):
     """
@@ -453,7 +459,10 @@ def evaluate(population, generation, cfg):
         if len(fit_files) >= cfg.popsize:
             break
         #print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
-        time.sleep(1)
+        time.sleep(2)
+        if not rwe.monitor_once(): #problem... relaunch starcraft
+            chaosLauncher = subprocess.Popen([cl_path])
+
 
     #finishes this execution of chaoslauncher and starcraft
     subprocess.call("taskkill /IM starcraft.exe")

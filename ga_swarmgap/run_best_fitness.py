@@ -3,6 +3,7 @@ Searches the individual with the best fitness in the last generation,
 creates the c:\bestValues.txt file and run GAMedicReadValues_release.dll.
 
 '''
+import run_whole_experiment as rwe
 import configparser
 import subprocess
 import shutil
@@ -24,14 +25,19 @@ def go(cfg_file, num_matches):
 
     experiment_path = os.path.join(sc_dir, cfg.output_dir)
 
-    best_file = best_fitness_file(experiment_path, cfg.function)
-
     dest = "c:/bestValues.txt"
     copy_dest = experiment_path + "\\bestValues.txt" #file containing the values from the best game
-    shutil.copyfile(best_file, dest)
-    shutil.copyfile(best_file, copy_dest)
+
+    if os.path.exists(copy_dest):
+        best_file = copy_dest
+        print 'Found bestValues.txt in %s, will use it.' % (experiment_path)
+    else:
+        best_file = best_fitness_file(experiment_path, cfg.function)
+        shutil.copyfile(best_file, copy_dest)
+        print '%s copied to %s, as a copy.' % (best_file, copy_dest)
+
     print '%s copied to %s, to be executed by MedicReadValues' % (best_file, dest)
-    print '%s copied to %s, as a copy.' % (best_file, copy_dest)
+    shutil.copyfile(best_file, dest)
 
     # puts the correct .ini into bwapi.ini
     paths.inicopy('bwapi_readValues_%s.ini' % enemy)
@@ -62,7 +68,14 @@ def go(cfg_file, num_matches):
 
         if len(res_lines) >= num_matches:
             break
-        time.sleep(1)
+        time.sleep(2)
+        if not rwe.monitor_once(): #problem... relaunch starcraft
+            print 'Removing <sc>/results.txt and restarting.'
+            rfile.close()
+            open(results_path, 'w').close()  # resets results.txt file
+            chaosLauncher = subprocess.Popen([cl_path])
+            last_read = 0
+            #rwe.erase_best_values(sc_dir, current_experiment)
         #print len(res_lines)
     #terminates chaoslauncher and starcraft
     subprocess.call("taskkill /IM starcraft.exe")
