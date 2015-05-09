@@ -75,8 +75,12 @@ def set_experiment_status():
         response.headers['Content-Type'] = 'application/json'
         return json.dumps(json_response)
 
-    update_result = db(db.experiment.id == experiment_id).update(status=experiment_status, last_modified_date=datetime.datetime.now())
-    #return dict(message=update_result)
+    update_result = 0
+
+    experiment_record = db(db.experiment.id == experiment_id).select().first()
+
+    if experiment_record != None and experiment_record.status != "READY":
+        update_result = db(db.experiment.id == experiment_id).update(status=experiment_status, last_modified_date=datetime.datetime.now())
 
     if update_result == 1:
         json_response['success'] = 'true'

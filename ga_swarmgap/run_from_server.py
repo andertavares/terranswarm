@@ -176,16 +176,22 @@ def get_experiment_from_server(server_address):
     hostname = socket.gethostname()
     payload = {'server_name': hostname}
 
-    server_uri = "http://" + server_address + ":8000/ga_server/experiment/get_experiment"
-    r = requests.post(server_uri, data=payload)
-    decoded = json.loads(r.content)
+    decoded = {}
+
+    try:
+        server_uri = "http://" + server_address + ":8000/ga_server/experiment/get_experiment"
+        r = requests.post(server_uri, data=payload, timeout=5)
+        decoded = json.loads(r.content)
+    except requests.exceptions.Timeout:
+        return {'success' : False, 'message': "Timeout exception "}
+    except requests.exceptions.RequestException as e:
+        return {'success' : False, 'message': "Request exception :" + str(e)}
 
     #print "Content:", r.content
     #print "json dump: ", json.dumps(decoded, sort_keys=True, indent=4)
     #print "json decoded:", decoded
 
-    response = {}
-    if decoded["success"] == "true":
+    if "success" in decoded and decoded["success"] == "true":
         h = HTMLParser.HTMLParser()
         xml_decoded = h.unescape(decoded["xml_data"])
 
@@ -204,19 +210,24 @@ def get_experiment_from_server(server_address):
         with open(full_file_path, "w") as text_file:
             text_file.write(xml_decoded)
 
-        return {'success' : True, 'xml_filepath' : full_file_path, 'num_matches': decoded["num_matches"], "experiment_id": decoded["id"]}
+        return {'success' : True, 'xml_filepath' : full_file_path, 'num_matches': decoded["num_matches"], "experiment_id": decoded["id"], "name": decoded["name"]}
     else:
-        return {'success' : False}
+        return {'success' : False }
 
 
 def set_experiment_status(server_address, experiment_id, experiment_status):
     payload = {'experiment_id': experiment_id, 'experiment_status': experiment_status}
 
-    server_uri = "http://" + server_address + ":8000/ga_server/experiment/set_experiment_status"
-    r = requests.post(server_uri, data=payload)
-    decoded = json.loads(r.content)
+    try:
+        server_uri = "http://" + server_address + ":8000/ga_server/experiment/set_experiment_status"
+        r = requests.post(server_uri, data=payload, timeout=5)
+        decoded = json.loads(r.content)
+    except requests.exceptions.Timeout:
+        return {'success' : False, 'message': "Timeout exception "}
+    except requests.exceptions.RequestException as e:
+        return {'success' : False, 'message': "Request exception :" + str(e)}
 
-    if decoded["success"] == "true":
+    if "success" in decoded and decoded["success"] == "true":
         return {'success' : True}
     else:
         return {'success' : False, 'message': decoded["message"]}
@@ -240,12 +251,17 @@ if __name__ == "__main__":
 
     print 'Server address:', args.server
     print 'Is looping activated:', args.loop
+    if not args.loop:
+        print "    **** ALERT, looping to get new experiment is NOT ACTIVATED ****    "
 
     while(1):
         return_experiment = get_experiment_from_server(args.server)
         if return_experiment["success"] == True:
-            print "Experiment found, temp file: ", return_experiment["xml_filepath"]
-            print "Num runs:", return_experiment["num_matches"]
+            print "\n------------------8<------------------"
+            print "Experiment Name: ", return_experiment["name"]
+            print "Experiment ID: ", return_experiment["experiment_id"]
+            print "Experiment XML path: ", return_experiment["xml_filepath"]
+            print "Experiment Num runs:", return_experiment["num_matches"]
             set_status_result = set_experiment_status(args.server, return_experiment["experiment_id"], "RUNNING")
             print "Set status to RUNNING: ", set_status_result["success"]
             
@@ -256,12 +272,15 @@ if __name__ == "__main__":
 
             set_status_result = set_experiment_status(args.server, return_experiment["experiment_id"], "FINISHED")
             print "Set status to FINISHED: ", set_status_result["success"]
+            print "------------------8<------------------\n"
             time.sleep(2)
         else:
-            if args.loop:
-                print "No experiment found on server, retrying..", time.strftime("%Y-%m-%d %H:%M:%S")
-            else:
-                print "No experiment found on server, exiting.."
+            print "No experiment found on server, retrying..", time.strftime("%Y-%m-%d %H:%M:%S")
+            if "message" in return_experiment:
+                print "    ", return_experiment["message"], time.strftime("%Y-%m-%d %H:%M:%S") 
+
+            if not args.loop:
+                print "No looping flag, exiting.."
                 break
             
         time.sleep(4)
