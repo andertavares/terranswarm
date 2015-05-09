@@ -265,9 +265,9 @@ if __name__ == "__main__":
             set_status_result = set_experiment_status(args.server, return_experiment["experiment_id"], "RUNNING")
             print "Set status to RUNNING: ", set_status_result["success"]
             
-            #run_step(return_experiment["xml_filepath"])
-            #best_step(return_experiment["xml_filepath"], int(return_experiment["num_matches"]))
-            #zip_step(return_experiment["xml_filepath"])
+            run_step(return_experiment["xml_filepath"])
+            best_step(return_experiment["xml_filepath"], int(return_experiment["num_matches"]))
+            zip_step(return_experiment["xml_filepath"])
             time.sleep(2)
 
             set_status_result = set_experiment_status(args.server, return_experiment["experiment_id"], "FINISHED")
