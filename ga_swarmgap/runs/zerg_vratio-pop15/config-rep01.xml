@@ -1,11 +1,11 @@
 <ga_swarmgap>
 
     <io>
-        <output-dir value="terran_vratio-pop15-rep01" />
+        <output-dir value="zerg_vratio-pop15-rep01" />
     </io>
 
 	<parameters>
-		<enemy value="terran"/>
+		<enemy value="zerg"/>
 		<popsize value='15' />
 		<elitism value='true' />
 		<tournament-size value='2' />
