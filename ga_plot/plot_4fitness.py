@@ -8,7 +8,7 @@ ind = np.arange(N)  # the x locations for the groups
 width = 0.15       # the width of the bars
 fig, ax = plt.subplots()
 
-f = open('chartvalues.txt', 'r')
+f = open(sys.argv[1], 'r')
 
 f1=float(f.readline().replace(',','.'))/1.5
 f2=float(f.readline().replace(',','.'))/1.5
