@@ -51,31 +51,29 @@ vicErr = (e12,e10,e11)
 
 
 rects1 = ax.bar(ind + 0.05, scoreMeans, width, color='darkred', yerr=scoreErr)
-rects2 = ax.bar(ind+width+0.08, timeMeans , width, color='goldenrod', yerr=timeErr)
-rects3 = ax.bar(ind+2*width+0.11, unitMeans , width, color='darkblue', yerr=unitErr)
-rects4 = ax.bar(ind+3*width+0.14, vicMeans , width, color='g',yerr=vicErr)
+rects2 = ax.bar(ind+width+0.08, timeMeans, width, color='goldenrod', yerr=timeErr)
+rects3 = ax.bar(ind+2*width+0.11, unitMeans, width, color='darkblue', yerr=unitErr)
+rects4 = ax.bar(ind+3*width+0.14, vicMeans, width, color='g', yerr=vicErr)
 
 
 # add some text for labels, title and axes ticks
-ax.set_ylabel('Victories(%)')
-ax.set_title('Percentage of victories by enemy race and fitness fuction')
+ax.set_ylabel('Victories (%)')
+#ax.set_title('Percentage of victories by enemy race and fitness fuction')
 ax.set_xticks(ind+width)
 ax.set_xticklabels( ('                  Zerg',  '                  Terran', '                  Protoss') )
 
-ax.legend( (rects1[0], rects2[0], rects3[0], rects4[0]), ('Score', 'Time', 'Unit', '5 Victories') )
+ax.legend( (rects1[0], rects2[0], rects3[0], rects4[0]), ('Score ratio', 'Time-based', 'Unit-based', 'Victory ratio') )
 
 def autolabel(rects):
     # attach some text labels
     for rect in rects:
         height = rect.get_height()
-        ax.text(rect.get_x()+rect.get_width()/2., 1.01*height, '%.1f'%float(height),
+        ax.text(rect.get_x()+rect.get_width()/2., 1.04 * height, '%.1f' % float(height),
                 ha='center', va='bottom')
 
 autolabel(rects1)
 autolabel(rects2)
 autolabel(rects3)
 autolabel(rects4)
-
-
 
 plt.show()
