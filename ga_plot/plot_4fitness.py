@@ -24,18 +24,36 @@ f10=float(f.readline().replace(',','.'))/1.5
 f11=float(f.readline().replace(',','.'))/1.5
 f12=float(f.readline().replace(',','.'))/1.5
 
+e1=float(f.readline().replace(',','.'))/1.5
+e2=float(f.readline().replace(',','.'))/1.5
+e3=float(f.readline().replace(',','.'))/1.5
+e4=float(f.readline().replace(',','.'))/1.5
+e5=float(f.readline().replace(',','.'))/1.5
+e6=float(f.readline().replace(',','.'))/1.5
+e7=float(f.readline().replace(',','.'))/1.5
+e8=float(f.readline().replace(',','.'))/1.5
+e9=float(f.readline().replace(',','.'))/1.5
+e10=float(f.readline().replace(',','.'))/1.5
+e11=float(f.readline().replace(',','.'))/1.5
+e12=float(f.readline().replace(',','.'))/1.5
+
+
 
 scoreMeans = (f3,f1,f2)
 timeMeans = (f6,f4,f5)
 unitMeans = (f9,f7,f8)
 vicMeans = (f12,f10,f11)
 
+scoreErr = (e3,e1,e2)
+timeErr = (e6,e4,e5)
+unitErr = (e9,e7,e8)
+vicErr = (e12,e10,e11)
 
 
-rects1 = ax.bar(ind + 0.05, scoreMeans, width, color='darkred')
-rects2 = ax.bar(ind+width+0.08, timeMeans , width, color='goldenrod')
-rects3 = ax.bar(ind+2*width+0.11, unitMeans , width, color='darkblue')
-rects4 = ax.bar(ind+3*width+0.14, vicMeans , width, color='g')
+rects1 = ax.bar(ind + 0.05, scoreMeans, width, color='darkred', yerr=scoreErr)
+rects2 = ax.bar(ind+width+0.08, timeMeans , width, color='goldenrod', yerr=timeErr)
+rects3 = ax.bar(ind+2*width+0.11, unitMeans , width, color='darkblue', yerr=unitErr)
+rects4 = ax.bar(ind+3*width+0.14, vicMeans , width, color='g',yerr=vicErr)
 
 
 # add some text for labels, title and axes ticks
