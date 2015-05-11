@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # a bar plot with errorbars
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
