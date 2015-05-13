@@ -344,21 +344,26 @@ def evaluate_victory_ratio(population, generation, cfg):
     if len(result_files) / cfg.num_matches < cfg.popsize:
         chaosLauncher = subprocess.Popen([cl_path])
         cl_called = True
+        time.sleep(5)  # waits for starcraft launch
 
     # watch directory to see if all .res.xml files were generated
     while True:
         #result_files_pattern = os.path.join(write_dir, "*.fit")
         result_files = glob.glob(result_files_pattern)
-        sys.stdout.write('\r %5d .res.xml files found. Need %5d to finish this generation.' % (len(result_files), cfg.popsize))
+        sys.stdout.write(
+            '\r %5d .res.xml files found. Need %5d to finish this generation.' %
+            (len(result_files), cfg.popsize*cfg.num_matches)
+        )
 
         if len(result_files) / cfg.num_matches >= cfg.popsize:
-            print  # prints nothing to insert a new line from the print above
+            print '\rGeneration %d finished.' % generation
             break
         #print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
         time.sleep(1)
         if not rwe.monitor_once(): #problem... relaunch starcraft
+            print 'Relaunching Chaoslauncher and StarCraft.'
             chaosLauncher = subprocess.Popen([cl_path])
-
+            time.sleep(2)
 
     # finishes this execution of chaoslauncher and starcraft
     subprocess.call("taskkill /IM starcraft.exe")
@@ -409,7 +414,6 @@ def evaluate(population, generation, cfg):
     # create dir g# in output_path
     write_dir = os.path.join(sc_dir, cfg.output_dir, 'g%d' % generation)
     distutils. dir_util.mkpath(write_dir)
-
 
     for i in range(0, len(population)):
         p = population[i]
@@ -465,7 +469,7 @@ def evaluate(population, generation, cfg):
         sys.stdout.write('\r %5d .fit files found. Need %5d to finish this generation.' % (len(fit_files), cfg.popsize))
 
         if len(fit_files) / cfg.num_matches >= cfg.popsize:
-            print  # prints nothing to insert a new line from the print above
+            print '\rGeneration %d finished.' % generation
             break
         #print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
         time.sleep(1)
