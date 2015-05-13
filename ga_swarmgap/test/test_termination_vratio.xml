@@ -1,0 +1,29 @@
+<ga_swarmgap>
+
+    <io>
+        <output-dir value="test_termin_vratio" />
+    </io>
+
+	<parameters>
+        <enemy value='protoss' />
+		<popsize value='4' />
+		<elitism value='true' />
+		<tournament-size value='5' />
+		<p-crossover value='.9' />
+		<p-mutation value='.01' />
+		<generations value='250000' />
+		
+		<reliab-threshold value='0.6' />
+        <p-eval-above-thresh value='0.1' />
+	</parameters>
+
+    <fitness>
+        <function value="victory_ratio" />
+        <num_matches value="5" />
+    </fitness>
+	           
+	<externals>
+		<random-seed value='6' />
+		<repetitions value='1' />
+	</externals>            
+</ga_swarmgap>
