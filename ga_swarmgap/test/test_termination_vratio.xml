@@ -14,7 +14,7 @@
 		<generations value='250000' />
 		
 		<reliab-threshold value='0.6' />
-        <p-eval-above-thresh value='0.1' />
+        <p-eval-above-thresh value='1.0' />
 	</parameters>
 
     <fitness>
