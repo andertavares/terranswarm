@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import shutil
 import distutils.dir_util
 import random
@@ -332,7 +333,7 @@ def evaluate_victory_ratio(population, generation, cfg):
     pfile.close()
 
     # calls chaoslauncher, which will run the game for each missing .fit file in the last generation it finds
-    print 'starting simulations...'
+    print 'Starting simulations...'
 
     # calls chaoslauncher if not all result files were generated #TODO: make this prettier
     result_files_pattern = os.path.join(write_dir, "*.res.xml")
@@ -343,18 +344,26 @@ def evaluate_victory_ratio(population, generation, cfg):
     if len(result_files) / cfg.num_matches < cfg.popsize:
         chaosLauncher = subprocess.Popen([cl_path])
         cl_called = True
+        time.sleep(5)  # waits for starcraft launch
 
     # watch directory to see if all .res.xml files were generated
     while True:
         #result_files_pattern = os.path.join(write_dir, "*.fit")
         result_files = glob.glob(result_files_pattern)
+        sys.stdout.write(
+            '\r %5d .res.xml files found. Need %5d to finish this generation.' %
+            (len(result_files), cfg.popsize*cfg.num_matches)
+        )
+
         if len(result_files) / cfg.num_matches >= cfg.popsize:
+            print '\rGeneration %d finished.' % generation
             break
         #print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
         time.sleep(1)
         if not rwe.monitor_once(): #problem... relaunch starcraft
+            print 'Relaunching Chaoslauncher and StarCraft.'
             chaosLauncher = subprocess.Popen([cl_path])
-
+            time.sleep(2)
 
     # finishes this execution of chaoslauncher and starcraft
     subprocess.call("taskkill /IM starcraft.exe")
@@ -406,7 +415,6 @@ def evaluate(population, generation, cfg):
     write_dir = os.path.join(sc_dir, cfg.output_dir, 'g%d' % generation)
     distutils. dir_util.mkpath(write_dir)
 
-
     for i in range(0, len(population)):
         p = population[i]
 
@@ -440,7 +448,7 @@ def evaluate(population, generation, cfg):
     pfile.close()
 
     #calls chaoslauncher, which will run the game for each missing .fit file in the last generation it finds
-    print 'starting simulations...'
+    print 'Starting simulations...'
 
     #calls chaoslauncher if not all fitness files were generated #TODO: make this prettier
     fit_files_pattern = os.path.join(write_dir, "*.fit")
@@ -452,16 +460,23 @@ def evaluate(population, generation, cfg):
         chaosLauncher = subprocess.Popen([cl_path])
         cl_called = True
 
+        time.sleep(5)   #waits until StarCraft is launched
+
     #watch directory to see if all .fit files were generated
     while True:
         fit_files_pattern = os.path.join(write_dir, "*.fit")
         fit_files = glob.glob(fit_files_pattern)
-        if len(fit_files) >= cfg.popsize:
+        sys.stdout.write('\r %5d .fit files found. Need %5d to finish this generation.' % (len(fit_files), cfg.popsize))
+
+        if len(fit_files) / cfg.num_matches >= cfg.popsize:
+            print '\rGeneration %d finished.' % generation
             break
         #print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
-        time.sleep(2)
+        time.sleep(1)
         if not rwe.monitor_once(): #problem... relaunch starcraft
+            print 'Relaunching Chaoslauncher and StarCraft.'
             chaosLauncher = subprocess.Popen([cl_path])
+            time.sleep(2)
 
 
     #finishes this execution of chaoslauncher and starcraft
