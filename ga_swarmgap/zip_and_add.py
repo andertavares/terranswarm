@@ -7,7 +7,7 @@ import subprocess
 import configparser
 
 
-def zip_and_add(config_file, commit_mode, no_pull=False, no_add=False, no_commit=False, no_set_user=False):
+def zip_and_add(config_file, commit_mode, no_pull=False, no_add=False, no_commit=False, no_set_user=False, no_push=False):
     """
     Zips the files in output directory specified in config_file,
     copies it to our results/ directory and adds it to git and performs a commit.
@@ -57,7 +57,13 @@ def zip_and_add(config_file, commit_mode, no_pull=False, no_add=False, no_commit
 
                 # effectively commits
                 subprocess.call(['git', 'commit', '-m', 'Result file %s' % copied_zip_path])
-                print 'git commit attempted, you must push manually'
+                print 'git commit attempted'
+
+                if not no_push:
+                    print 'will try to git push. You should have a .netrc file on home directory'
+                    subprocess.call(['git', 'push'])
+                    print 'git push attempted'
+
 
     elif commit_mode == 'svn':
         # performs svn up
@@ -98,7 +104,10 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--commit-mode', type=str, default='git',
                        help='Commit mode (use svn or git commands), default=git')
 
+    parser.add_argument('--no-push', action='store_true', default=False,
+                       help="Does not execute push after the add/commit")
+
     args = parser.parse_args()
    
     for cfg in args.config:
-        zip_and_add(cfg, args.commit_mode, args.no_pull, args.no_add, args.no_commit, args.no_set_user)
+        zip_and_add(cfg, args.commit_mode, args.no_pull, args.no_add, args.no_commit, args.no_set_user, args.no_push)
