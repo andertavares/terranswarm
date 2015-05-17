@@ -25,7 +25,7 @@ def go(cfg_file, num_matches):
 
     experiment_path = os.path.join(sc_dir, cfg.output_dir)
 
-    dest = "c:/bestValues.txt"
+    dest = sc_dir +  "\\bwapi-data" + "\\bestValues.txt"
     copy_dest = experiment_path + "\\bestValues.txt" #file containing the values from the best game
 
     if os.path.exists(copy_dest):

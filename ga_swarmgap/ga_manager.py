@@ -351,12 +351,12 @@ def evaluate_victory_ratio(population, generation, cfg):
         #result_files_pattern = os.path.join(write_dir, "*.fit")
         result_files = glob.glob(result_files_pattern)
         sys.stdout.write(
-            '\r %5d .res.xml files found. Need %5d to finish this generation.' %
+            '\r %5d .res.xml files found. Need %5d to finish this generation. ' %
             (len(result_files), cfg.popsize*cfg.num_matches)
         )
 
         if len(result_files) / cfg.num_matches >= cfg.popsize:
-            print '\rGeneration %d finished.' % generation
+            print 'Generation %d finished.' % generation
             break
         #print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
         time.sleep(1)
@@ -466,10 +466,10 @@ def evaluate(population, generation, cfg):
     while True:
         fit_files_pattern = os.path.join(write_dir, "*.fit")
         fit_files = glob.glob(fit_files_pattern)
-        sys.stdout.write('\r %5d .fit files found. Need %5d to finish this generation.' % (len(fit_files), cfg.popsize))
+        sys.stdout.write('\r %5d .fit files found. Need %5d to finish this generation. ' % (len(fit_files), cfg.popsize))
 
         if len(fit_files) / cfg.num_matches >= cfg.popsize:
-            print '\rGeneration %d finished.' % generation
+            print 'Generation %d finished.' % generation
             break
         #print "%d files with pattern %s" % (len(fit_files), fit_files_pattern)
         time.sleep(1)
