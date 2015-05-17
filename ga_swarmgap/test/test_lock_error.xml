@@ -1,0 +1,30 @@
+<ga_swarmgap>
+<!-- simple execution to test the fitness function based on building score ratio
+only 2 generations with 2 individuals is executed -->
+
+    <io>
+        <output-dir value="test_lock_error" />
+    </io>
+
+	<parameters>
+        <enemy value='zerg' />
+		<popsize value='2' />
+		<elitism value='false' />
+		<tournament-size value='2' />
+		<p-crossover value='.9' />
+		<p-mutation value='.01' />
+		<generations value='1000' />
+		
+		<reliab-threshold value='0.6' />
+        <p-eval-above-thresh value='1.0' />
+	</parameters>
+
+    <fitness>
+        <function value="score_ratio" />
+    </fitness>
+	           
+	<externals>
+		<random-seed value='77' />
+		<repetitions value='1' />
+	</externals>
+</ga_swarmgap>
