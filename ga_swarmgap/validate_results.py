@@ -17,6 +17,62 @@ def validate(results_path, fitness='unit_score'):
     :return: int number of invalid fitnessess found
     """
 
+    if fitness == 'unit_score':
+        return validate_unit_score(results_path)
+
+    elif fitness == 'time_based':
+        return validate_time_based(results_path)
+
+    elif fitness == 'victory_ratio':
+        return validate_victory_ratio(results_path)
+
+    else:
+        print 'INVALID FITNESS MODE.'
+        return -1
+
+
+def validate_time_based(results_path):
+    """
+    Traverses the generations inside results_path checking whether the fitness in .fit
+    file reflects the one configured in fitness_mode
+    :param config_file: path to the .xml config file
+    :return: int number of invalid fitnessess found
+    """
+
+    result_ext = '.res.xml'
+    invalids = 0
+    for f in glob.glob(os.path.join(results_path,'*','*.fit')):
+        #print f
+        file_name, file_extension = os.path.splitext(f)
+
+        fitness_in_file = float(open(f).read().strip())
+
+        xml_filename = '%s%s' % (file_name, result_ext)
+        xml_tree = ET.parse(xml_filename).getroot()
+
+        result = xml_tree.find('result').get('value')
+        duration = int(xml_tree.find('gameDuration').get('value'))
+
+        fitness_in_results = 0.0
+        if result == 'win':
+            fitness_in_results = 1.0 - (duration / 7200.0)
+        else:
+            fitness_in_results = duration / 7200.0
+
+        if abs(fitness_in_file - fitness_in_results) > 0.005:  # uses a small tolerance
+            #print '.fit says %f and .xml.res says %f for for %s' % (fitness_in_file, fitness_in_results, f)
+            invalids += 1
+
+    return invalids
+
+def validate_unit_score(results_path):
+    """
+    Traverses the generations inside results_path checking whether the fitness in .fit
+    file reflects the one configured in fitness_mode
+    :param config_file: path to the .xml config file
+    :return: int number of invalid fitnessess found
+    """
+
     result_ext = '.res.xml'
     invalids = 0
     for f in glob.glob(os.path.join(results_path,'*','*.fit')):
@@ -58,7 +114,7 @@ if __name__ == "__main__":
     parser.add_argument('paths', metavar='path', type=str, nargs='*',
                        help='Path to root directory of experiment results')
 
-    parser.add_argument('-f', '--fitness', type=str, default='unit_score',
+    parser.add_argument('-f', '--fitness', type=str, # default='unit_score',
                        help='Fitness mode to validate')
 
     args = parser.parse_args()
