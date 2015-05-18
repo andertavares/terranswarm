@@ -26,7 +26,7 @@ def dateDif (stringstart, stringend):
     if(enddate[1]=='02' and (yr4div and (not yr100div or yr400div))):
         carry_mth = 29*(carry_yr + int(enddate[1]) - int(startdate[1]))
     elif(enddate[1]=='02'):
-        carry_mth = 29*(carry_yr + int(enddate[1]) - int(startdate[1]))
+        carry_mth = 28*(carry_yr + int(enddate[1]) - int(startdate[1]))
     elif(enddate[1] == '01' or enddate[1] == '03' or enddate[1] == '05' or enddate[1] == '07' or enddate[1] == '08' or enddate[1] == '10' or enddate[1] == '12'):
         carry_mth = 31*(carry_yr + int(enddate[1]) - int(startdate[1]))
     else:
