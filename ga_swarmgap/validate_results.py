@@ -173,6 +173,9 @@ def validate_victory_ratio(results_path):
             #print '.fit says %f and .xml.res says %f for for %s' % (fitness_in_file, fitness_in_results, f)
             invalids += 1
 
+            if fitness_in_results > 1:
+                print 'ERROR: fitness > 1 in %s' % file_name
+
         elif fitness_in_results > 1:
             print 'ERROR: fitness > 1 in %s' % file_name
             invalids +=1
