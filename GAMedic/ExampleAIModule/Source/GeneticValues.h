@@ -10,12 +10,13 @@ using namespace BWAPI;
 
 class GeneticValues {
 	static std::map<int, double> map_instance;
-	static std::string paramsFile;
+	static std::string paramsFileName; //only the file name
+	static std::string paramsFilePath; //full path to the file
 
 public:
 	static void initializeMap(std::string path);
 	static std::map<int, double> getMap();
 	static std::string getParamsFile();
-	//static double getValue(int key);
-	
+	static std::string getParamsFilePath();
+	static int lockParamsFile();
 };

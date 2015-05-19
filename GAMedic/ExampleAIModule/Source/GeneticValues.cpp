@@ -5,13 +5,15 @@
 #include <sstream>
 #include <iostream>
 #include <stdio.h>
+#include <errno.h>
 #include <windows.h>
 
 using namespace BWAPI;
 using namespace std;
 
 std::map<int, double> GeneticValues::map_instance; //definition, prevents link error
-std::string GeneticValues::paramsFile = "";
+std::string GeneticValues::paramsFileName = "";
+std::string GeneticValues::paramsFilePath = "";
 
 std::string utf8_encode(const std::wstring &wstr)
 {
@@ -34,9 +36,20 @@ map<int, double> GeneticValues::getMap(){
 	return map_instance;
 }
 
+/**
+ * Returns the name of the parameter file that was read
+ */
 string GeneticValues::getParamsFile(){
-	return paramsFile;
+	return paramsFileName;
 }
+
+/**
+ * Returns the full path to the parameter file that was read
+ */
+string GeneticValues::getParamsFilePath(){
+	return paramsFilePath;
+}
+
 
 //map<int, double> initializeMap(string mainPath)
 void GeneticValues::initializeMap(string mainPath)
@@ -47,18 +60,16 @@ void GeneticValues::initializeMap(string mainPath)
 	WIN32_FIND_DATA data;
 	//string mainPath = "c:\\test_files\\";
 	string fullFilePath = mainPath + "\\" + "*.chr";
-	Broodwar << "looking for file:" << fullFilePath << endl;
+	Broodwar << "Parameter seek pattern:" << fullFilePath << endl;
 	std::wstring stemp = utf8_decode(fullFilePath);
 	LPCWSTR filePath = stemp.c_str();
 	
 	hFind = FindFirstFile(filePath, &data);
 	if (hFind != INVALID_HANDLE_VALUE) {
 		do {
-			//_tprintf (TEXT("File found is %s\n"), data.cFileName);
-
+			
 			string fileChar = utf8_encode(data.cFileName);
-			//cout << fileChar << "  fullFile:" << mainPath+fileChar << endl;
-
+			
 			char fullPathChar[1024];
 			char fullPathLockChar[1024];
 
@@ -66,7 +77,10 @@ void GeneticValues::initializeMap(string mainPath)
 			string fullPathLock = fullPath + ".lock";
 
 			//Broodwar << "fileChar: " << fileChar << endl;
-			paramsFile = fileChar;
+
+			//updates class attributes (can be queried later)
+			paramsFileName = fileChar;
+			paramsFilePath = fullPath;
 
 			strncpy_s(fullPathChar, fullPath.c_str(), sizeof(fullPathChar));
 			strncpy_s(fullPathLockChar, fullPathLock.c_str(), sizeof(fullPathLockChar));
@@ -89,24 +103,73 @@ void GeneticValues::initializeMap(string mainPath)
 					map_instance[key] = value;
 				}
 				myfile.close();
+				break;
 			}
 
 			//cout << m["aa"] << endl;
-
+			
 			// Rename the file to append the .lock extension
-			int resultRename = rename( fullPathChar , fullPathLockChar );
+			/*int resultRename = rename( fullPathChar , fullPathLockChar );
+			
 			if (resultRename == 0){
-				//cout << "File successfully renamed" << endl;
+				Broodwar << "File successfully renamed" << endl;
+				Broodwar << "From: " << fullPathChar << endl;
+				Broodwar << "to: " << fullPathLockChar << endl;
 				break;
 			}
 			else{
-				//cout << "Error renaming file, continue to next one" << endl;
+				Broodwar << "Error renaming file, continue to next one" << endl;
+				Broodwar << "From: " << fullPathChar << endl;
+				Broodwar << "to: " << fullPathLockChar << endl;
+				Broodwar << "reason: " << strerror(errno) << endl;
 			}
 			//break;
+			*/
+			
 		} while (FindNextFile(hFind, &data));
 		FindClose(hFind);
 	}
 	//return m;
+}
+
+/**
+ * Appends the .lock at the parameter file it has read before
+ */
+int GeneticValues::lockParamsFile(){
+	// Rename the file to append the .lock extension
+
+	if (getParamsFilePath().compare("")) {
+		Broodwar << "ERROR: no parameter file was found to lock";
+	}
+
+	//string lockFile = getParamsFile() + ".lock";
+	//const char* pfile = getParamsFilePath().c_str();
+	//const char* lockFile = (getParamsFilePath() + ".lock").c_str();
+
+	/*
+	char fullPathChar[1024];
+	char fullPathLockChar[1024];
+
+	strncpy_s(fullPathChar, getParamsFilePath().c_str(), sizeof(fullPathChar));
+	strncpy_s(fullPathLockChar, (getParamsFilePath() + ".lock").c_str(), sizeof(fullPathLockChar));
+	fullPathChar[sizeof(fullPathChar) - 1] = 0;
+	fullPathLockChar[sizeof(fullPathLockChar) - 1] = 0;
+	*/
+
+	//return rename( pfile , lockFile );
+	//return rename( "nonexiste" , "estetampoco");
+	/*
+	ofstream errfile("c:\\debug.err", ios_base::app);
+	errfile << "fullPathChar: " << fullPathChar << endl;
+	errfile << "fullPathLockChar: " << fullPathLockChar << endl;
+	//errfile << "pfile: " << pfile << endl;
+	//errfile << "lockfile: " << lockFile << endl;
+	errfile << "pfile.c_str: " << getParamsFilePath().c_str() << endl;
+	errfile << "lockfile.c_str: " << (getParamsFilePath() + ".lock").c_str() << endl;
+	errfile.close();
+	*/
+
+	return rename( getParamsFilePath().c_str() , (getParamsFilePath() + ".lock").c_str() );
 }
 
 //map<int, double> m = initializeMap("c:\\test_files\\");
