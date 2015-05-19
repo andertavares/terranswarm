@@ -3,6 +3,12 @@
 #include <unordered_map>
 #include <iostream>
 #include <fstream>
+#include <exception>
+
+#include <errno.h>
+#include <string.h>
+#include <stdio.h>
+
 #include <cmath>
 #include <ctime>
 #include "ExampleAIModule.h"
@@ -150,6 +156,8 @@ void ExampleAIModule::onStart() {
 
 void ExampleAIModule::onEnd(bool isWinner) {
 	endTime = currentDateTime();
+	Broodwar->setGUI(true); 
+	Broodwar->setLocalSpeed(100); //reduces speed
 
 	// Called when the game ends
 	if (Broodwar->isReplay()){
@@ -213,7 +221,6 @@ void ExampleAIModule::onEnd(bool isWinner) {
 		endl << "\t<enemy>" << endl <<
 		"\t\t<race value='" << enemy->getRace().getName() << "'/>" << endl <<
 		"\t\t<unitScore value='" << enemy->getUnitScore() << "'/>" << endl <<
-		"\t\t<unitScore value='" << enemy->getUnitScore() << "'/>" << endl <<
 		"\t\t<killScore value='" << enemy->getKillScore() << "'/>" << endl <<
 		"\t\t<buildingScore value='" << enemy->getBuildingScore() << "'/>" << endl <<
 		"\t\t<razingScore value='" << enemy->getRazingScore() << "'/>" << endl <<
@@ -229,16 +236,24 @@ void ExampleAIModule::onEnd(bool isWinner) {
 
 	ofstream fitFile(workingDir + "\\" + GeneticValues::getParamsFile() + ".fit", ios_base::out);
 	float fitness = myTotal / float(enemyTotal);
-	/*if (timeOver) {
-		fitness += 20000;
-	}
-	else if (isWinner) {
-		fitness += 50000;
-	}
-	*/
+
 	fitFile << fitness << endl;
 	
 	fitFile.close();
+
+	int lockResult = GeneticValues::lockParamsFile();
+
+	if (lockResult != 0) {
+		ofstream errfile(workingDir + "\\" + "problem.err", ios_base::app);
+		errfile << "ERROR: could not lock file " << GeneticValues::getParamsFilePath().c_str() << endl;
+		//errfile << "Attempted lock name " << GeneticValues::getParamsFilePath().c_str() + ".lock" << endl;
+		errfile << "reason: " << strerror(errno) << endl;
+		errfile.close();
+
+		Broodwar << "ERROR: could not lock file " << GeneticValues::getParamsFilePath();
+
+		//throw runtime_error("Could not lock file" + GeneticValues::getParamsFile());
+	}
 	
 
 }
