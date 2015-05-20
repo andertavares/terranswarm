@@ -50,23 +50,25 @@ def dateDif (stringstart, stringend):
 
 if __name__ == '__main__':
 
-    filePath = sys.argv[1]
 
-    archive = zipfile.ZipFile(filePath, 'r')
-    fileList = archive.namelist()
-    exectime=0
+    for i in range(1, len(sys.argv)):
+        filePath = sys.argv[i]
 
-    for f in fileList:
-        if (f.split('.')[-1] == 'xml'):
-            xml_tree = ET.parse(archive.open(f)).getroot()
-            stringstart = xml_tree.find('start').get('value')
-            stringend = xml_tree.find('end').get('value')
+        archive = zipfile.ZipFile(filePath, 'r')
+        fileList = archive.namelist()
+        exectime=0
+        neg = False
+        for f in fileList:
+            if (f.split('.')[-1] == 'xml'):
+                xml_tree = ET.parse(archive.open(f)).getroot()
+                stringstart = xml_tree.find('start').get('value')
+                stringend = xml_tree.find('end').get('value')
 
 
-            dif = dateDif (stringstart, stringend)
-            if (dif < 0):
-                print 'Negative difference(%d) in file %s!' %(dif,f)
-                exit()
-            exectime = exectime + dif
-           
-    print exectime
+                dif = dateDif (stringstart, stringend)
+                if (dif < 0):
+                    print 'Negative difference(%d) in file %s!' %(dif,f)
+                    neg=True 
+                exectime = exectime + dif
+        if (not neg):
+            print exectime

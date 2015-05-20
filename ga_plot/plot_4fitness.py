@@ -62,7 +62,7 @@ ax.set_ylabel('Victories (%)')
 ax.set_xticks(ind+width)
 ax.set_xticklabels( ('                  Zerg',  '                  Terran', '                  Protoss') )
 
-ax.legend( (rects1[0], rects2[0], rects3[0], rects4[0]), ('Score ratio', 'Time-based', 'Unit-based', 'Victory ratio') )
+ax.legend( (rects1[0], rects2[0], rects3[0], rects4[0]), ('Score ratio', 'Time-based', 'Unit-based', 'Victory rate') )
 
 def autolabel(rects):
     # attach some text labels
