@@ -176,10 +176,16 @@ def get_experiment_from_server(server_address):
     hostname = socket.gethostname()
     payload = {'server_name': hostname}
 
+    if server_address[-1] == "/":
+        server_address = server_address[:-1]
+
+    server_address = server_address.replace("http://", "")
+    server_address = server_address.replace("https://", "")
+
     decoded = {}
 
     try:
-        server_uri = "http://" + server_address + ":8000/ga_server/experiment/get_experiment"
+        server_uri = "http://" + server_address + "/ga_server/experiment/get_experiment"
         r = requests.post(server_uri, data=payload, timeout=5)
         decoded = json.loads(r.content)
     except requests.exceptions.Timeout:
@@ -216,10 +222,16 @@ def get_experiment_from_server(server_address):
 
 
 def set_experiment_status(server_address, experiment_id, experiment_status):
+    if server_address[-1] == "/":
+        server_address = server_address[:-1]
+
+    server_address = server_address.replace("http://", "")
+    server_address = server_address.replace("https://", "")
+
     payload = {'experiment_id': experiment_id, 'experiment_status': experiment_status}
 
     try:
-        server_uri = "http://" + server_address + ":8000/ga_server/experiment/set_experiment_status"
+        server_uri = "http://" + server_address + "/ga_server/experiment/set_experiment_status"
         r = requests.post(server_uri, data=payload, timeout=5)
         decoded = json.loads(r.content)
     except requests.exceptions.Timeout:
