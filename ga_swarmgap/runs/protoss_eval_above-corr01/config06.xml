@@ -1,7 +1,7 @@
 <ga_swarmgap>
 
     <io>
-        <output-dir value="protoss_eval.9-01" />
+        <output-dir value="protoss_eval06-01" />
     </io>
 
 	<parameters>
@@ -14,7 +14,7 @@
 		<generations value='50' />
 		
 		<reliab-threshold value='0.5' />
-        <p-eval-above-thresh value='0.9' />
+        <p-eval-above-thresh value='0.6' />
 	</parameters>     
 	           
 	<externals>
