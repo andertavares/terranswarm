@@ -36,8 +36,8 @@ def go(cfg_file, num_matches):
         shutil.copyfile(best_file, copy_dest)
         print '%s copied to %s, as a copy.' % (best_file, copy_dest)
 
-    shutil.copyfile(best_file, dest)
     print '%s copied to %s, to be executed by MedicReadValues' % (best_file, dest)
+    shutil.copyfile(best_file, dest)
 
     # puts the correct .ini into bwapi.ini
     paths.inicopy('bwapi_readValues_%s.ini' % enemy)

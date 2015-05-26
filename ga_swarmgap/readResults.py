@@ -210,6 +210,9 @@ if __name__ == "__main__":
     numFiles = len(sys.argv)
     for i in range (1, numFiles):
         print 'Evaluating %s' %sys.argv[i]
-        data = runReadRes(sys.argv[i], numFiles)
+        if (os.path.exists(sys.argv[i])):
+            data = runReadRes(sys.argv[i], numFiles)
+        else:
+            data = "\n"
         output.write(data)
     output.close()
