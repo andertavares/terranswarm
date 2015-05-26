@@ -9,7 +9,7 @@ import subprocess
 import configparser
 
 
-def validate(results_path, fitness='unit_score'):
+def validate(results_path, fitness):
     """
     Traverses the generations inside results_path checking whether the fitness in .fit
     file reflects the one configured in fitness_mode
@@ -116,7 +116,7 @@ def validate_score_ratio(results_path):
 
     result_ext = '.res.xml'
     invalids = 0
-    for f in glob.glob(os.path.join(results_path,'*','*.fit')):
+    for f in glob.glob(os.path.join(results_path, '*', '*.fit')):
         #print f
         file_name, file_extension = os.path.splitext(f)
         '''if 'chr' in file_name:
@@ -124,8 +124,11 @@ def validate_score_ratio(results_path):
 
         fitness_in_file = float(open(f).read().strip())
 
-        ###works only for unit_score ###
         xml_filename = '%s%s' % (file_name, result_ext)
+
+        if not os.path.exists(xml_filename):  #skips when individual was estimated (no .res.xml file)
+            continue
+
         xml_tree = ET.parse(xml_filename).getroot()
 
         fitness_in_results = float(xml_tree.find('scoreRatio').get('value'))
@@ -148,7 +151,6 @@ def validate_victory_ratio(results_path):
     result_ext = '.res.xml'
     invalids = 0
     for f in glob.glob(os.path.join(results_path,'*','*.fit')):
-        #print f
         if '-rep-' in f:  #skips the *-rep-num.chr.fit created by the bot
             #print 'skipping', f
             continue
@@ -157,10 +159,7 @@ def validate_victory_ratio(results_path):
         fitness_in_file = float(open(f).read().strip())
 
         dirname = os.path.dirname(f)
-        #print file_name
-        #files_pattern = os.path.join(dirname, "%d-rep-*.res.xml" % file_name)
         files_pattern = "%s-rep-*.res.xml" % file_name
-        #print files_pattern
         files = glob.glob(files_pattern)
         victories = 0
         for f in files:
@@ -170,7 +169,6 @@ def validate_victory_ratio(results_path):
 
         fitness_in_results = float(victories) / len(files)
         if abs(fitness_in_file - fitness_in_results) > 0.005:  # uses a small tolerance
-            #print '.fit says %f and .xml.res says %f for for %s' % (fitness_in_file, fitness_in_results, f)
             invalids += 1
 
             if fitness_in_results > 1:
@@ -179,9 +177,6 @@ def validate_victory_ratio(results_path):
         elif fitness_in_results > 1:
             print 'ERROR: fitness > 1 in %s' % file_name
             invalids +=1
-
-        #else:
-         #   sys.stdout.write('\rfile = %.5f, results = %.5f' % (fitness_in_file, fitness_in_results))
 
     return invalids
 
@@ -194,7 +189,7 @@ if __name__ == "__main__":
     parser.add_argument('paths', metavar='path', type=str, nargs='*',
                        help='Path to root directory of experiment results')
 
-    parser.add_argument('-f', '--fitness', type=str, # default='unit_score',
+    parser.add_argument('-f', '--fitness', type=str, required=True,
                        help='Fitness mode to validate')
 
     args = parser.parse_args()
