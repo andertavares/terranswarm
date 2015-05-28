@@ -17,6 +17,10 @@ import re
 def go(enemy, num_matches, output):
     sc_dir, cl_path = paths.read_paths()
 
+    if os.path.exists(output):
+        print 'File %s already exists and won\'t be overwritten. Exiting...'
+        exit()
+
     #puts the correct .ini into bwapi.ini
     paths.inicopy('bwapi_randomMedic_%s.ini' % enemy)
 
@@ -80,7 +84,7 @@ def go(enemy, num_matches, output):
     #moves/renames results.txt to the name specified by the user
     os.rename(results_path, output)
 
-    print 'Matches finished. Check the results in %s file.' % results_path
+    print 'Matches finished. Check the results in %s file.' % output
 
 
 if __name__ == '__main__':

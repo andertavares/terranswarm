@@ -17,6 +17,10 @@ import re
 def go(enemy, num_matches, output):
     sc_dir, cl_path = paths.read_paths()
 
+    if os.path.exists(output):
+        print 'File %s already exists and won\'t be overwritten. Exiting...'
+        exit()
+
     best_file = 'setup/bestValues_manual.txt'
     dest = os.path.join(sc_dir, 'bwapi-data', 'bestValues.txt')
 
