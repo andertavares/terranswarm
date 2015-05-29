@@ -62,7 +62,7 @@ def go(enemy, num_matches, output):
         res_lines = rfile.readlines()
 
         if len(res_lines) > last_read:
-            print 'Result for match %d: %s' % (len(res_lines), res_lines[-1].strip())
+            sys.stdout.write('\rResult for match %d: %s' % (len(res_lines), res_lines[-1].strip()))
             last_read = len(res_lines)
 
         if len(res_lines) >= num_matches:
@@ -81,10 +81,18 @@ def go(enemy, num_matches, output):
     chaosLauncher.terminate()
     rfile.close()
 
-    #moves/renames results.txt to the name specified by the user
-    os.rename(results_path, output)
+    print '\nMatches finished.'
 
-    print 'Matches finished. Check the results in %s file.' % output
+    #moves/renames results.txt to the name specified by the user
+    renamed = False
+    try:
+        os.rename(results_path, output)
+        print 'Check the results in %s file.' % output
+
+    except Exception as e:
+        print 'Error occurred when renaming! Will try copying instead... Error: %s' % e
+        shutil.copy(results_path, output)
+        print 'Check the results in %s file.' % output
 
 
 if __name__ == '__main__':
