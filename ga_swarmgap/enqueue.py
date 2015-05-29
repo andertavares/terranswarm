@@ -42,10 +42,10 @@ def enqueue(server, filename, num_matches=150):
     cfg = configparser.ConfigParser(filename)
 
     payload = {
-        'experiment_xml_data': open(filename).read(),
-        'experiment_num_matches': num_matches,
-        'experiment_name': cfg.output_dir,
-        'experiment_status': 'READY',
+        'xml_data': open(filename).read(),
+        'num_matches': num_matches,
+        'name': cfg.output_dir,
+        'status': 'READY',
         '_formname': 'web2py_grid',
         '_formkey': fkey
     }
