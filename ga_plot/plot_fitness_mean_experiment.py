@@ -5,13 +5,8 @@ import re
 import sys
 
 import argparse
-import requests
-import socket
-import json
-import HTMLParser
-import datetime
-
 import zipfile
+
 
 def do_plots(rootdir):
 
@@ -84,6 +79,7 @@ def do_plots(rootdir):
     plt.show()
 
 
+
 def get_mean_fitness_data(range_list, input_file, folder_name):
     global number_of_generations
     global number_of_population
@@ -104,7 +100,7 @@ def get_mean_fitness_data(range_list, input_file, folder_name):
         if number_of_generations == 0:
             number_of_generations = len(folder_list)
         if number_of_generations != len(folder_list):
-            print "ERROR: the number of generations are not the same"
+            print "ERROR: the number of generations are not the same: %d in number vs %d in folder" % (number_of_generations, len(folder_list))
             sys.exit()
 
         for folder in folder_list:
@@ -119,13 +115,19 @@ def get_mean_fitness_data(range_list, input_file, folder_name):
             fitness_list = []
 
             for fit in fit_path_list:
-                fit_zip_data = archive.read(folder + "/" + fit)
-                fit_data = float("".join(fit_zip_data))
-                fitness_list.append(fit_data)
+                try:
+                    fit_zip_data = archive.read(folder + "/" + fit)
+                    fit_data = float("".join(fit_zip_data))
+                    fitness_list.append(fit_data)
+                except Exception as e:
+                    print 'An error occurred: %s' % e
+                    print 'But we will skip the file that caused the error and proceed'
+
 
             raw_exp_data[int(range_i)][generation_num] = np.mean(fitness_list)
 
     return raw_exp_data
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Create plot of fitnes mean among generations from a set of experiments')

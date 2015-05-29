@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pprint
+import glob
 import os
 import re
 import sys
@@ -81,14 +83,38 @@ def do_plots(rootdir):
 
 
 def get_mean_fitness_data(range_list, input_file, folder_name):
+    #print 'gmfd with %s, %s, %s' % (range_list, input_file, folder_name)
     global number_of_generations
-    global number_of_population
+    #global number_of_population
     #global raw_exp_data
 
     #raw_exp_data[race_name] = {}
 
-    raw_exp_data = {}
+    #raw_exp_data = {}
+    fit_across_generations = []
 
+    for gen in range(1, number_of_generations + 1):
+
+        fit_across_repetitions = []
+
+        for rep in range_list:
+            exp_data[int(rep)] = {}
+
+            fit_pattern = os.path.join(input_file, folder_name + '%s' % rep, 'g%d' % gen, '*.fit')
+
+            files = glob.glob(fit_pattern)
+            sys.stdout.write('\rlooking at %s; found %3d items' % (fit_pattern, len(files)))
+            fit_of_population = [float(open(f).read().strip()) for f in files]
+
+            fit_across_repetitions.append(np.mean(fit_of_population))
+            #raw_exp_data[int(rep)][gen] = np.mean(population_fitness)
+            #print 'rep, gen, mean, data -- %d, %d, %f, %f' % (int(rep), gen, np.mean(population_fitness), raw_exp_data[int(rep)][gen])
+
+        fit_across_generations.append(np.mean(fit_across_repetitions))
+
+    #pprint.pprint(population_fitness)
+    return fit_across_generations
+'''
     for range_i in range_list:
         file_path = str(input_file) + str(folder_name) + range_i + '.zip'
         print file_path
@@ -121,7 +147,7 @@ def get_mean_fitness_data(range_list, input_file, folder_name):
 
             raw_exp_data[int(range_i)][generation_num] = np.mean(fitness_list)
 
-    return raw_exp_data
+'''
 
 
 if __name__ == '__main__':
@@ -130,10 +156,13 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--terran',   help="The terran source name", required=True)
     parser.add_argument('-z', '--zerg',     help="The zerg source name", required=True)
     parser.add_argument('-p', '--protoss',  help="The protoss source name", required=True)
-    parser.add_argument('-r', '--range',   help="The source range Ej: 1-10", required=True)
+    parser.add_argument('-r', '--range',   help="The source range e.g.: 1-10", required=True)
     parser.add_argument('-i', '--input',   help="The source dir", required=True)
+    parser.add_argument('-g', '--generations',   help="The number of generations", required=True, type=int)
 
     args = parser.parse_args()
+
+    number_of_generations = args.generations
 
     range_list = []
     range_limits = re.findall(r'\d+', args.range)
@@ -156,67 +185,30 @@ if __name__ == '__main__':
     protoss_folder = str(args.protoss)
 
     print 'Parameters:'
-    print '     -Terran name:', "'" + terran_folder + "'"
-    print '     -Zerg name:', "'" + zerg_folder + "'"
-    print '     -Protoss name:', "'" + protoss_folder + "'"
-    print '     -Range:', "'" + str(range_list) + "'"
-    print '     -Source dir:', "'" + input_folder + "'\n"
+    print '     -Terran name: "%s"' % terran_folder
+    print '     -Zerg name: "%s"' % zerg_folder
+    print '     -Protoss name: "%s"' % protoss_folder
+    print '     -Range: "%s" ' % range_list
+    print '     -Source dir: "%s"' % input_folder
+    print  #skips a line
 
-    number_of_generations = 0
-    number_of_population = 0
+    #gathers experiment data
+    exp_data = {}
+    exp_data["terran"] = get_mean_fitness_data(range_list, input_folder, terran_folder)
+    exp_data["zerg"] = get_mean_fitness_data(range_list, input_folder, zerg_folder)
+    exp_data["protoss"] = get_mean_fitness_data(range_list, input_folder, protoss_folder)
+    print '\rData gathered, generating plot...                            '
 
-    raw_exp_data = {}
-    raw_exp_data["terran"] = get_mean_fitness_data(range_list, input_folder, terran_folder)
-    raw_exp_data["zerg"] = get_mean_fitness_data(range_list, input_folder, zerg_folder)
-    raw_exp_data["protoss"] = get_mean_fitness_data(range_list, input_folder, protoss_folder)
+    plt.plot(range(1, len(exp_data["terran"]) +1), exp_data["terran"], 'b', label='vs Terran')
+    plt.plot(range(1, len(exp_data["protoss"]) +1), exp_data["protoss"], 'g', label='vs Protoss')
+    plt.plot(range(1, len(exp_data["zerg"]) +1), exp_data["zerg"], 'r', label='vs Zerg')
 
-    print "Generations number:", number_of_generations
-    print "Population number:", number_of_population
-    #print raw_exp_data
+    #the baseline
+    plt.plot(range(1, len(exp_data["zerg"]) +1), [1] * number_of_generations, 'y--')
+    plt.xlim(1, len(exp_data["zerg"]))
 
-    plotX = []
-    plotY = []
 
-    for g in xrange(1, number_of_generations + 1):
-        plotX.append(g)
-        gen_values = []
-        for i in xrange(int(range_list[0]), int(range_list[1]) + 1):
-            gen_values = raw_exp_data["terran"][i][g]
-        plotY.append(np.mean(gen_values))
-
-    plt.plot(plotX, plotY, 'b', label='Terran')
-    plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
-
-    plotX = []
-    plotY = []
-
-    for g in xrange(1, number_of_generations + 1):
-        plotX.append(g)
-        gen_values = []
-        for i in xrange(int(range_list[0]), int(range_list[1]) + 1):
-            gen_values = raw_exp_data["zerg"][i][g]
-        plotY.append(np.mean(gen_values))
-
-    plt.plot(plotX, plotY, 'r', label='zerg')
-    plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
-
-    plotX = []
-    plotY = []
-
-    for g in xrange(1, number_of_generations + 1):
-        plotX.append(g)
-        gen_values = []
-        for i in xrange(int(range_list[0]), int(range_list[1]) + 1):
-            gen_values = raw_exp_data["protoss"][i][g]
-        plotY.append(np.mean(gen_values))
-
-    plt.plot(plotX, plotY, 'g', label='protoss')
-    plt.xticks(np.arange(min(plotX), max(plotX)+1, 2.0))
-
-    plt.plot(plotX, [1] * len(plotX), 'y--')
-    plt.ylabel('Mean Time based fitness')
-    plt.xlabel('Generation')
-    plt.axis([min(plotX), max(plotX), 0, 1])
     plt.legend(ncol=3)
-    plt.grid(True)
+    #plt.grid(True)
+    print 'Done.'
     plt.show()
