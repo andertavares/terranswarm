@@ -266,7 +266,7 @@ if __name__ == "__main__":
     if not args.loop:
         print "    **** ALERT, looping to get new experiment is NOT ACTIVATED ****    "
 
-    while(1):
+    while True:
         return_experiment = get_experiment_from_server(args.server)
         if return_experiment["success"] == True:
             print "\n------------------8<------------------"
@@ -291,11 +291,10 @@ if __name__ == "__main__":
             if "message" in return_experiment:
                 print "    ", return_experiment["message"], time.strftime("%Y-%m-%d %H:%M:%S") 
 
-            if not args.loop:
-                print "No looping flag, exiting.."
-                break
-            
         time.sleep(4)
+        if not args.loop:
+            print "No looping flag, exiting.."
+            break
 
     exit()
 
