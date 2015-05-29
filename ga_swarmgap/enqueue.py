@@ -19,10 +19,11 @@ def enqueue(server, filename, num_matches=150):
     server = server.replace("https://", "")
 
     fkey = ''
+    s = requests.Session()
     # obtains the form key
     try:
         server_uri = "http://" + server + "/ga_server/experiment/all_records/new/experiment"
-        r = requests.get(server_uri, timeout=5)
+        r = s.get(server_uri, timeout=5)
 
 
         #pprint(vars(r))
@@ -49,9 +50,11 @@ def enqueue(server, filename, num_matches=150):
         '_formkey': fkey
     }
 
+    pprint(payload, sys.stderr)
+
     try:
         server_uri = "http://" + server + "/ga_server/experiment/all_records/new/experiment"
-        r = requests.post(server_uri, data=payload, timeout=5)
+        r = s.post(server_uri, payload, timeout=5)
         #pprint(vars(r))
         print r.content
         #decoded = json.loads(r.content)
@@ -79,5 +82,5 @@ if __name__ == '__main__':
 
     for e in args.experiment:
         enqueue(args.server, e)
-        time.sleep(2)
+        time.sleep(1)
 
