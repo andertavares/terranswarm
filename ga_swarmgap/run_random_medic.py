@@ -70,9 +70,9 @@ def go(enemy, num_matches, output):
         time.sleep(2)
 
         if not rwe.monitor_once(): #problem... relaunch starcraft
-            print 'Removing <sc>/results.txt and restarting.'
-            rfile.close()
-            open(results_path, 'w').close()  # resets results.txt file
+            #print 'Removing <sc>/results.txt and restarting.'
+            #rfile.close()
+            #open(results_path, 'w').close()  # resets results.txt file
             chaosLauncher = subprocess.Popen([cl_path])
             last_read = 0
 
