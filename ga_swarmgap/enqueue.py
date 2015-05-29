@@ -29,7 +29,7 @@ def enqueue(server, filename, num_matches=150):
         #pprint(vars(r))
         #print r.content
         fkey = re.match(r'.*_formkey.*value="(.*)" /><input', r.content, re.M | re.I | re.DOTALL).group(1)
-        sys.stderr.write(fkey)
+        #sys.stderr.write(fkey)
         #decoded = json.loads(r.content)
 
     except requests.exceptions.Timeout:
@@ -50,14 +50,15 @@ def enqueue(server, filename, num_matches=150):
         '_formkey': fkey
     }
 
-    pprint(payload, sys.stderr)
+    #pprint(payload, sys.stderr)
 
     try:
         server_uri = "http://" + server + "/ga_server/experiment/all_records/new/experiment"
         r = s.post(server_uri, payload, timeout=5)
         #pprint(vars(r))
-        print r.content
+        #print r.content
         #decoded = json.loads(r.content)
+        print '%s enqueued' % filename
 
     except requests.exceptions.Timeout:
         print 'Timeout exception'
