@@ -14,27 +14,27 @@ f = open(sys.argv[1], 'r')
 
 race = f.readline()
 
-f1=float(f.readline().replace(',','.'))/1.5
-f2=float(f.readline().replace(',','.'))/1.5
-f3=float(f.readline().replace(',','.'))/1.5
-f4=float(f.readline().replace(',','.'))/1.5
-f5=float(f.readline().replace(',','.'))/1.5
-f6=float(f.readline().replace(',','.'))/1.5
-f7=float(f.readline().replace(',','.'))/1.5
-f8=float(f.readline().replace(',','.'))/1.5
-f9=float(f.readline().replace(',','.'))/1.5
-f10=float(f.readline().replace(',','.'))/1.5
+f1=float(f.readline().replace(',','.')) 
+f2=float(f.readline().replace(',','.')) 
+f3=float(f.readline().replace(',','.')) 
+f4=float(f.readline().replace(',','.')) 
+f5=float(f.readline().replace(',','.')) 
+f6=float(f.readline().replace(',','.')) 
+f7=float(f.readline().replace(',','.')) 
+f8=float(f.readline().replace(',','.')) 
+f9=float(f.readline().replace(',','.')) 
+f10=float(f.readline().replace(',','.')) 
 
-e1=float(f.readline().replace(',','.'))/1.5
-e2=float(f.readline().replace(',','.'))/1.5
-e3=float(f.readline().replace(',','.'))/1.5
-e4=float(f.readline().replace(',','.'))/1.5
-e5=float(f.readline().replace(',','.'))/1.5
-e6=float(f.readline().replace(',','.'))/1.5
-e7=float(f.readline().replace(',','.'))/1.5
-e8=float(f.readline().replace(',','.'))/1.5
-e9=float(f.readline().replace(',','.'))/1.5
-e10=float(f.readline().replace(',','.'))/1.5
+e1=float(f.readline().replace(',','.')) 
+e2=float(f.readline().replace(',','.')) 
+e3=float(f.readline().replace(',','.')) 
+e4=float(f.readline().replace(',','.')) 
+e5=float(f.readline().replace(',','.')) 
+e6=float(f.readline().replace(',','.')) 
+e7=float(f.readline().replace(',','.')) 
+e8=float(f.readline().replace(',','.')) 
+e9=float(f.readline().replace(',','.')) 
+e10=float(f.readline().replace(',','.')) 
 
 valueMeans = (f1,f2,f3,f4,f5,f6,f7,f8,f9,f10)
 valueErr =  (e1,e2,e3,e4,e5,e6,e7,e8,e9,e10)
@@ -49,7 +49,7 @@ else:
   exit()
   
 # add some text for labels, title and axes ticks
-ax.set_ylabel('Victories (%)')
+ax.set_ylabel('Time (seconds)')
 
 #ax.set_title('Percentage of victories by enemy race and fitness fuction')
 ax.set_xticks(ind+width)
