@@ -26,6 +26,7 @@ class Gene(object):
 
         '''
         self._value = self._domain.random_value()
+        print self._value
 
     def set_domain(self, domain):
         '''
@@ -67,19 +68,31 @@ class Chromosome(object):
     i.e., non-swarm-gap parameters
     '''
     GENE_NAMES = [
-        's_gather_minerals', 's_build_barracks_denominator', 's_build_cmd_center',
-        's_attack',
-        #'s_attack_near', 's_attack_mid', 's_attack_far',
-        's_train_scv_denominator',
-        's_train_medic_ratio',
-        's_train_marine', 'k_scv_gather_minerals', #'k_scv_build_barracks',
-        #'k_scv_build_supply', 'k_scv_build_cmd_center',
-        'k_scv_repair_near', 'k_scv_repair_mid', 'k_scv_repair_far',
-        'k_scv_explore', 'k_scv_attack_near', 'k_scv_attack_mid', 'k_scv_attack_far',
-        'k_marine_explore', 'k_marine_attack_near', 'k_marine_attack_mid', 'k_marine_attack_far',
-        'k_general_train_scv', 'k_general_train_marine',
-        'k_general_train_medic',
-        'm_pack_size'
+        's_gather_minerals',                #0
+        's_build_barracks_denominator',     #1
+        's_build_cmd_center',               #2
+        's_attack',                         #3
+        's_train_scv_denominator',          #4
+        's_train_medic_ratio',              #5
+        's_train_marine',                   #6
+        'k_scv_gather_minerals',            #7
+        'k_scv_repair_near',                #8
+        'k_scv_repair_mid',                 #9
+        'k_scv_repair_far',                 #10
+        'k_scv_explore',                    #11
+        'k_scv_attack_near',                #12
+        'k_scv_attack_mid',                 #13
+        'k_scv_attack_far',                 #14
+        'k_marine_explore',                 #15
+        'k_marine_attack_near',             #16
+        'k_marine_attack_mid',              #17
+        'k_marine_attack_far',              #18
+        'k_general_train_scv',              #19
+        'k_general_train_marine',           #20
+        'k_general_train_medic',            #21
+        'm_pack_size',                      #22
+        's_train_firebat',                  #23
+        'k_general_train_firebat'           #24
     ]
     #some tasks or skills are hard-coded and do not enter in the gene: k_build refinery, k_build academy,
     #k_build cmd center, k_build barracks, s/k_build supply depot,

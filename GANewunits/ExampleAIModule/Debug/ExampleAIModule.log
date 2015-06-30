@@ -1,0 +1,84 @@
+﻿Build started 30/06/2015 16:23:40.
+     1>Project "E:\github\terranswarm\GAMedic\ExampleAIModule\ExampleAIModule.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\GAMedicAIModule.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I../include /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D EXAMPLEAIMODULE_EXPORTS /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt Source\CommanderAgent.cpp Source\Dll.cpp Source\ExampleAIModule.cpp Source\FirebatAgent.cpp Source\MarineAgent.cpp Source\Parameters.cpp Source\SCVAgent.cpp
+         SCVAgent.cpp
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\scvagent.cpp(29): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\scvagent.cpp(167): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\scvagent.cpp(313): warning C4244: 'initializing' : conversion from 'double' to 'int', possible loss of data
+         Parameters.cpp
+         MarineAgent.cpp
+         FirebatAgent.cpp
+         ExampleAIModule.cpp
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\exampleaimodule.cpp(38): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\exampleaimodule.cpp(204): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\exampleaimodule.cpp(206): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\exampleaimodule.cpp(252): warning C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(157) : see declaration of 'strerror'
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\exampleaimodule.cpp(783): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\exampleaimodule.cpp(833): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\exampleaimodule.cpp(850): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\exampleaimodule.cpp(893): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\exampleaimodule.cpp(1288): warning C4244: 'initializing' : conversion from 'const float' to 'int', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\exampleaimodule.cpp(1296): warning C4244: 'initializing' : conversion from 'const float' to 'int', possible loss of data
+         CommanderAgent.cpp
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\commanderagent.cpp(35): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\commanderagent.cpp(58): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\commanderagent.cpp(79): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\commanderagent.cpp(80): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>e:\github\terranswarm\gamedic\exampleaimodule\source\commanderagent.cpp(81): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         Generating Code...
+         Compiling...
+         Dll.cpp
+         Generating Code...
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\github\terranswarm\GAMedic\Debug\GAMedicAIModule.dll" /INCREMENTAL:NO /NOLOGO ../lib/BWAPId.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\GAMedicAIModule.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"E:\github\terranswarm\GAMedic\Debug\GAMedicAIModule.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\github\terranswarm\GAMedic\Debug\GAMedicAIModule.lib" /MACHINE:X86 /DLL Debug\CommanderAgent.obj
+         Debug\Dll.obj
+         Debug\ExampleAIModule.obj
+         Debug\FirebatAgent.obj
+         Debug\GeneticValues.obj
+         Debug\MarineAgent.obj
+         Debug\MedicAgent.obj
+         Debug\Parameters.obj
+         Debug\SCVAgent.obj
+         Debug\Task.obj
+         Debug\TaskAssociation.obj
+         Debug\util.obj
+     1>CommanderAgent.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
+            Creating library E:\github\terranswarm\GAMedic\Debug\GAMedicAIModule.lib and object E:\github\terranswarm\GAMedic\Debug\GAMedicAIModule.exp
+     1>BWAPId.lib(AIModule.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(AIModule.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(Bulletset.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(Bulletset.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(Color.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(Color.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(DamageType.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(DamageType.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(Error.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(Error.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(ExplosionType.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(ExplosionType.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(Filters.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(Filters.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(Game.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(Game.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(Order.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(Order.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(Player.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(Player.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(Playerset.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(Playerset.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(Position.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(Position.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(PositionUnit.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(PositionUnit.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(Race.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(Race.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(TechType.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(TechType.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(Unit.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(Unit.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(Unitset.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(Unitset.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(UnitCommand.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(UnitCommand.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(UnitCommandType.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(UnitCommandType.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(UnitSizeType.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(UnitSizeType.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(UnitType.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(UnitType.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(UpgradeType.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(UpgradeType.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+     1>BWAPId.lib(WeaponType.obj) : warning LNK4099: PDB 'bwapid.pdb' was not found with 'BWAPId.lib(WeaponType.obj)' or at 'E:\github\terranswarm\GAMedic\Debug\bwapid.pdb'; linking object as if no debug info
+         ExampleAIModule.vcxproj -> E:\github\terranswarm\GAMedic\Debug\GAMedicAIModule.dll
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"E:\github\terranswarm\GAMedic\Debug\GAMedicAIModule.dll;#2" /manifest Debug\GAMedicAIModule.dll.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Debug\GAMedicAIModule.unsuccessfulbuild".
+         Touching "Debug\GAMedicAIModule.lastbuildstate".
+     1>Done Building Project "E:\github\terranswarm\GAMedic\ExampleAIModule\ExampleAIModule.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:15.31
