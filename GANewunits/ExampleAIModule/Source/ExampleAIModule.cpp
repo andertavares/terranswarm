@@ -71,7 +71,7 @@ void ExampleAIModule::onStart() {
 	Broodwar->setCommandOptimizationLevel(2);
 
 	Broodwar->setGUI(false); //disables gui drawing (better performance)
-	Broodwar->setLocalSpeed(5); //fastest speed, rock on!
+	Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 	// Check if this is a replay
 	if ( Broodwar->isReplay() ) {

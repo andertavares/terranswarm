@@ -1,4 +1,4 @@
-﻿Build started 05/07/2015 19:30:13.
+﻿Build started 05/07/2015 19:53:51.
      1>Project "E:\github\terranswarm\GANewunits\ExampleAIModule\ExampleAIModule.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Release\GAMedicAIModule.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -46,4 +46,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:12.45
+Time Elapsed 00:00:10.42
