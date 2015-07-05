@@ -15,11 +15,14 @@ public:
 	void createSupply(BWAPI::Unit u);
 	int calculateBarracksFromCommandCenter(BWAPI::Unit u);
 	void createBarrackNearCommandCenter(BWAPI::Unit u);
+	int calculateFactoryFromCommandCenter(BWAPI::Unit u);
+	void createFactoryNearCommandCenter(BWAPI::Unit u);
 	void researchRequest(BWAPI::TechType techType);
 	void researchRequest(BWAPI::UpgradeType upgdType);
 
 private:
 	BWAPI::Unitset _commandCenters;
 	BWAPI::Unitset _barracks;
+	BWAPI::Unitset _factories;
 };
 

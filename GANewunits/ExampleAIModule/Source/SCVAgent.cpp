@@ -131,6 +131,19 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 		state = NO_TASK;
 		newBuildingLocation = NULL;
 	}
+	else if(state == BUILDING_FACTORY){ //if unit should be building factory but it isn't, either the job is finished or location is obstructed
+		//Broodwar << "could not build barracks" << endl;
+		Position pos = gameUnit->getPosition();
+		Broodwar->registerEvent(
+			[pos](Game*) {
+				Broodwar->drawCircleMap(pos,20,Color(Colors::Orange));
+			},
+			nullptr,  // condition
+			50 // frames to run
+		);  
+		state = NO_TASK;
+		newBuildingLocation = NULL;
+	}
 	else if(state == BUILDING_BUNKER){ //if unit should be building barracks but it isn't, either the job is finished or location is obstructed
 		//Broodwar << "could not build barracks" << endl;
 		Position pos = gameUnit->getPosition();
@@ -261,7 +274,6 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 					}
 				}
 			}
-
 			else if(taskType == BuildAcademy){
 				
 				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
@@ -308,7 +320,52 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 					}	
 				}
 			}
+			else if(taskType == BuildArmory){
+				
+				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+					auto task = it;
+					float rNumber = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					TaskAssociation taskA = TaskAssociation(&(*task), 0.3f);
+					
+					if(taskA.tValue() > rNumber){
+						Broodwar << "Agent [" << unitId << "] Task Armory " << taskA.tValue() << " Incentive " << taskA.task()->getIncentive() << " Numbr " << rNumber << std::endl;
+						
+						UnitType supplyProviderType = UnitTypes::Terran_Armory;
+						if ( supplyProviderType.isBuilding() ){
+							newBuildingLocation = Broodwar->getBuildLocation(supplyProviderType, gameUnit->getTilePosition());
+							TilePosition targetBuildLocation = newBuildingLocation;
+							if ( newBuildingLocation ){
+								// Register an event that draws the target build location
+								Broodwar->registerEvent([targetBuildLocation,supplyProviderType](Game*){
+										Broodwar->drawBoxMap( Position(targetBuildLocation), Position(targetBuildLocation + supplyProviderType.tileSize()),	Colors::Orange);
+									},
+									nullptr,  // condition
+									supplyProviderType.buildTime() + 100 
+								);  // frames to run
 
+								// Order the builder to construct the supply structure
+								gameUnit->build( supplyProviderType, targetBuildLocation );
+							}
+							else {
+								Position txtPlace =  gameUnit->getPosition();
+								Broodwar->registerEvent([txtPlace,supplyProviderType](Game*)
+								{
+									Broodwar->drawTextMap( txtPlace,
+											Broodwar->getLastError().c_str());
+									},
+								nullptr,  // condition
+								supplyProviderType.buildTime() + 100 );
+								//Broodwar << Broodwar->getLastError() << std::endl;
+							}
+						}
+
+						Broodwar->drawTextMap(gameUnit->getPosition(),"\nArmory");
+						lastChecked = Broodwar->getFrameCount();
+						it = taskList->erase(it);
+						return;
+					}	
+				}
+			}
 			else if(taskType == Repair){
 				int maxDistance = Position(0,0).getDistance(Position(Broodwar->mapWidth() * TILE_SIZE, Broodwar->mapHeight() * TILE_SIZE));
 
@@ -430,6 +487,28 @@ void SCVAgent::onFrame(unordered_map<TaskType, vector<Task>*> *taskMap, vector<P
 						//it = taskList->erase(it); <<this does not prevent more then one SCV trying to build in the same place
 						//it->setIncentive(0); <<this does not prevent more then one SCV trying to build in the same place
 						createBarrackNearCommandCenter(it->getPosition());
+						taskList->erase(it);
+						return;
+					}
+				}
+			}
+			else if(taskType == BuildFactory){
+				// evaluate incentive
+				//TODO: build barracks around new bases
+				//calculates max map distance
+				int maxDistance = Position(0,0).getApproxDistance(Position(Broodwar->mapWidth() * TILE_SIZE, Broodwar->mapHeight() * TILE_SIZE));
+
+				for (vector<Task>::iterator it = taskList->begin(); it != taskList->end(); it++){
+					auto task = it;
+					float rNumber = rand() / float(RAND_MAX);
+					//distfactor ranges [0:0.5]: when it is .5, agent capability to build cmd center is minimum
+					float distFactor = .5f * (gameUnit->getPosition().getApproxDistance(task->getPosition()) / float(maxDistance));
+
+					//agent capability decreases exponentially with the distance to the task
+					TaskAssociation taskA = TaskAssociation(&(*task), pow(float(EULER),-distFactor));
+					
+					if(rNumber < taskA.tValue()){
+						createFactoryNearCommandCenter(it->getPosition());
 						taskList->erase(it);
 						return;
 					}
@@ -1128,6 +1207,83 @@ void SCVAgent::createBarrackNearCommandCenter(Position commandCenterPos) {
 		barrackType.buildTime() + 100 );*/
 		Broodwar << Broodwar->getLastError().c_str() << std::endl;
 
+		
+		state = NO_TASK;
+		gameUnit->stop();
+		return;
+	}
+}
+
+void SCVAgent::createFactoryNearCommandCenter(Position commandCenterPos) {
+	UnitType factoryType = UnitTypes::Terran_Factory;
+	
+	TilePosition cmdTilePos = TilePosition(commandCenterPos.x / TILE_SIZE, commandCenterPos.y / TILE_SIZE);
+	//tries to place barrack near the command center
+	newBuildingLocation = Broodwar->getBuildLocation(factoryType, cmdTilePos);//gameUnit->getTilePosition());
+	//Broodwar->getb
+
+	if ( newBuildingLocation ){
+		state = BUILDING_FACTORY;
+		Broodwar->drawLineMap(gameUnit->getPosition(), Position(commandCenterPos.x, commandCenterPos.y), Color(Colors::Green));
+		
+		//checks if other scvs are planning to construct a barrack in my area
+		SCVMap map = _aiModule->getSCVMap();
+		for(auto scv = map.begin(); scv != map.end(); scv++){
+			if(scv->second->gameUnit->getID() != gameUnit->getID() &&  scv->second->newBuildingLocation == newBuildingLocation){
+				Broodwar << "someone will build there already" << endl;
+				newBuildingLocation = NULL;
+				state = NO_TASK;
+				gameUnit->stop();
+				return;
+			}
+		}
+
+		// Order the builder to construct the structure, if it fails, print some info and return
+		if(!gameUnit->build( factoryType, newBuildingLocation )) {
+			
+
+			if(Broodwar->getLastError().getID() == Errors::Unbuildable_Location){
+				Broodwar << "Not buildable!" << std::endl;
+				gameUnit->move(Position(newBuildingLocation));
+				//this error seems to happen when place is unexplored
+
+				/*
+				Position myPos = gameUnit->getPosition();
+				Position target = Position(newBuildingLocation);
+				Broodwar->registerEvent(
+					[target,myPos](Game*){
+						Broodwar->drawLineMap( myPos, target,	Colors::Yellow);
+					},
+					nullptr,  // condition
+					1000 
+				);  // frames to run
+				*/
+			}
+
+			state = NO_TASK;
+			newBuildingLocation = NULL;
+			//gameUnit->stop();
+			return;
+		}
+
+		// Register an event that draws the target build location
+		TilePosition targetBuildLocation = newBuildingLocation;
+		Broodwar->registerEvent([targetBuildLocation,factoryType](Game*)
+			{
+				Broodwar->drawBoxMap( Position(targetBuildLocation),
+					Position(targetBuildLocation + factoryType.tileSize()),
+					Colors::Blue);
+			},
+			nullptr,  // condition
+			factoryType.buildTime() + 100 // frames to run
+		);  
+
+		
+		
+	}
+	else {
+		Position txtPlace =  gameUnit->getPosition();
+		Broodwar << Broodwar->getLastError().c_str() << std::endl;
 		
 		state = NO_TASK;
 		gameUnit->stop();

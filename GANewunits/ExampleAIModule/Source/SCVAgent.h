@@ -59,6 +59,7 @@ public:
 	void createSupply();
 	void createBarrackNearCommandCenter(Position commandCenterPos);
 	void createBunkerNearCommandCenter(Position commandCenterPos);
+	void createFactoryNearCommandCenter(Position commandCenterPos);
 	bool isBuildingExpansion();
 	bool isRepairing();
 	bool shouldBeRepaired(Unit target);

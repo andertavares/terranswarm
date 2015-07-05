@@ -15,6 +15,7 @@ using namespace Filter;
 
 CommanderAgent::CommanderAgent() : latencyFrames(10){
 	_barracks.clear();
+	_factories.clear();
 	_commandCenters.clear();
 }
 
@@ -78,6 +79,8 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 	//iterates through the barracks
 	TaskAssociation trainMarine = TaskAssociation(&tasklist[TrainMarine]->at(0), parameters[K_GENERAL_TRAIN_MARINE]);
 	TaskAssociation trainFirebat = TaskAssociation(&tasklist[TrainFirebat]->at(0), parameters[K_GENERAL_TRAIN_FIREBAT]);
+	TaskAssociation trainGoliath = TaskAssociation(&tasklist[TrainGoliath]->at(0), parameters[K_GENERAL_TRAIN_GOLIATH]);
+	TaskAssociation trainVulture = TaskAssociation(&tasklist[TrainVulture]->at(0), parameters[K_GENERAL_TRAIN_VULTURE]);
 	TaskAssociation trainMedic = TaskAssociation(&tasklist[TrainMedic]->at(0), parameters[K_GENERAL_TRAIN_MEDIC]);
 	Unitset myUnits = Broodwar->self()->getUnits();
 	for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u ) {
@@ -107,6 +110,24 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 				}			
 			}
 		} //closure
+		
+		if ( u->getType() == UnitTypes::Terran_Factory ) {
+			
+			if ((rand() / float(RAND_MAX)) < trainVulture.tValue() && u->isIdle() && !u->train(UnitTypes::Terran_Vulture)) {
+				Error lastErr = Broodwar->getLastError();
+				if(lastErr == Errors::Insufficient_Supply){
+					//Broodwar->sendText("Marine can't be created - %s", lastErr.toString().c_str());	
+					//CommanderAgent::createSupply(Broodwar->getUnit(u->getID()));
+				}			
+			}
+			else if ((rand() / float(RAND_MAX)) < trainGoliath.tValue() && u->isIdle() && !u->train(UnitTypes::Terran_Goliath)) {
+				Error lastErr = Broodwar->getLastError();
+				if(lastErr == Errors::Insufficient_Supply){
+					//Broodwar->sendText("Marine can't be created - %s", lastErr.toString().c_str());	
+					//CommanderAgent::createSupply(Broodwar->getUnit(u->getID()));
+				}			
+			}
+		}
 	}
 	
 	TaskAssociation researchAcademyLongRange = TaskAssociation(&tasklist[ResearchAcademyLongRange]->at(0), .7f); //was[TrainMarine]
@@ -119,6 +140,18 @@ void CommanderAgent::onFrame(unordered_map<TaskType, vector<Task>*> tasklist, un
 	if ((rand() / float(RAND_MAX)) < researchAcademyStimPack.tValue()){
 		Broodwar << "Resquest Stim Pack upgrade" << endl;
 		researchRequest(TechTypes::Stim_Packs);
+	}
+
+	TaskAssociation researchArmoryWeapon = TaskAssociation(&tasklist[ResearchArmoryWeapon]->at(0), .7f); //was[TrainMarine]
+	if ((rand() / float(RAND_MAX)) < researchArmoryWeapon.tValue()){
+		Broodwar << "Resquest Vehicle Weapons upgrade" << endl;
+		researchRequest(UpgradeTypes::Terran_Vehicle_Weapons);
+	}
+
+	TaskAssociation researchArmoryPlating = TaskAssociation(&tasklist[ResearchArmoryPlating]->at(0), .7f); //was[TrainMarine]
+	if ((rand() / float(RAND_MAX)) < researchArmoryPlating.tValue()){
+		Broodwar << "Resquest Vehicle Plating upgrade" << endl;
+		researchRequest(UpgradeTypes::Terran_Vehicle_Plating);
 	}
 }
 

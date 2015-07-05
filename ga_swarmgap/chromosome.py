@@ -92,11 +92,16 @@ class Chromosome(object):
         'k_general_train_medic',            #21
         'm_pack_size',                      #22
         's_train_firebat',                  #23
-        'k_general_train_firebat'           #24
+        'k_general_train_firebat',          #24
+        's_build_factory_denominator',      #25
+        's_train_goliath',                  #26
+        'k_general_train_goliath',          #27
+        's_train_vulture',                  #28
+        'k_general_train_vulture'           #29
     ]
     #some tasks or skills are hard-coded and do not enter in the gene: k_build refinery, k_build academy,
-    #k_build cmd center, k_build barracks, s/k_build supply depot,
-    #research U_238_shells, research stim pack and gather gas.
+    #k_build cmd center, k_build barracks, s/k_build supply depot, k_build armory,
+    #all research types and gather gas.
 
     def __init__(self, value_array=None):
         '''
@@ -118,13 +123,15 @@ class Chromosome(object):
             self._genes[self.GENE_NAMES[i]] = Gene(self.GENE_NAMES[i], domain.DiscreteDomain(domain.STANDARD_INTERVAL), value)
 
         #--- BEGIN: fixes information of genes with specific domains
-        self._genes['s_build_barracks_denominator'].set_domain(domain.DiscreteDomain([1, 2, 3, 4, 5]))
+        self._genes['s_build_barracks_denominator'].set_domain(domain.DiscreteDomain([1,2,3,4,5]))
+        self._genes['s_build_factory_denominator'].set_domain(domain.DiscreteDomain([0,1,2,3,4,5]))
         self._genes['s_train_scv_denominator'].set_domain(domain.DiscreteDomain([1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]))
         self._genes['s_train_medic_ratio'].set_domain(domain.DiscreteDomain([1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]))
-        self._genes['m_pack_size'].set_domain(domain.DiscreteDomain(range(6, 24, 2)))
+        self._genes['m_pack_size'].set_domain(domain.DiscreteDomain(range(6, 36, 2)))
 
         if value_array is None:
             self._genes['s_build_barracks_denominator'].randomize()
+            self._genes['s_build_factory_denominator'].randomize()
             self._genes['s_train_scv_denominator'].randomize()
             self._genes['s_train_medic_ratio'].randomize()
             self._genes['m_pack_size'].randomize()

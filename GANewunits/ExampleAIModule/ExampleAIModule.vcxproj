@@ -96,6 +96,7 @@
     <ClCompile Include="Source\ExampleAIModule.cpp" />
     <ClCompile Include="Source\FirebatAgent.cpp" />
     <ClCompile Include="Source\GeneticValues.cpp" />
+    <ClCompile Include="Source\GoliathAgent.cpp" />
     <ClCompile Include="Source\MarineAgent.cpp" />
     <ClCompile Include="Source\MedicAgent.cpp" />
     <ClCompile Include="Source\Parameters.cpp" />
@@ -103,6 +104,7 @@
     <ClCompile Include="Source\Task.cpp" />
     <ClCompile Include="Source\TaskAssociation.cpp" />
     <ClCompile Include="Source\util.cpp" />
+    <ClCompile Include="Source\VultureAgent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\AgentStates.h" />
@@ -110,6 +112,7 @@
     <ClInclude Include="Source\ExampleAIModule.h" />
     <ClInclude Include="Source\FirebatAgent.h" />
     <ClInclude Include="Source\GeneticValues.h" />
+    <ClInclude Include="Source\GoliathAgent.h" />
     <ClInclude Include="Source\MarineAgent.h" />
     <ClInclude Include="Source\MedicAgent.h" />
     <ClInclude Include="Source\Parameters.h" />
@@ -117,6 +120,7 @@
     <ClInclude Include="Source\Task.h" />
     <ClInclude Include="Source\TaskAssociation.h" />
     <ClInclude Include="Source\util.h" />
+    <ClInclude Include="Source\VultureAgent.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

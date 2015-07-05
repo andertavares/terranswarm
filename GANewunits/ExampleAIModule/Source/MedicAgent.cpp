@@ -148,7 +148,7 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 					u = *unit;
 				}
 			}	
-				else if(unit->getType() == UnitTypes::Terran_Firebat){
+			else if(unit->getType() == UnitTypes::Terran_Firebat){
 				newHitPoints = unit->getHitPoints();
 				if (newHitPoints < unit->getInitialHitPoints() && (u == NULL || newHitPoints < hitPoints)) {
 					hitPoints = newHitPoints;

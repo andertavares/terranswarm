@@ -8,6 +8,7 @@ enum TaskType{
 	TrainWorker,
 	BuildSupplyDepot,
 	BuildBarracks,
+	BuildFactory,
 	BuildCommandCenter,
 	Repair,
 	GatherMinerals,
@@ -16,10 +17,15 @@ enum TaskType{
 	GuardBase,
 	BuildVespeneGas,
 	BuildAcademy,
+	BuildArmory,
 	TrainFirebat,
+	TrainVulture,
+	TrainGoliath,
 	TrainMedic,
 	ResearchAcademyLongRange,
 	ResearchAcademyStimPack,
+	ResearchArmoryWeapon,
+	ResearchArmoryPlating,
 	BuildBunker,
 	BuildComSat //this was making marines go explore weird places instead of attacking, why???
 };
