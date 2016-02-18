@@ -1,6 +1,11 @@
 '''
 Makes GAMedicReadValues play with a hand-configured chromosome against a Human.
-bwapi.ini to be used is configured so that
+
+We select a different 'bestValues.txt' according to the adversary.
+
+- Terran is based on the results of terran_vratio-pop15-rep16.zip
+- Protoss is based on the results of protoss_eval10-29.zip
+- Zerg is based on the results of zerg_vratio-pop15-rep17.zip
 
 '''
 import run_whole_experiment as rwe
@@ -19,7 +24,7 @@ def go(enemy, output):
     sc_dir, cl_path = paths.read_paths()
 
     if os.path.exists(output):
-        print 'File %s already exists and won\'t be overwritten. Exiting...'
+        print 'File %s already exists and won\'t be overwritten. Please remove it. Exiting...' % output
         exit()
 
     best_file = 'setup/bestValues_%s.txt' % enemy
@@ -60,10 +65,10 @@ def go(enemy, output):
     open(results_path, 'w').close() #create empty results.txt file
 
     #calls chaoslauncher and monitors results.txt
-    chaosLauncher = subprocess.call(cl_path)
+    subprocess.call(cl_path)
 
     #terminates chaoslauncher and starcraft
-    subprocess.call("taskkill /IM starcraft.exe")
+    #subprocess.call("taskkill /IM starcraft.exe")
     #chaosLauncher.terminate()
 
     #moves/renames results.txt to the name specified by the user
