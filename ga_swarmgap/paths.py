@@ -82,20 +82,20 @@ def ai_module_exists():
     return os.path.exists(ai_module_path())
 
 
-def check_map_location():
+def check_map_location(mapname='(2)Astral Balance_edit.scm'):
     """
-    Checks whether Astral Balance_edit.scm is in starcraft maps.
-    If not, it is copied there.
+    Checks whether a map is in starcraft maps.
+    If not, it is copied there (it must be in setup/mapname)
     :return:
     """
 
     sc_dir, cl_path = read_paths()
-    sc_map_path = os.path.join(sc_dir, 'maps', 'Broodwar', '(2)Astral Balance_edit.scm')
+    sc_map_path = os.path.join(sc_dir, 'maps', 'Broodwar', mapname)
     if not os.path.exists(sc_map_path):
         print 'Map %s not found, we will copy one there.' % sc_map_path
 
         try:
-            our_map_path = os.path.join('setup', '(2)Astral Balance_edit.scm')
+            our_map_path = os.path.join('setup', mapname)
             shutil.copyfile(our_map_path, sc_map_path)
         except IOError as e:
             print 'An error has occurred. Could not copy %s \n' \
