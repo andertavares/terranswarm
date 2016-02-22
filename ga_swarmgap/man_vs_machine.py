@@ -23,7 +23,7 @@ import re
 def go(enemy):
 
     # ensures that map is present
-    paths.check_map_location('(2)Astral_BOT_vs_%s.scx' % enemy.capitalize())
+    paths.check_map_location('(2)Astral_quick_vs_%s.scx' % enemy.capitalize())
 
     sc_dir, cl_path = paths.read_paths()
 
