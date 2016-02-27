@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <windows.h>
 
+#include "Parameters.h"
+
 using namespace BWAPI;
 using namespace std;
 
@@ -38,8 +40,11 @@ string GeneticValues::getParamsFile(){
 	return paramsFile;
 }
 
-
-void GeneticValues::initializeMap(string mainPath)
+/**
+ * Attempts to read the parameters from a file. 
+ * Returns a bool indicating success
+ */
+bool GeneticValues::loadFromFile(string mainPath)
 {
 	// starcraft path is the root path, no need to specify it
 	string partialFilePath = "bwapi-data\\bestValues.txt";
@@ -61,5 +66,135 @@ void GeneticValues::initializeMap(string mainPath)
 			map_instance[key] = value;
 		}
 		myfile.close();
+		return true;
 	}
+	else {
+		Broodwar << "Could not read parameters from " << partialFilePath << endl;
+		Broodwar << "Will use default params vs. unknown opponent" << endl;
+
+		loadDefaultVsUnknown();
+		return false;
+	}
+}
+
+/**
+ * Loads the default vs-terran best values
+ * and returns the map
+ */
+void GeneticValues::loadDefaultVsTerran(){
+	map_instance[Params::S_GATHER_MINERALS] =			0.45;
+	map_instance[Params::S_BUILD_BARRACKS_DENOMINATOR] =2;
+	map_instance[Params::S_BUILD_CMD_CENTER] = 			0.75;
+	map_instance[Params::S_ATTACK] = 					1.0;
+	map_instance[Params::S_TRAIN_SCV_DENOMINATOR] = 	2.5;
+	map_instance[Params::S_TRAIN_MEDIC_RATIO] = 		4.5;
+	map_instance[Params::S_TRAIN_MARINE] = 				0.7;
+	map_instance[Params::K_SCV_GATHER_MINERALS] = 		0.4;
+	map_instance[Params::K_SCV_REPAIR_NEAR] = 			0.75;
+	map_instance[Params::K_SCV_REPAIR_MID] = 			0.2;
+	map_instance[Params::K_SCV_REPAIR_FAR] = 			0.45;
+	map_instance[Params::K_SCV_EXPLORE] = 				0.55;
+	map_instance[Params::K_SCV_ATTACK_NEAR] = 			0.95;
+	map_instance[Params::K_SCV_ATTACK_MID] = 			0.2;
+	map_instance[Params::K_SCV_ATTACK_FAR] = 			0.25;
+	map_instance[Params::K_MARINE_EXPLORE] = 			0.7;
+	map_instance[Params::K_MARINE_ATTACK_NEAR] = 		0.95;
+	map_instance[Params::K_MARINE_ATTACK_MID] = 		0.6;
+	map_instance[Params::K_MARINE_ATTACK_FAR] = 		0.65;
+	map_instance[Params::K_GENERAL_TRAIN_SCV] = 		0.3;
+	map_instance[Params::K_GENERAL_TRAIN_MARINE] = 		1.0;
+	map_instance[Params::K_GENERAL_TRAIN_MEDIC] = 		0.45;
+	map_instance[Params::M_PACK_SIZE] = 				10;
+}
+
+/**
+ * Loads the default vs-protoss best values
+ * and returns the map
+ */
+void GeneticValues::loadDefaultVsProtoss(){
+	map_instance[Params::S_GATHER_MINERALS] =			0.55;
+	map_instance[Params::S_BUILD_BARRACKS_DENOMINATOR] =3;
+	map_instance[Params::S_BUILD_CMD_CENTER] = 			1.0;
+	map_instance[Params::S_ATTACK] = 					0.95;
+	map_instance[Params::S_TRAIN_SCV_DENOMINATOR] = 	2.5;
+	map_instance[Params::S_TRAIN_MEDIC_RATIO] = 		5.0;
+	map_instance[Params::S_TRAIN_MARINE] = 				0.9;
+	map_instance[Params::K_SCV_GATHER_MINERALS] = 		0.6;
+	map_instance[Params::K_SCV_REPAIR_NEAR] = 			0.7;
+	map_instance[Params::K_SCV_REPAIR_MID] = 			0.4;
+	map_instance[Params::K_SCV_REPAIR_FAR] = 			0.25;
+	map_instance[Params::K_SCV_EXPLORE] = 				0.2;
+	map_instance[Params::K_SCV_ATTACK_NEAR] = 			0.75;
+	map_instance[Params::K_SCV_ATTACK_MID] = 			0.55;
+	map_instance[Params::K_SCV_ATTACK_FAR] = 			0.45;
+	map_instance[Params::K_MARINE_EXPLORE] = 			0.95;
+	map_instance[Params::K_MARINE_ATTACK_NEAR] = 		0.9;
+	map_instance[Params::K_MARINE_ATTACK_MID] = 		0.2;
+	map_instance[Params::K_MARINE_ATTACK_FAR] = 		0.65;
+	map_instance[Params::K_GENERAL_TRAIN_SCV] = 		0.7;
+	map_instance[Params::K_GENERAL_TRAIN_MARINE] = 		0.95;
+	map_instance[Params::K_GENERAL_TRAIN_MEDIC] = 		0.7;
+	map_instance[Params::M_PACK_SIZE] = 				12;
+}
+
+/**
+ * Loads the default vs-zerg best values
+ * and returns the map
+ */
+void GeneticValues::loadDefaultVsZerg(){
+	map_instance[Params::S_GATHER_MINERALS] =			0.0;
+	map_instance[Params::S_BUILD_BARRACKS_DENOMINATOR] =2;
+	map_instance[Params::S_BUILD_CMD_CENTER] = 			0.45;
+	map_instance[Params::S_ATTACK] = 					0.05;
+	map_instance[Params::S_TRAIN_SCV_DENOMINATOR] = 	2.5;
+	map_instance[Params::S_TRAIN_MEDIC_RATIO] = 		4.0;
+	map_instance[Params::S_TRAIN_MARINE] = 				0.3;
+	map_instance[Params::K_SCV_GATHER_MINERALS] = 		0.3;
+	map_instance[Params::K_SCV_REPAIR_NEAR] = 			0.3;
+	map_instance[Params::K_SCV_REPAIR_MID] = 			0.6;
+	map_instance[Params::K_SCV_REPAIR_FAR] = 			0.6;
+	map_instance[Params::K_SCV_EXPLORE] = 				0.25;
+	map_instance[Params::K_SCV_ATTACK_NEAR] = 			0.0;
+	map_instance[Params::K_SCV_ATTACK_MID] = 			0.6;
+	map_instance[Params::K_SCV_ATTACK_FAR] = 			0.35;
+	map_instance[Params::K_MARINE_EXPLORE] = 			0.05;
+	map_instance[Params::K_MARINE_ATTACK_NEAR] = 		0.05;
+	map_instance[Params::K_MARINE_ATTACK_MID] = 		0.65;
+	map_instance[Params::K_MARINE_ATTACK_FAR] = 		0.35;
+	map_instance[Params::K_GENERAL_TRAIN_SCV] = 		0.9;
+	map_instance[Params::K_GENERAL_TRAIN_MARINE] = 		0.95;
+	map_instance[Params::K_GENERAL_TRAIN_MEDIC] = 		0.05;
+	map_instance[Params::M_PACK_SIZE] = 				10;
+}
+
+
+/**
+ * Loads the default vs-unknown values
+ * and returns the map
+ */
+void GeneticValues::loadDefaultVsUnknown(){
+	
+	map_instance[Params::S_GATHER_MINERALS] =			0.6;
+	map_instance[Params::S_BUILD_BARRACKS_DENOMINATOR] =3;
+	map_instance[Params::S_BUILD_CMD_CENTER] = 			0.8;
+	map_instance[Params::S_ATTACK] = 					0.8;
+	map_instance[Params::S_TRAIN_SCV_DENOMINATOR] = 	2.5;
+	map_instance[Params::S_TRAIN_MEDIC_RATIO] = 		3.0;
+	map_instance[Params::S_TRAIN_MARINE] = 				0.8;
+	map_instance[Params::K_SCV_GATHER_MINERALS] = 		0.7;
+	map_instance[Params::K_SCV_REPAIR_NEAR] = 			0.9;
+	map_instance[Params::K_SCV_REPAIR_MID] = 			0.6;
+	map_instance[Params::K_SCV_REPAIR_FAR] = 			0.3;
+	map_instance[Params::K_SCV_EXPLORE] = 				0.0;
+	map_instance[Params::K_SCV_ATTACK_NEAR] = 			0.9;
+	map_instance[Params::K_SCV_ATTACK_MID] = 			0.0;
+	map_instance[Params::K_SCV_ATTACK_FAR] = 			0.0;
+	map_instance[Params::K_MARINE_EXPLORE] = 			0.3;
+	map_instance[Params::K_MARINE_ATTACK_NEAR] = 		0.9;
+	map_instance[Params::K_MARINE_ATTACK_MID] = 		0.6;
+	map_instance[Params::K_MARINE_ATTACK_FAR] = 		0.3;
+	map_instance[Params::K_GENERAL_TRAIN_SCV] = 		0.7;
+	map_instance[Params::K_GENERAL_TRAIN_MARINE] = 		0.7;
+	map_instance[Params::K_GENERAL_TRAIN_MEDIC] = 		0.4;
+	map_instance[Params::M_PACK_SIZE] = 				8;
 }

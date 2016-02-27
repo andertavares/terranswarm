@@ -30,7 +30,6 @@ class ExampleAIModule : public BWAPI::AIModule {
 	//stores whether the game has lasted too long and should end as a draw
 	bool timeOver;
 
-
 	string startTime, endTime; //start and finishing times, stored as strings
 
 	//relative path where the chromosome files are located
@@ -38,6 +37,9 @@ class ExampleAIModule : public BWAPI::AIModule {
 
 	//parameters that are used here and will be evolved by the GA
 	map<int, double> parameters;
+
+	//indicates whether parameters were successfully loaded
+	bool paramsLoaded;
 
 	//tasks that will have a single instance
 	Task* gatherMinerals;
@@ -54,6 +56,8 @@ class ExampleAIModule : public BWAPI::AIModule {
 	Task* buildBunker;
 
 	Unit ourComSat;
+
+	BWAPI::Race enemyRace;
 
 	CommanderAgent* _commanderAgent;
 

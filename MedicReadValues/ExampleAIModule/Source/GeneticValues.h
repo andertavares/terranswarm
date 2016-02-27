@@ -13,9 +13,14 @@ class GeneticValues {
 	static std::string paramsFile;
 
 public:
-	static void initializeMap(std::string path);
+	static bool loadFromFile(std::string path);
 	static std::map<int, double> getMap();
 	static std::string getParamsFile();
+
+	static void loadDefaultVsTerran();
+	static void loadDefaultVsProtoss();
+	static void loadDefaultVsZerg();
+	static void loadDefaultVsUnknown();
 	//static double getValue(int key);
 	
 };

@@ -29,6 +29,8 @@ ExampleAIModule::ExampleAIModule() {
 	timeOver = false;
 	srand(time(0));
 
+	enemyRace = BWAPI::Races::Unknown;
+
 	//sets the working dir according to path.cfg located in starcraft directory
 	ifstream infile("path.cfg");
 	stringstream buffer;
@@ -36,8 +38,12 @@ ExampleAIModule::ExampleAIModule() {
 	workingDir = buffer.str();
 
 	//loads the parameters
-	GeneticValues::initializeMap(workingDir);
+	paramsLoaded = GeneticValues::loadFromFile(workingDir);
 	parameters = GeneticValues::getMap();
+
+	if(!paramsLoaded){
+		Broodwar << "Could not load parameters from file, will use hard-coded ones" << endl;
+	}
 }
 
 ExampleAIModule::~ExampleAIModule(){
@@ -51,7 +57,7 @@ void ExampleAIModule::onStart() {
 	startTime = currentDateTime();
 	// Hello World!
 	Broodwar->sendText("GAMedic is online!");
-	Broodwar << "working dir:" << workingDir << endl;
+	//Broodwar << "working dir:" << workingDir << endl;
   
 
 	// Enable the UserInput flag, which allows us to control the bot and type messages.
@@ -62,8 +68,8 @@ void ExampleAIModule::onStart() {
 	// and reduce the bot's APM (Actions Per Minute).
 	Broodwar->setCommandOptimizationLevel(2);
 
-	Broodwar->setGUI(false); //disables gui drawing (better performance)
-	Broodwar->setLocalSpeed(0); //fastest speed, rock on!
+	//Broodwar->setGUI(false); //disables gui drawing (better performance)
+	//Broodwar->setLocalSpeed(0); //fastest speed, rock on!
 
 	// Check if this is a replay
 	if ( Broodwar->isReplay() ) {
@@ -86,8 +92,9 @@ void ExampleAIModule::onStart() {
 
 		// Retrieve you and your enemy's races. enemy() will just return the first enemy.
 		// If you wish to deal with multiple enemies then you must use enemies().
-		if ( Broodwar->enemy() ) // First make sure there is an enemy
+		if ( Broodwar->enemy() ) {// First make sure there is an enemy
 			Broodwar << "The matchup is " << Broodwar->self()->getRace() << " vs " << Broodwar->enemy()->getRace() << std::endl;
+		}
 		
 		//cleans the list of command centers
 		commandCenters.clear();
@@ -276,8 +283,37 @@ void ExampleAIModule::onFrame() {
 
 	// Prevent spamming by only running our onFrame once every number of latency frames.
 	// Latency frames are the number of frames before commands are processed.
-	if ( Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0 )
+	if ( Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0 ) {
 		return;
+	}
+
+	// query the enemy race if I don't know it yet and adjust my parameters
+	if ( Broodwar->enemy() && enemyRace == BWAPI::Races::Unknown && !paramsLoaded) {	
+		
+		if(Broodwar->enemy()->getRace() != BWAPI::Races::Unknown){
+			Broodwar << "Now, I know that my enemy is " << Broodwar->enemy()->getRace() << std::endl;
+			enemyRace = Broodwar->enemy()->getRace();
+
+			if (Broodwar->enemy()->getRace() == BWAPI::Races::Terran){
+				GeneticValues::loadDefaultVsTerran();
+			}
+
+			if (Broodwar->enemy()->getRace() == BWAPI::Races::Protoss){
+				GeneticValues::loadDefaultVsProtoss();
+			}
+
+			if (Broodwar->enemy()->getRace() == BWAPI::Races::Zerg){
+				GeneticValues::loadDefaultVsZerg();
+			}
+			
+			Broodwar << "Parameters against enemy race loaded " << endl;
+			parameters = GeneticValues::getMap();
+			paramsLoaded = true;
+		}
+
+		
+		
+	}
 
 	// reinsert tasks to prevent errors
 	if(allTasks[BuildCommandCenter]->size() <= 0){
