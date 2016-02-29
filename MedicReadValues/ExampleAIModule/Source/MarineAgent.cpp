@@ -63,9 +63,9 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 	Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 20 * TILE_SIZE, Filter::IsOwned && Filter::IsBuilding);
 	//Broodwar->drawTextMap(gameUnit->getPosition(), "\n\nCLU=%d", closeUnits.size());
 	for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
-		if(unit->getType() == UnitTypes::Terran_Bunker && unit->isVisible()){
+		if ((*unit)->getType() == UnitTypes::Terran_Bunker && (*unit)->isVisible()){
 			//Broodwar->sendText("Bunker found");
-			if (unit->getLoadedUnits().size() < 4) {
+			if ((*unit)->getLoadedUnits().size() < 4) {
 				u = *unit;
 				break;
 			}
@@ -94,7 +94,7 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 		//checks if there is a medic around
 		bool medicAround = false;
 		for (auto unit = friendsAround.begin(); unit != friendsAround.end(); unit++){
-			if (unit->getType() == UnitTypes::Terran_Medic){
+			if ((*unit)->getType() == UnitTypes::Terran_Medic){
 				medicAround = true;
 				break;
 			}
@@ -190,7 +190,7 @@ void MarineAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap, unorde
 		Broodwar->drawTextMap(gameUnit->getPosition(),"\nEX");
 		if(!goScout()){ //if scouting does not work out, do something else
 			gameUnit->stop(); //become idle
-			Broodwar << "not scouting anymore" << endl;
+			Broodwar << "not scouting anymore" << "\n";
 			state = NO_TASK;
 		}
 	}
@@ -364,8 +364,8 @@ Unit MarineAgent::oldestColleagueAround(){
 	Unitset colleagues = Broodwar->getUnitsInRadius(gameUnit->getPosition(), MEETING_RADIUS, Filter::IsOwned);
 	
 	for(auto colleague = colleagues.begin(); colleague != colleagues.end(); colleague++){
-		if(colleague->getType() == UnitTypes::Terran_Marine && colleague->getID() < minID){
-			minID = colleague->getID();
+		if((*colleague)->getType() == UnitTypes::Terran_Marine && (*colleague)->getID() < minID){
+			minID = (*colleague)->getID();
 			oldest = *colleague;
 		}
 	}
@@ -438,7 +438,7 @@ bool MarineAgent::goScout(){
 
 		Broodwar->drawTextMap(myPos, "\n\n%d,%d,%d", Broodwar->hasPath(myPos,pos), Broodwar->isExplored(TilePosition(pos)), Broodwar->isWalkable(WalkPosition(pos)));// {
 
-		Broodwar << "Agent [" << gameUnit->getID() << "] Scouting to :" << pos << std::endl;
+		Broodwar << "Agent [" << gameUnit->getID() << "] Scouting to :" << pos << "\n";
 
 		gameUnit->attack(pos);
 		return true;
@@ -455,7 +455,7 @@ Position MarineAgent::getPositionToScout(){
 	std::deque<Position> positionListInRadious;
 	std::deque<Position> positionListInMap;
 	Position myPos = unit->getPosition();
-	Region myRegion = Broodwar->getRegion( unit->getTilePosition() );
+	Region myRegion = Broodwar->getRegionAt( unit->getPosition() );
 
 	TilePosition seedTilePos = TilePosition(myPos);
 	

@@ -7,13 +7,18 @@ namespace BWAPI
   class UpgradeType;
   class DamageType;
   class ExplosionType;
+  class UnitType;
 
+  /// <summary>namespace containing weapon types.</summary>
+  /// @see WeaponType
   namespace WeaponTypes
   {
-    /// Enumeration of weapon types
+    /// <summary>Enumeration of weapon types.</summary>
+    /// @see WeaponType
     namespace Enum
     {
-      /// Enumeration of weapon types
+      /// <summary>Enumeration of weapon types.</summary>
+      /// @see WeaponType
       enum Enum
       {
         Gauss_Rifle = 0,
@@ -134,200 +139,305 @@ namespace BWAPI
       };
     }
   }
+  /// <summary>This object identifies a weapon type used by a unit to attack and deal damage.</summary>
+  /// Some weapon types can be upgraded while others are used for special abilities.
+  ///
+  /// @see WeaponTypes
+  /// @ingroup TypeClasses
   class WeaponType : public Type<WeaponType, WeaponTypes::Enum::Unknown>
   {
     public:
       /// @copydoc Type::Type(int)
       WeaponType(int id = WeaponTypes::Enum::None);
 
-      /** Returns the tech type that must be researched before this weapon can be used, or TechTypes::None if
-       * no tech type is required. */
+      /// <summary>Retrieves the technology type that must be researched before this weapon can
+      /// be used.</summary>
+      ///
+      /// @returns TechType required by this weapon.
+      /// @retval TechTypes::None if no tech type is required to use this weapon.
+      /// @see TechType::getWeapon
       TechType getTech() const;
 
-      /** Returns the unit that can use this weapon. */
+      /// <summary>Retrieves the unit type that is intended to use this weapon type.</summary>
+      ///
+      /// @note There is a rare case where some hero unit types use the same weapon.
+      ///
+      /// @todo specify which types use the same weapon
+      ///
+      /// @returns The UnitType that uses this weapon.
+      /// @see UnitType::groundWeapon, UnitType::airWeapon
       UnitType whatUses() const;
 
-      /** Returns the amount of damage that this weapon deals per attack. */
+      /// <summary>Retrieves the base amount of damage that this weapon can deal per attack.</summary>
+      /// 
+      /// @note That this damage amount must go through a DamageType and UnitSizeType filter
+      /// before it is applied to a unit.
+      ///
+      /// @returns Amount of base damage that this weapon deals.
       int damageAmount() const;
 
-      // TODO: add doc
+      /// <summary>Determines the bonus amount of damage that this weapon type increases by for every
+      /// upgrade to this type.</summary>
+      ///
+      /// @see upgradeType
+      /// @returns Amount of damage added for every weapon upgrade.
       int damageBonus() const;
 
-      /** Returns the amount of cooldown time between attacks. */
+      /// <summary>Retrieves the base amount of cooldown time between each attack, in frames.</summary>
+      ///
+      /// @returns The amount of base cooldown applied to the unit after an attack.
+      /// @see UnitInterface::getGroundWeaponCooldown, UnitInterface::getAirWeaponCooldown
       int damageCooldown() const;
 
-      /** Returns the amount that the damage increases per upgrade.
-       * \see WeaponType::upgradeType. */
+      /// <summary>Obtains the intended number of missiles/attacks that are used.</summary>
+      /// This is used to multiply with the damage amount to obtain the full amount of damage
+      /// for an attack.
+      ///
+      /// @returns The damage factor multiplied by the amount to obtain the total damage.
+      /// @see damageAmount
       int damageFactor() const;
 
-      /** Returns the upgrade type that can be upgraded to increase the attack damage. */
+      /// <summary>Retrieves the upgrade type that increases this weapon's damage output.</summary>
+      /// 
+      /// @returns The UpgradeType used to upgrade this weapon's damage.
+      /// @see damageBonus
       UpgradeType upgradeType() const;
 
-      /** Returns the type of damage that this weapon uses (i.e. concussive, normal, explosive, etc). */
+      /// <summary>Retrieves the damage type that this weapon applies to a unit type.</summary>
+      ///
+      /// @returns DamageType used for damage calculation.
+      /// @see DamageType, UnitSizeType
       DamageType damageType() const;
 
-      /** Returns the type of explosion that this weapon uses. */
+      /// <summary>Retrieves the explosion type that indicates how the weapon deals damage.</summary>
+      ///
+      /// @returns ExplosionType identifying how damage is applied to a target location.
       ExplosionType explosionType() const;
 
-      /** Returns the minimum attack range of the weapon, measured in pixels, 0 for most things except
-       * WeaponTypes::Arclite_Shock_Cannon (the weapon of the Terran Siege Tank in Siege Mode). */
+      /// <summary>Retrieves the minimum attack range of the weapon, measured in pixels.</summary>
+      /// This value is 0 for almost all weapon types, except for WeaponTypes::Arclite_Shock_Cannon
+      /// and WeaponTypes::Arclite_Shock_Cannon_Edmund_Duke.
+      ///
+      /// @returns Minimum attack range, in pixels.
       int minRange() const;
 
-      /** Returns the maximum attack range of the weapon, measured in pixels. */
+      /// <summary>Retrieves the maximum attack range of the weapon, measured in pixels.</summary>
+      ///
+      /// @returns Maximum attack range, in pixels.
       int maxRange() const;
 
-      /** Inner radius used in splash damage calculations. */
+      /// <summary>Retrieves the inner radius used for splash damage calculations, in pixels.</summary>
+      /// 
+      /// @returns Radius of the inner splash area, in pixels.
+      ///
+      /// @todo Add damage calculation.
       int innerSplashRadius() const;
 
-      /** Median radius used in splash damage calculations. */
+      /// <summary>Retrieves the middle radius used for splash damage calculations, in pixels.</summary>
+      /// 
+      /// @returns Radius of the middle splash area, in pixels.
+      ///
+      /// @todo Add damage calculation.
       int medianSplashRadius() const;
 
-      /** Outer radius used in splash damage calculations. */
+      /// <summary>Retrieves the outer radius used for splash damage calculations, in pixels.</summary>
+      /// 
+      /// @returns Radius of the outer splash area, in pixels.
+      ///
+      /// @todo Add damage calculation.
       int outerSplashRadius() const;
 
-      /** Returns true if this weapon can attack air units. */
+      /// <summary>Checks if this weapon type can target air units.</summary>
+      ///
+      /// @returns true if this weapon type can target air units, and false otherwise.
+      /// @see UnitInterface::isFlying, UnitType::isFlyer
       bool targetsAir() const;
 
-      // TODO: group these methods
-      /** Returns true if this weapon can attack ground units. */
+      /// <summary>Checks if this weapon type can target ground units.</summary>
+      ///
+      /// @returns true if this weapon type can target ground units, and false otherwise.
+      /// @see UnitInterface::isFlying, UnitType::isFlyer
       bool targetsGround() const;
+
+      /// <summary>Checks if this weapon type can only target mechanical units.</summary>
+      ///
+      /// @returns true if this weapon type can only target mechanical units, and false otherwise.
+      /// @see targetsOrgOrMech, UnitType::isMechanical
       bool targetsMechanical() const;
+      
+      /// <summary>Checks if this weapon type can only target organic units.</summary>
+      ///
+      /// @returns true if this weapon type can only target organic units, and false otherwise.
+      /// @see targetsOrgOrMech, UnitType::isOrganic
       bool targetsOrganic() const;
+      
+      /// <summary>Checks if this weapon type cannot target structures.</summary>
+      ///
+      /// @returns true if this weapon type cannot target buildings, and false if it can.
+      /// @see UnitType::isBuilding
       bool targetsNonBuilding() const;
+
+      /// <summary>Checks if this weapon type cannot target robotic units.</summary>
+      ///
+      /// @returns true if this weapon type cannot target robotic units, and false if it can.
+      /// @see UnitType::isRobotic
       bool targetsNonRobotic() const;
+
+      /// <summary>Checks if this weapon type can target the ground.</summary>
+      ///
+      /// @note This is more for attacks like @Psi_Storm which can target a location, not to be
+      /// confused with attack move.
+      ///
+      /// @returns true if this weapon type can target a location, and false otherwise.
       bool targetsTerrain() const;
+      
+      /// <summary>Checks if this weapon type can only target organic or mechanical units.</summary>
+      ///
+      /// @returns true if this weapon type can only target organic or mechanical units, and false otherwise.
+      /// @see targetsOrganic, targetsMechanical, UnitType::isOrganic, UnitType::isMechanical
       bool targetsOrgOrMech() const;
+
+      /// <summary>Checks if this weapon type can only target units owned by the same player.</summary>
+      /// This is used for WeaponTypes::Consume.
+      ///
+      /// @returns true if this weapon type can only target your own units, and false otherwise.
+      /// @see UnitInterface::getPlayer
       bool targetsOwn() const;
   };
-  /// namespace containing weapon types
+
+  /// @ingroup Types
   namespace WeaponTypes
   {
-    /// Retrieves the set of all weapon types. This is a union between the normalWeaponTypes and
-    /// specialWeaponTypes.
+    /// <summary>Retrieves the set of all defined weapon types.</summary> This is a union between
+    /// the normal and special weapon types.
     ///
-    /// @returns set consisting of all weapon types.
+    /// @returns set consisting of all defined weapon types.
+    /// @see normalWeaponTypes, specialWeaponTypes
     const WeaponType::set& allWeaponTypes();
 
-    /// Retrieves the set of all normal weapon types. This set contains all weapons that are
-    /// not used for abilities.
+    /// <summary>Retrieves the set of all defined normal weapon types.</summary> This set contains
+    /// all weapons that are not used for abilities.
     ///
     /// @returns constant set consisting of all normal weapon types.
-    const WeaponType::const_set& normalWeaponTypes();
+    const WeaponType::set& normalWeaponTypes();
 
-    /// Retrieves the set of all special weapon types. This set contains all weapons that are
-    /// used exclusively for special unit abilities.
+    /// <summary>Retrieves the set of all special weapon types.</summary> This set contains all
+    /// weapons that are used exclusively for special unit abilities.
     ///
     /// @returns constant set consisting of all special weapon types.
-    const WeaponType::const_set& specialWeaponTypes();
+    const WeaponType::set& specialWeaponTypes();
 
-#ifdef BWAPI_DECL
-#undef BWAPI_DECL
-#endif
-#define BWAPI_DECL(x) /** x */ extern const WeaponType x
-    BWAPI_DECL(Gauss_Rifle);
-    BWAPI_DECL(Gauss_Rifle_Jim_Raynor);
-    BWAPI_DECL(C_10_Canister_Rifle);
-    BWAPI_DECL(C_10_Canister_Rifle_Sarah_Kerrigan);
-    BWAPI_DECL(C_10_Canister_Rifle_Samir_Duran);
-    BWAPI_DECL(C_10_Canister_Rifle_Infested_Duran);
-    BWAPI_DECL(C_10_Canister_Rifle_Alexei_Stukov);
-    BWAPI_DECL(Fragmentation_Grenade);
-    BWAPI_DECL(Fragmentation_Grenade_Jim_Raynor);
-    BWAPI_DECL(Spider_Mines);
-    BWAPI_DECL(Twin_Autocannons);
-    BWAPI_DECL(Twin_Autocannons_Alan_Schezar);
-    BWAPI_DECL(Hellfire_Missile_Pack);
-    BWAPI_DECL(Hellfire_Missile_Pack_Alan_Schezar);
-    BWAPI_DECL(Arclite_Cannon);
-    BWAPI_DECL(Arclite_Cannon_Edmund_Duke);
-    BWAPI_DECL(Fusion_Cutter);
-    BWAPI_DECL(Gemini_Missiles);
-    BWAPI_DECL(Gemini_Missiles_Tom_Kazansky);
-    BWAPI_DECL(Burst_Lasers);
-    BWAPI_DECL(Burst_Lasers_Tom_Kazansky);
-    BWAPI_DECL(ATS_Laser_Battery);
-    BWAPI_DECL(ATS_Laser_Battery_Hero);
-    BWAPI_DECL(ATS_Laser_Battery_Hyperion);
-    BWAPI_DECL(ATA_Laser_Battery);
-    BWAPI_DECL(ATA_Laser_Battery_Hero);
-    BWAPI_DECL(ATA_Laser_Battery_Hyperion);
-    BWAPI_DECL(Flame_Thrower);
-    BWAPI_DECL(Flame_Thrower_Gui_Montag);
-    BWAPI_DECL(Arclite_Shock_Cannon);
-    BWAPI_DECL(Arclite_Shock_Cannon_Edmund_Duke);
-    BWAPI_DECL(Longbolt_Missile);
-    BWAPI_DECL(Claws);
-    BWAPI_DECL(Claws_Devouring_One);
-    BWAPI_DECL(Claws_Infested_Kerrigan);
-    BWAPI_DECL(Needle_Spines);
-    BWAPI_DECL(Needle_Spines_Hunter_Killer);
-    BWAPI_DECL(Kaiser_Blades);
-    BWAPI_DECL(Kaiser_Blades_Torrasque);
-    BWAPI_DECL(Toxic_Spores);
-    BWAPI_DECL(Spines);
-    BWAPI_DECL(Acid_Spore);
-    BWAPI_DECL(Acid_Spore_Kukulza);
-    BWAPI_DECL(Glave_Wurm);
-    BWAPI_DECL(Glave_Wurm_Kukulza);
-    BWAPI_DECL(Seeker_Spores);
-    BWAPI_DECL(Subterranean_Tentacle);
-    BWAPI_DECL(Suicide_Infested_Terran);
-    BWAPI_DECL(Suicide_Scourge);
-    BWAPI_DECL(Particle_Beam);
-    BWAPI_DECL(Psi_Blades);
-    BWAPI_DECL(Psi_Blades_Fenix);
-    BWAPI_DECL(Phase_Disruptor);
-    BWAPI_DECL(Phase_Disruptor_Fenix);
-    BWAPI_DECL(Psi_Assault);
-    BWAPI_DECL(Psionic_Shockwave);
-    BWAPI_DECL(Psionic_Shockwave_TZ_Archon);
-    BWAPI_DECL(Dual_Photon_Blasters);
-    BWAPI_DECL(Dual_Photon_Blasters_Mojo);
-    BWAPI_DECL(Dual_Photon_Blasters_Artanis);
-    BWAPI_DECL(Anti_Matter_Missiles);
-    BWAPI_DECL(Anti_Matter_Missiles_Mojo);
-    BWAPI_DECL(Anti_Matter_Missiles_Artanis);
-    BWAPI_DECL(Phase_Disruptor_Cannon);
-    BWAPI_DECL(Phase_Disruptor_Cannon_Danimoth);
-    BWAPI_DECL(Pulse_Cannon);
-    BWAPI_DECL(STS_Photon_Cannon);
-    BWAPI_DECL(STA_Photon_Cannon);
-    BWAPI_DECL(Scarab);
-    BWAPI_DECL(Neutron_Flare);
-    BWAPI_DECL(Halo_Rockets);
-    BWAPI_DECL(Corrosive_Acid);
-    BWAPI_DECL(Subterranean_Spines);
-    BWAPI_DECL(Warp_Blades);
-    BWAPI_DECL(Warp_Blades_Hero);
-    BWAPI_DECL(Warp_Blades_Zeratul);
-    BWAPI_DECL(Independant_Laser_Battery);
-    BWAPI_DECL(Twin_Autocannons_Floor_Trap);
-    BWAPI_DECL(Hellfire_Missile_Pack_Wall_Trap);
-    BWAPI_DECL(Flame_Thrower_Wall_Trap);
-    BWAPI_DECL(Hellfire_Missile_Pack_Floor_Trap);
+    /// @name Normal Weapons
+    ///@{
+    extern const WeaponType Gauss_Rifle;
+    extern const WeaponType Gauss_Rifle_Jim_Raynor;
+    extern const WeaponType C_10_Canister_Rifle;
+    extern const WeaponType C_10_Canister_Rifle_Sarah_Kerrigan;
+    extern const WeaponType C_10_Canister_Rifle_Samir_Duran;
+    extern const WeaponType C_10_Canister_Rifle_Infested_Duran;
+    extern const WeaponType C_10_Canister_Rifle_Alexei_Stukov;
+    extern const WeaponType Fragmentation_Grenade;
+    extern const WeaponType Fragmentation_Grenade_Jim_Raynor;
+    extern const WeaponType Spider_Mines;
+    extern const WeaponType Twin_Autocannons;
+    extern const WeaponType Twin_Autocannons_Alan_Schezar;
+    extern const WeaponType Hellfire_Missile_Pack;
+    extern const WeaponType Hellfire_Missile_Pack_Alan_Schezar;
+    extern const WeaponType Arclite_Cannon;
+    extern const WeaponType Arclite_Cannon_Edmund_Duke;
+    extern const WeaponType Fusion_Cutter;
+    extern const WeaponType Gemini_Missiles;
+    extern const WeaponType Gemini_Missiles_Tom_Kazansky;
+    extern const WeaponType Burst_Lasers;
+    extern const WeaponType Burst_Lasers_Tom_Kazansky;
+    extern const WeaponType ATS_Laser_Battery;
+    extern const WeaponType ATS_Laser_Battery_Hero;
+    extern const WeaponType ATS_Laser_Battery_Hyperion;
+    extern const WeaponType ATA_Laser_Battery;
+    extern const WeaponType ATA_Laser_Battery_Hero;
+    extern const WeaponType ATA_Laser_Battery_Hyperion;
+    extern const WeaponType Flame_Thrower;
+    extern const WeaponType Flame_Thrower_Gui_Montag;
+    extern const WeaponType Arclite_Shock_Cannon;
+    extern const WeaponType Arclite_Shock_Cannon_Edmund_Duke;
+    extern const WeaponType Longbolt_Missile;
+    extern const WeaponType Claws;
+    extern const WeaponType Claws_Devouring_One;
+    extern const WeaponType Claws_Infested_Kerrigan;
+    extern const WeaponType Needle_Spines;
+    extern const WeaponType Needle_Spines_Hunter_Killer;
+    extern const WeaponType Kaiser_Blades;
+    extern const WeaponType Kaiser_Blades_Torrasque;
+    extern const WeaponType Toxic_Spores;
+    extern const WeaponType Spines;
+    extern const WeaponType Acid_Spore;
+    extern const WeaponType Acid_Spore_Kukulza;
+    extern const WeaponType Glave_Wurm;
+    extern const WeaponType Glave_Wurm_Kukulza;
+    extern const WeaponType Seeker_Spores;
+    extern const WeaponType Subterranean_Tentacle;
+    extern const WeaponType Suicide_Infested_Terran;
+    extern const WeaponType Suicide_Scourge;
+    extern const WeaponType Particle_Beam;
+    extern const WeaponType Psi_Blades;
+    extern const WeaponType Psi_Blades_Fenix;
+    extern const WeaponType Phase_Disruptor;
+    extern const WeaponType Phase_Disruptor_Fenix;
+    extern const WeaponType Psi_Assault;
+    extern const WeaponType Psionic_Shockwave;
+    extern const WeaponType Psionic_Shockwave_TZ_Archon;
+    extern const WeaponType Dual_Photon_Blasters;
+    extern const WeaponType Dual_Photon_Blasters_Mojo;
+    extern const WeaponType Dual_Photon_Blasters_Artanis;
+    extern const WeaponType Anti_Matter_Missiles;
+    extern const WeaponType Anti_Matter_Missiles_Mojo;
+    extern const WeaponType Anti_Matter_Missiles_Artanis;
+    extern const WeaponType Phase_Disruptor_Cannon;
+    extern const WeaponType Phase_Disruptor_Cannon_Danimoth;
+    extern const WeaponType Pulse_Cannon;
+    extern const WeaponType STS_Photon_Cannon;
+    extern const WeaponType STA_Photon_Cannon;
+    extern const WeaponType Scarab;
+    extern const WeaponType Neutron_Flare;
+    extern const WeaponType Halo_Rockets;
+    extern const WeaponType Corrosive_Acid;
+    extern const WeaponType Subterranean_Spines;
+    extern const WeaponType Warp_Blades;
+    extern const WeaponType Warp_Blades_Hero;
+    extern const WeaponType Warp_Blades_Zeratul;
+    extern const WeaponType Independant_Laser_Battery;
+    extern const WeaponType Twin_Autocannons_Floor_Trap;
+    extern const WeaponType Hellfire_Missile_Pack_Wall_Trap;
+    extern const WeaponType Flame_Thrower_Wall_Trap;
+    extern const WeaponType Hellfire_Missile_Pack_Floor_Trap;
+    ///@}
 
-    BWAPI_DECL(Yamato_Gun);
-    BWAPI_DECL(Nuclear_Strike);
-    BWAPI_DECL(Lockdown);
-    BWAPI_DECL(EMP_Shockwave);
-    BWAPI_DECL(Irradiate);
-    BWAPI_DECL(Parasite);
-    BWAPI_DECL(Spawn_Broodlings);
-    BWAPI_DECL(Ensnare);
-    BWAPI_DECL(Dark_Swarm);
-    BWAPI_DECL(Plague);
-    BWAPI_DECL(Consume);
-    BWAPI_DECL(Stasis_Field);
-    BWAPI_DECL(Psionic_Storm);
-    BWAPI_DECL(Disruption_Web);
-    BWAPI_DECL(Restoration);
-    BWAPI_DECL(Mind_Control);
-    BWAPI_DECL(Feedback);
-    BWAPI_DECL(Optical_Flare);
-    BWAPI_DECL(Maelstrom);
+    /// @name Special Weapons
+    ///@{
+    extern const WeaponType Yamato_Gun;
+    extern const WeaponType Nuclear_Strike;
+    extern const WeaponType Lockdown;
+    extern const WeaponType EMP_Shockwave;
+    extern const WeaponType Irradiate;
+    extern const WeaponType Parasite;
+    extern const WeaponType Spawn_Broodlings;
+    extern const WeaponType Ensnare;
+    extern const WeaponType Dark_Swarm;
+    extern const WeaponType Plague;
+    extern const WeaponType Consume;
+    extern const WeaponType Stasis_Field;
+    extern const WeaponType Psionic_Storm;
+    extern const WeaponType Disruption_Web;
+    extern const WeaponType Restoration;
+    extern const WeaponType Mind_Control;
+    extern const WeaponType Feedback;
+    extern const WeaponType Optical_Flare;
+    extern const WeaponType Maelstrom;
+    ///@}
 
-    BWAPI_DECL(None);
-    BWAPI_DECL(Unknown);
-#undef BWAPI_DECL
+    extern const WeaponType None;
+    extern const WeaponType Unknown;
   }
+
+  static_assert(sizeof(WeaponType) == sizeof(int), "Expected type to resolve to primitive size.");
 }

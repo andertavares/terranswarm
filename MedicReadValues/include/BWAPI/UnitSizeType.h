@@ -1,16 +1,21 @@
 #pragma once
 #include <BWAPI/Type.h>
 
-#define BWAPI_UNITSIZETYPEDEF(x) static const UnitSizeType x(Enum::x) /** ref x */
-
 namespace BWAPI
 {
+  /// <summary>Namespace containing unit size types.</summary>
+  ///
+  /// @see UnitSizeType
+  ///
+  /// [View on Starcraft Campendium (Official Website)](http://classic.battle.net/scc/gs/damage.shtml)<br>
   namespace UnitSizeTypes
   {
-    /// Enumeration of unit size types
+    /// <summary>Enumeration of unit size types.</summary>
+    /// @see UnitSizeType
     namespace Enum
     {
-      /// Enumeration of unit size types
+      /// <summary>Enumeration of unit size types.</summary>
+      /// @see UnitSizeType
       enum Enum
       {
         Independent = 0,
@@ -23,30 +28,37 @@ namespace BWAPI
       };
     };
   };
+
+  /// <summary>Size types are used by unit types in Broodwar to determine how much damage will be
+  /// applied.</summary> This corresponds with DamageType for several different damage reduction
+  /// applications.
+  ///
+  /// @see DamageType, UnitType, UnitSizeTypes
+  ///
+  /// [View on Starcraft Campendium (Official Website)](http://classic.battle.net/scc/gs/damage.shtml)<br>
+  /// @ingroup TypeClasses
   class UnitSizeType : public Type<UnitSizeType, UnitSizeTypes::Enum::Unknown>
   {
   public:
     /// @copydoc Type::Type(int)
     UnitSizeType(int id = UnitSizeTypes::Enum::None);
   };
-  /// Namespace containing unit size types
+
+  /// @ingroup Types
   namespace UnitSizeTypes
   {
-    /// Retrieves the set of all UnitSizeTypes.
+    /// <summary>Retrieves the set of all valid UnitSizeTypes.</summary>
     ///
     /// @returns Set of all UnitSizeTypes.
-    const UnitSizeType::const_set& allUnitSizeTypes();
+    const UnitSizeType::set& allUnitSizeTypes();
     
-#ifdef BWAPI_DECL
-#undef BWAPI_DECL
-#endif
-#define BWAPI_DECL(x) /** x */ extern const UnitSizeType x
-    BWAPI_DECL(Independent);
-    BWAPI_DECL(Small);
-    BWAPI_DECL(Medium);
-    BWAPI_DECL(Large);
-    BWAPI_DECL(None);
-    BWAPI_DECL(Unknown);
-#undef BWAPI_DECL
+    extern const UnitSizeType Independent;
+    extern const UnitSizeType Small;
+    extern const UnitSizeType Medium;
+    extern const UnitSizeType Large;
+    extern const UnitSizeType None;
+    extern const UnitSizeType Unknown;
   }
+
+  static_assert(sizeof(UnitSizeType) == sizeof(int), "Expected type to resolve to primitive size.");
 }

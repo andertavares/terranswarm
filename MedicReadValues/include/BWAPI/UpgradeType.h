@@ -6,12 +6,13 @@ namespace BWAPI
 {
   class Race;
 
+  /// <summary>Namespace of upgrade types.</summary>
   namespace UpgradeTypes
   {
-    /// Enumeration of upgrade types
+    /// <summary>Enumeration of upgrade types.</summary>
     namespace Enum
     {
-      /// Enumeration of upgrade types
+      /// <summary>Enumeration of upgrade types.</summary>
       enum Enum
       {
         Terran_Infantry_Armor   = 0,
@@ -76,108 +77,173 @@ namespace BWAPI
       };
     }
   }
+
+  /// <summary>The upgrade type represents a passive upgrade that can be obtained with
+  /// UnitInterface::upgrade. </summary>
+  ///
+  /// @see UpgradeTypes
+  ///
+  /// @ingroup TypeClasses
   class UpgradeType : public Type<UpgradeType, UpgradeTypes::Enum::Unknown>
   {
   public:
     /// @copydoc Type::Type(int)
     UpgradeType(int id = UpgradeTypes::Enum::None);
 
-    /** Returns the race the upgrade is for. For example, UpgradeTypes::Terran_Infantry_Armor.getRace()
-     * will return Races::Terran. */
+    /// <summary>Retrieves the race the upgrade is for.</summary>
+    /// For example, UpgradeTypes::Terran_Infantry_Armor.getRace() will return Races::Terran.
+    ///
+    /// @returns Race that this upgrade belongs to.
     Race getRace() const;
 
-    /** Returns the mineral price for the first upgrade. */
+    /// <summary>Returns the mineral price for the upgrade.</summary>
+    ///
+    /// <param name="level"> (optional)
+    ///     The next upgrade level.
+    /// </param>
+    ///
+    /// @note Upgrades start at level 0.
+    /// 
+    /// @returns The mineral cost of the upgrade for the given \p level.
     int mineralPrice(int level = 1) const;
 
-    /** Returns the amount that the mineral price increases for each additional upgrade. */
+    /// <summary>The amount that the mineral price increases for each additional upgrade.</summary>
+    ///
+    /// @returns The mineral cost added to the upgrade after each level.
     int mineralPriceFactor() const;
 
-    /** Returns the vespene gas price for the first upgrade. */
+    /// <summary>Returns the vespene gas price for the first upgrade.</summary>
+    ///
+    /// <param name="level"> (optional)
+    ///     The next upgrade level.
+    /// </param>
+    ///
+    /// @note Upgrades start at level 0.
+    /// 
+    /// @returns The gas cost of the upgrade for the given \p level.
     int gasPrice(int level = 1) const;
 
-    /** Returns the amount that the vespene gas price increases for each additional upgrade. */
+    /// <summary>Returns the amount that the vespene gas price increases for each additional upgrade.</summary>
+    ///
+    /// @returns The gas cost added to the upgrade after each level.
     int gasPriceFactor() const;
 
-    /** Returns the number of frames needed to research the first upgrade. */
+    /// <summary>Returns the number of frames needed to research the first upgrade.</summary>
+    ///
+    /// <param name="level"> (optional)
+    ///     The next upgrade level.
+    /// </param>
+    ///
+    /// @note Upgrades start at level 0.
+    /// 
+    /// @returns The time cost of the upgrade for the given \p level.
     int upgradeTime(int level = 1) const;
 
-    /** Returns the number of frames that the upgrade time increases for each additional upgrade. */
+    /// <summary>Returns the number of frames that the upgrade time increases for each additional upgrade.</summary>
+    ///
+    /// @returns The time cost added to the upgrade after each level.
     int upgradeTimeFactor() const;
 
-    /** Returns the maximum number of times the upgrade can be researched. */
+    /// <summary>Returns the maximum number of times the upgrade can be researched.</summary>
+    ///
+    /// @returns Maximum number of times this upgrade can be upgraded.
     int maxRepeats() const;
 
-    /** Returns the type of unit that researches the upgrade. */
+    /// <summary>Returns the type of unit that researches the upgrade.</summary>
+    ///
+    /// @returns The UnitType that is used to upgrade this type.
     UnitType whatUpgrades() const;
 
-    /** Returns the type of unit that is additionally required for the upgrade. */
+    /// <summary>Returns the type of unit that is required for the upgrade.</summary> The player
+    /// must have at least one of these units completed in order to start upgrading this upgrade.
+    ///
+    /// <param name="level"> (optional)
+    ///     The next upgrade level.
+    /// </param>
+    ///
+    /// @note Upgrades start at level 0.
+    /// 
+    /// @returns UnitType required to obtain this upgrade.
     UnitType whatsRequired(int level = 1) const;
 
-    /** Returns the set of units that are affected by this upgrade. */
-    const UnitType::const_set& whatUses() const;
+    /// <summary>Returns the set of units that are affected by this upgrade.</summary>
+    /// 
+    /// @returns Set of unit types that passively use this upgrade type.
+    const UnitType::set& whatUses() const;
   };
-  /// Namespace of upgrade types
+
+  /// @ingroup Types
   namespace UpgradeTypes
   {
-    /** Returns the set of all the UpgradeTypes. */
-    const UpgradeType::const_set& allUpgradeTypes();
+    /// <summary>Returns the set of all the UpgradeTypes.</summary>
+    ///
+    /// @returns UpgradeType::set containing all of the well-defined UpgradeTypes.
+    const UpgradeType::set& allUpgradeTypes();
 
-#ifdef BWAPI_DECL
-#undef BWAPI_DECL
-#endif
-#define BWAPI_DECL(x) /** x */ extern const UpgradeType x
-    BWAPI_DECL(Terran_Infantry_Armor);
-    BWAPI_DECL(Terran_Vehicle_Plating);
-    BWAPI_DECL(Terran_Ship_Plating);
-    BWAPI_DECL(Zerg_Carapace);
-    BWAPI_DECL(Zerg_Flyer_Carapace);
-    BWAPI_DECL(Protoss_Ground_Armor);
-    BWAPI_DECL(Protoss_Air_Armor);
-    BWAPI_DECL(Terran_Infantry_Weapons);
-    BWAPI_DECL(Terran_Vehicle_Weapons);
-    BWAPI_DECL(Terran_Ship_Weapons);
-    BWAPI_DECL(Zerg_Melee_Attacks);
-    BWAPI_DECL(Zerg_Missile_Attacks);
-    BWAPI_DECL(Zerg_Flyer_Attacks);
-    BWAPI_DECL(Protoss_Ground_Weapons);
-    BWAPI_DECL(Protoss_Air_Weapons);
-    BWAPI_DECL(Protoss_Plasma_Shields);
-    BWAPI_DECL(U_238_Shells);
-    BWAPI_DECL(Ion_Thrusters);
-    BWAPI_DECL(Titan_Reactor);
-    BWAPI_DECL(Ocular_Implants);
-    BWAPI_DECL(Moebius_Reactor);
-    BWAPI_DECL(Apollo_Reactor);
-    BWAPI_DECL(Colossus_Reactor);
-    BWAPI_DECL(Ventral_Sacs);
-    BWAPI_DECL(Antennae);
-    BWAPI_DECL(Pneumatized_Carapace);
-    BWAPI_DECL(Metabolic_Boost);
-    BWAPI_DECL(Adrenal_Glands);
-    BWAPI_DECL(Muscular_Augments);
-    BWAPI_DECL(Grooved_Spines);
-    BWAPI_DECL(Gamete_Meiosis);
-    BWAPI_DECL(Metasynaptic_Node);
-    BWAPI_DECL(Singularity_Charge);
-    BWAPI_DECL(Leg_Enhancements);
-    BWAPI_DECL(Scarab_Damage);
-    BWAPI_DECL(Reaver_Capacity);
-    BWAPI_DECL(Gravitic_Drive);
-    BWAPI_DECL(Sensor_Array);
-    BWAPI_DECL(Gravitic_Boosters);
-    BWAPI_DECL(Khaydarin_Amulet);
-    BWAPI_DECL(Apial_Sensors);
-    BWAPI_DECL(Gravitic_Thrusters);
-    BWAPI_DECL(Carrier_Capacity);
-    BWAPI_DECL(Khaydarin_Core);
-    BWAPI_DECL(Argus_Jewel);
-    BWAPI_DECL(Argus_Talisman);
-    BWAPI_DECL(Caduceus_Reactor);
-    BWAPI_DECL(Chitinous_Plating);
-    BWAPI_DECL(Anabolic_Synthesis);
-    BWAPI_DECL(Charon_Boosters);
-    BWAPI_DECL(None);
-    BWAPI_DECL(Unknown);
-#undef BWAPI_DECL
+    /// @name Terran Upgrades
+    /// @{
+    extern const UpgradeType Terran_Infantry_Armor;
+    extern const UpgradeType Terran_Vehicle_Plating;
+    extern const UpgradeType Terran_Ship_Plating;
+    extern const UpgradeType Terran_Infantry_Weapons;
+    extern const UpgradeType Terran_Vehicle_Weapons;
+    extern const UpgradeType Terran_Ship_Weapons;
+    extern const UpgradeType U_238_Shells;
+    extern const UpgradeType Ion_Thrusters;
+    extern const UpgradeType Titan_Reactor;
+    extern const UpgradeType Ocular_Implants;
+    extern const UpgradeType Moebius_Reactor;
+    extern const UpgradeType Apollo_Reactor;
+    extern const UpgradeType Colossus_Reactor;
+    extern const UpgradeType Caduceus_Reactor;
+    extern const UpgradeType Charon_Boosters;
+    /// @}
+    /// @name Zerg Upgrades
+    /// @{
+    extern const UpgradeType Zerg_Carapace;
+    extern const UpgradeType Zerg_Flyer_Carapace;
+    extern const UpgradeType Zerg_Melee_Attacks;
+    extern const UpgradeType Zerg_Missile_Attacks;
+    extern const UpgradeType Zerg_Flyer_Attacks;
+    extern const UpgradeType Ventral_Sacs;
+    extern const UpgradeType Antennae;
+    extern const UpgradeType Pneumatized_Carapace;
+    extern const UpgradeType Metabolic_Boost;
+    extern const UpgradeType Adrenal_Glands;
+    extern const UpgradeType Muscular_Augments;
+    extern const UpgradeType Grooved_Spines;
+    extern const UpgradeType Gamete_Meiosis;
+    extern const UpgradeType Metasynaptic_Node;
+    extern const UpgradeType Chitinous_Plating;
+    extern const UpgradeType Anabolic_Synthesis;
+    /// @}
+    /// @name Protoss Upgrades
+    /// @{
+    extern const UpgradeType Protoss_Ground_Armor;
+    extern const UpgradeType Protoss_Air_Armor;
+    extern const UpgradeType Protoss_Ground_Weapons;
+    extern const UpgradeType Protoss_Air_Weapons;
+    extern const UpgradeType Protoss_Plasma_Shields;
+    extern const UpgradeType Singularity_Charge;
+    extern const UpgradeType Leg_Enhancements;
+    extern const UpgradeType Scarab_Damage;
+    extern const UpgradeType Reaver_Capacity;
+    extern const UpgradeType Gravitic_Drive;
+    extern const UpgradeType Sensor_Array;
+    extern const UpgradeType Gravitic_Boosters;
+    extern const UpgradeType Khaydarin_Amulet;
+    extern const UpgradeType Apial_Sensors;
+    extern const UpgradeType Gravitic_Thrusters;
+    extern const UpgradeType Carrier_Capacity;
+    extern const UpgradeType Khaydarin_Core;
+    extern const UpgradeType Argus_Jewel;
+    extern const UpgradeType Argus_Talisman;
+    /// @}
+
+    extern const UpgradeType Upgrade_60;
+    extern const UpgradeType None;
+    extern const UpgradeType Unknown;
   }
+
+  static_assert(sizeof(UpgradeType) == sizeof(int), "Expected type to resolve to primitive size.");
 }

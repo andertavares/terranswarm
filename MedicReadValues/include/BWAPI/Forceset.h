@@ -1,5 +1,5 @@
 #pragma once
-#include <BWAPI/Vectorset.h>
+#include "SetContainer.h"
 
 namespace BWAPI
 {
@@ -8,15 +8,12 @@ namespace BWAPI
   typedef ForceInterface *Force;
   class Playerset;
 
-  /// A container that holds a group of Forces.
+  /// <summary>A container that holds a group of Forces.</summary>
   ///
-  /// @see BWAPI::Force, BWAPI::Vectorset
-  class Forceset : public Vectorset<BWAPI::Force>
+  /// @see BWAPI::Force
+  class Forceset : public SetContainer<BWAPI::Force, std::hash<void*>>
   {
   public:
-    Forceset(size_t initialSize = 5);
-    Forceset(const Forceset &other);
-    Forceset(Forceset &&other);
 
     /// @copydoc ForceInterface::getPlayers
     Playerset getPlayers() const;

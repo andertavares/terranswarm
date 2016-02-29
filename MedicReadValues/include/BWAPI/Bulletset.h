@@ -1,5 +1,5 @@
 #pragma once
-#include <BWAPI/Vectorset.h>
+#include "SetContainer.h"
 
 namespace BWAPI
 {
@@ -7,12 +7,10 @@ namespace BWAPI
   class BulletInterface;
   typedef BulletInterface *Bullet;
 
-  class Bulletset : public Vectorset<BWAPI::Bullet>
+  /// <summary>A container for a set of Bullet objects.</summary>
+  class Bulletset : public SetContainer<Bullet, std::hash<void*>>
   {
   public:
-    Bulletset(size_t initialSize = 16);
-    Bulletset(const Bulletset &other);
-    Bulletset(Bulletset &&other);
   };
 }
 

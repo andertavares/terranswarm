@@ -6,12 +6,16 @@ namespace BWAPI
 {
   class UnitType;
 
+  /// <summary>Namespace containing error codes</summary>
+  /// @see Error
   namespace Errors
   {
-    /// Enumeration of Error types
+    /// <summary>Enumeration of Error types.</summary>
+    /// @see Error
     namespace Enum
     {
-      /// Enumeration of Error types
+      /// <summary>Enumeration of Error types.</summary>
+      /// @see Error
       enum Enum
       {
         Unit_Does_Not_Exist,
@@ -47,10 +51,12 @@ namespace BWAPI
     };
   };
   
-  /// The Error object is generally used to determine why certain functions in BWAPI have failed.
+  /// <summary>The Error object is generally used to determine why certain functions in BWAPI
+  /// have failed.</summary>
   ///
   /// For example, you may not have enough resources to construct a unit.
-  /// @see Game::getLastError, Game::setLastError
+  /// @see Game::getLastError, Game::setLastError, Errors
+  /// @ingroup TypeClasses
   class Error : public Type<Error, Errors::Enum::Unknown>
   {
   public:
@@ -58,46 +64,43 @@ namespace BWAPI
     Error(int id = Errors::Enum::None);
   };
 
-  /// Namespace containing error codes
+  /// @ingroup Types
   namespace Errors
   {
-    /// Retrieves the set of all the error codes.
+    /// <summary>Retrieves the set of all the error codes.</summary>
     ///
     /// @returns Set of error types.
-    const Error::const_set& allErrors();
-
-#ifdef BWAPI_DECL
-#undef BWAPI_DECL
-#endif
-#define BWAPI_DECL(x) /** x */ extern const Error x
-    BWAPI_DECL(Unit_Does_Not_Exist);
-    BWAPI_DECL(Unit_Not_Visible);
-    BWAPI_DECL(Unit_Not_Owned);
-    BWAPI_DECL(Unit_Busy);
-    BWAPI_DECL(Incompatible_UnitType);
-    BWAPI_DECL(Incompatible_TechType);
-    BWAPI_DECL(Incompatible_State);
-    BWAPI_DECL(Already_Researched);
-    BWAPI_DECL(Fully_Upgraded);
-    BWAPI_DECL(Currently_Researching);
-    BWAPI_DECL(Currently_Upgrading);
-    BWAPI_DECL(Insufficient_Minerals);
-    BWAPI_DECL(Insufficient_Gas);
-    BWAPI_DECL(Insufficient_Supply);
-    BWAPI_DECL(Insufficient_Energy);
-    BWAPI_DECL(Insufficient_Tech);
-    BWAPI_DECL(Insufficient_Ammo);
-    BWAPI_DECL(Insufficient_Space);
-    BWAPI_DECL(Invalid_Tile_Position);
-    BWAPI_DECL(Unbuildable_Location);
-    BWAPI_DECL(Unreachable_Location);
-    BWAPI_DECL(Out_Of_Range);
-    BWAPI_DECL(Unable_To_Hit);
-    BWAPI_DECL(Access_Denied);
-    BWAPI_DECL(File_Not_Found);
-    BWAPI_DECL(Invalid_Parameter);
-    BWAPI_DECL(None);
-    BWAPI_DECL(Unknown);
-#undef BWAPI_DECL
+    const Error::set& allErrors();
+    
+    extern const Error Unit_Does_Not_Exist;
+    extern const Error Unit_Not_Visible;
+    extern const Error Unit_Not_Owned;
+    extern const Error Unit_Busy;
+    extern const Error Incompatible_UnitType;
+    extern const Error Incompatible_TechType;
+    extern const Error Incompatible_State;
+    extern const Error Already_Researched;
+    extern const Error Fully_Upgraded;
+    extern const Error Currently_Researching;
+    extern const Error Currently_Upgrading;
+    extern const Error Insufficient_Minerals;
+    extern const Error Insufficient_Gas;
+    extern const Error Insufficient_Supply;
+    extern const Error Insufficient_Energy;
+    extern const Error Insufficient_Tech;
+    extern const Error Insufficient_Ammo;
+    extern const Error Insufficient_Space;
+    extern const Error Invalid_Tile_Position;
+    extern const Error Unbuildable_Location;
+    extern const Error Unreachable_Location;
+    extern const Error Out_Of_Range;
+    extern const Error Unable_To_Hit;
+    extern const Error Access_Denied;
+    extern const Error File_Not_Found;
+    extern const Error Invalid_Parameter;
+    extern const Error None;
+    extern const Error Unknown;
   }
+
+  static_assert(sizeof(Error) == sizeof(int), "Expected type to resolve to primitive size.");
 }

@@ -49,8 +49,8 @@ bool GeneticValues::loadFromFile(string mainPath)
 	// starcraft path is the root path, no need to specify it
 	string partialFilePath = "bwapi-data\\bestValues.txt";
 
-	Broodwar << "looking for file:" << partialFilePath << endl;
-	Broodwar << "Will read params from " << partialFilePath << endl;
+	Broodwar << "looking for file:" << partialFilePath << "\n";
+	Broodwar << "Will read params from " << partialFilePath << "\n";
 	
 	// Read the file and get the values into a map
 	string line;
@@ -69,8 +69,8 @@ bool GeneticValues::loadFromFile(string mainPath)
 		return true;
 	}
 	else {
-		Broodwar << "Could not read parameters from " << partialFilePath << endl;
-		Broodwar << "Will use default params vs. unknown opponent" << endl;
+		Broodwar << "Could not read parameters from " << partialFilePath << "\n";
+		Broodwar << "Will use default params vs. unknown opponent" << "\n";
 
 		loadDefaultVsUnknown();
 		return false;

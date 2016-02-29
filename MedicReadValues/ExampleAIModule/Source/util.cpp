@@ -57,7 +57,8 @@ Position getPositionToScout(Unit unit, Position& lastPosition){
 	std::deque<Position> positionListInRadious;
 	std::deque<Position> positionListInMap;
 	Position myPos = unit->getPosition();
-	Region myRegion = Broodwar->getRegion( unit->getTilePosition() );
+	//Broodwar->getr
+	Region myRegion = Broodwar->getRegionAt( myPos );
 
 	TilePosition seedTilePos = TilePosition(myPos);
 	
@@ -152,7 +153,7 @@ bool goScout(Unit gameUnit, Position& lastPosition, int lastFrameCount){
 	if ( currentFrameCount >= lastFrameCount + 20){
 		lastFrameCount = currentFrameCount;
 		Position pos = getPositionToScout(gameUnit, lastPosition);
-		Broodwar << "Agent [" << gameUnit->getID() << "] Scouting to :" << pos << std::endl;
+		Broodwar << "Agent [" << gameUnit->getID() << "] Scouting to :" << pos << "\n";
 
 		gameUnit->move(pos);
 		return true;

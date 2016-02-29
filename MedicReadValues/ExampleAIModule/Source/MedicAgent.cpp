@@ -4,11 +4,9 @@
 #include <unordered_map>
 #include <climits>
 #include <deque>
-//#include <random>
 
 #include "MedicAgent.h"
 #include "Task.h"
-//#include "PositionTask.h"
 #include "TaskAssociation.h"
 #include "util.h"
 #include <set>
@@ -110,7 +108,8 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 		UnitsInRange = gameUnit->getUnitsInRadius(WeaponTypes::Lockdown.maxRange());
 		
 		for (auto unit = UnitsInRange.begin(); unit != UnitsInRange.end(); unit++){
-			if ( Broodwar->self()->isEnemy((unit)->getPlayer()) && !(unit)->isBlind() && !allreadyFired(*unit)) {
+			
+			if ( Broodwar->self()->isEnemy((*unit)->getPlayer()) && !(*unit)->isBlind() && !alreadyFired(*unit)) {
 				gameUnit->useTech(TechTypes::Optical_Flare, *unit);
 			}
 		}
@@ -141,9 +140,9 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 	Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 5 * TILE_SIZE, Filter::IsOwned);
 	if(closeUnits.size() > 0){
 		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
-			if(unit->getType() == UnitTypes::Terran_Marine){
-				newHitPoints = unit->getHitPoints();
-				if (newHitPoints < unit->getInitialHitPoints() && (u == NULL || newHitPoints < hitPoints)) {
+			if((*unit)->getType() == UnitTypes::Terran_Marine){
+				newHitPoints = (*unit)->getHitPoints();
+				if (newHitPoints < (*unit)->getInitialHitPoints() && (u == NULL || newHitPoints < hitPoints)) {
 					hitPoints = newHitPoints;
 					u = *unit;
 				}
@@ -154,8 +153,8 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 	if(u == NULL){
 		Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 45 * TILE_SIZE, Filter::IsOwned);
 		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
-			if(unit->getType() == UnitTypes::Terran_Marine){
-				newDistance = unit->getPosition().getApproxDistance(gameUnit->getPosition());
+			if ((*unit)->getType() == UnitTypes::Terran_Marine){
+				newDistance = (*unit)->getPosition().getApproxDistance(gameUnit->getPosition());
 				if (u == NULL || newDistance < distance) {
 					distance = newDistance;
 					u = *unit;
@@ -198,8 +197,8 @@ void MedicAgent::onFrame(unordered_map<TaskType, vector<Task>*> taskMap){
 		u = NULL;
 		Unitset closeUnits = Broodwar->getUnitsInRadius(gameUnit->getPosition(), 45 * TILE_SIZE, Filter::IsOwned);
 		for (auto unit = closeUnits.begin(); unit != closeUnits.end(); unit++){
-			if(unit->getType() == UnitTypes::Terran_Marine){
-				newDistance = unit->getPosition().getApproxDistance(gameUnit->getPosition());
+			if ((*unit)->getType() == UnitTypes::Terran_Marine){
+				newDistance = (*unit)->getPosition().getApproxDistance(gameUnit->getPosition());
 				if (u == NULL || newDistance < distance) {
 					distance = newDistance;
 					u = *unit;
@@ -220,11 +219,11 @@ void MedicAgent::updatePositionToCure(){
 
 	Unitset units = Broodwar->self()->getUnits();
 	for (Unitset::iterator unit = units.begin(); unit != units.end(); unit++){
-		if(unit->getType() == UnitTypes::Terran_Marine && unit->exists() && unit->isCompleted()){
-			double dist = unit->getDistance(unit->getPosition());
+		if ((*unit)->getType() == UnitTypes::Terran_Marine && (*unit)->exists() && (*unit)->isCompleted()){
+			double dist = (*unit)->getDistance((*unit)->getPosition());
 			if (dist < closestDist){
 				closestDist = dist;
-				closestId = unit->getID();
+				closestId = (*unit)->getID();
 			}
 		}
 	}
@@ -248,14 +247,14 @@ bool MedicAgent::isOnAttack(){
 	return state == PACKING || state == ATTACKING;
 }
 
-bool MedicAgent::allreadyFired(Unit enemy){
-	
-	Bulletset bullets = Broodwar->getBullets();
+bool MedicAgent::alreadyFired(Unit enemy){
+	Bulletset b;
+	/*Bulletset bullets = Broodwar->getBullets();
 	for(Bulletset::iterator i = bullets.begin(); i != bullets.end(); ++i){
 		if ( (i)->getSource() == gameUnit && (i)->getTarget() == enemy) {
 			return true;
 		}
-	}
+	}*/
 
 	return false;
 }

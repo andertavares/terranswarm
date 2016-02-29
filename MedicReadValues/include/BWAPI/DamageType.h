@@ -3,12 +3,21 @@
 
 namespace BWAPI
 {
+  /// <summary>Namespace containing damage types.</summary>
+  ///
+  /// @see DamageType
+  ///
+  /// [View on Liquipedia](http://wiki.teamliquid.net/starcraft/Damage_Type)<br>
+  /// [View on Starcraft Campendium (Official Website)](http://classic.battle.net/scc/gs/damage.shtml)<br>
+  /// [View on Starcraft Wikia](http://starcraft.wikia.com/wiki/Damage_types)<br>
   namespace DamageTypes
   {
-    /// Enumeration of damage types
+    /// <summary>Enumeration of damage types.</summary>
+    /// @see DamageType
     namespace Enum
     {
-      /// Enumeration of damage types
+      /// <summary>Enumeration of damage types.</summary>
+      /// @see DamageType
       enum Enum
       {
         Independent,
@@ -22,31 +31,40 @@ namespace BWAPI
       };
     }
   }
+  /// <summary>Damage types are used in Broodwar to determine the amount of damage that will be
+  /// done to a unit.</summary> This corresponds with UnitSizeType to determine the damage done to
+  /// a unit.
+  /// 
+  /// @see WeaponType, DamageTypes, UnitSizeType
+  ///
+  /// [View on Liquipedia](http://wiki.teamliquid.net/starcraft/Damage_Type)<br>
+  /// [View on Starcraft Campendium (Official Website)](http://classic.battle.net/scc/gs/damage.shtml)<br>
+  /// [View on Starcraft Wikia](http://starcraft.wikia.com/wiki/Damage_types)<br>
+  ///
+  /// @ingroup TypeClasses
   class DamageType : public Type<DamageType, DamageTypes::Enum::Unknown>
   {
     public:
       /// @copydoc Type::Type(int)
       DamageType(int id = DamageTypes::Enum::None);
   };
-  /// Namespace containing damage types
+
+  /// @ingroup Types
   namespace DamageTypes
   {
-    /// Retrieves the set of all the DamageTypes.
+    /// <summary>Retrieves the set of all the DamageTypes.</summary>
     ///
     /// @returns Set of DamageTypes.
-    const DamageType::const_set& allDamageTypes();
+    const DamageType::set& allDamageTypes();
 
-#ifdef BWAPI_DECL
-#undef BWAPI_DECL
-#endif
-#define BWAPI_DECL(x) /** x */ extern const DamageType x
-    BWAPI_DECL(Independent);
-    BWAPI_DECL(Explosive);
-    BWAPI_DECL(Concussive);
-    BWAPI_DECL(Normal);
-    BWAPI_DECL(Ignore_Armor);
-    BWAPI_DECL(None);
-    BWAPI_DECL(Unknown);
-#undef BWAPI_DECL
+    extern const DamageType Independent;
+    extern const DamageType Explosive;
+    extern const DamageType Concussive;
+    extern const DamageType Normal;
+    extern const DamageType Ignore_Armor;
+    extern const DamageType None;
+    extern const DamageType Unknown;
   }
+
+  static_assert(sizeof(DamageType) == sizeof(int), "Expected type to resolve to primitive size.");
 }
