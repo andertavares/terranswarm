@@ -33,9 +33,14 @@ ExampleAIModule::ExampleAIModule() {
 
 	//sets the working dir according to path.cfg located in starcraft directory
 	ifstream infile("path.cfg");
-	stringstream buffer;
-	buffer << infile.rdbuf();
-	workingDir = buffer.str();
+	if(infile.is_open()) {
+		stringstream buffer;
+		buffer << infile.rdbuf();
+		workingDir = buffer.str();
+	}
+	else {
+		workingDir = "bwapi-data\\read";
+	}
 
 	//loads the parameters
 	paramsLoaded = GeneticValues::loadFromFile(workingDir);
@@ -57,7 +62,8 @@ void ExampleAIModule::onStart() {
 	startTime = currentDateTime();
 	// Hello World!
 	Broodwar->sendText("GAMedic is online!");
-	//Broodwar << "working dir:" << workingDir << endl;
+
+	Broodwar << "working dir: " << workingDir << endl;
   
 
 	// Enable the UserInput flag, which allows us to control the bot and type messages.
@@ -181,8 +187,8 @@ void ExampleAIModule::onEnd(bool isWinner) {
 	*/
 	//writes the default results file
 	ofstream resultFile;
-	Broodwar->enableFlag(Flag::CompleteMapInformation);	//attemp to obtain enemy score, works with hacked BWAPI.dll
-	resultFile.open ("results.txt", std::ios_base::app);
+	Broodwar->enableFlag(Flag::CompleteMapInformation);	//attemp to obtain enemy score, works with 'improved' BWAPI.dll
+	resultFile.open ("bwapi-data\\write\\results.txt", std::ios_base::app);
 	resultFile << "RV," << Broodwar->mapName() << "," << Broodwar->elapsedTime() << "," << gameResult << ",";
 	resultFile << me->getUnitScore() + me->getKillScore() << "," << me->getBuildingScore() + me->getRazingScore() << "," << me->gatheredMinerals() + me->gatheredGas() << ",";
 	resultFile << enemy->getRace().getName() << "," << enemy->getUnitScore() + enemy->getKillScore() << "," << enemy->getBuildingScore() + enemy->getRazingScore() << "," << enemy->gatheredMinerals() + enemy->gatheredGas() << endl;
@@ -192,8 +198,6 @@ void ExampleAIModule::onEnd(bool isWinner) {
 	//writes the result file for the genetic algorithm
 	string resFile = GeneticValues::getParamsFile() + ".res.xml";
 	ofstream statsFile(workingDir + "\\" + resFile, ios_base::out);
-
-	
 
 	statsFile << "<results>" << endl <<
 		"\t<result value='" << gameResult << "'/>" << endl <<
@@ -225,19 +229,14 @@ void ExampleAIModule::onEnd(bool isWinner) {
 		"</results>" << endl;
 	statsFile.close();
 
+	/*
 	ofstream fitFile(workingDir + "\\" + GeneticValues::getParamsFile() + ".fit", ios_base::out);
 	float fitness = myTotal / float(enemyTotal);
-	/*if (timeOver) {
-		fitness += 20000;
-	}
-	else if (isWinner) {
-		fitness += 50000;
-	}
-	*/
+
 	fitFile << fitness << endl;
 	
 	fitFile.close();
-	
+	*/
 
 }
 
