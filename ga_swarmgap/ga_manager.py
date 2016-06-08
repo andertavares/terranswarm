@@ -421,26 +421,34 @@ def evaluate(population, generation, cfg):
         #if reliability is above threshold and probability of evaluation in this condition is not met:
         #we make random.random() > prob because prob refers to chance of evaluation of reliable individuals
         #and this test is for individuals who will NOT be evaluated
-        if p['reliability'] > cfg.reliab_threshold and random.random() > cfg.p_eval_above_thresh:
-            #create file with fitness, this individual won't be eval'ed
-            #also, we create its chr_file with .lock extension, so that broodwar won't simulate it
-            chr_file = open(os.path.join(write_dir, '%d.chr.lock' % i), 'w')
-            fit_file = open(os.path.join(write_dir, '%d.fit' % i), 'w')
-            #print type(p['fitness'])
-            fit_file.write(str(p['fitness']))
-            fit_file.close()
-        else:
-            #as this individual will be evaluated, we set its reliability to 1 a priori
-            chr_file = open(os.path.join(write_dir, '%d.chr' % i), 'w')
-            p['reliability'] = 1
 
-        chr_file.write(p['chromosome'].to_file_string())
-        chr_file.close()
+        lock_i = os.path.exists(os.path.join(write_dir, '%d.chr.lock' % i))
+        lock_isuc = os.path.exists(os.path.join(write_dir, '%d.chr.lock' % (i+1)))
 
-        #creates a file with the reliability of this individual
-        misc_file = open(os.path.join(write_dir, '%d.misc' % i), 'w')
-        misc_file.write(str(p['reliability']))
-        misc_file.close()
+        
+        if (not lock_i or (lock_i and not lock_isuc)):
+            if (lock_i):
+                os.remove(os.path.join(write_dir, '%d.chr.lock' % i))
+            if p['reliability'] > cfg.reliab_threshold and random.random() > cfg.p_eval_above_thresh:
+                #create file with fitness, this individual won't be eval'ed
+                #also, we create its chr_file with .lock extension, so that broodwar won't simulate it
+                chr_file = open(os.path.join(write_dir, '%d.chr.lock' % i), 'w')
+                fit_file = open(os.path.join(write_dir, '%d.fit' % i), 'w')
+                #print type(p['fitness'])
+                fit_file.write(str(p['fitness']))
+                fit_file.close()
+            else:
+                #as this individual will be evaluated, we set its reliability to 1 a priori
+                chr_file = open(os.path.join(write_dir, '%d.chr' % i), 'w')
+                p['reliability'] = 1
+
+            chr_file.write(p['chromosome'].to_file_string())
+            chr_file.close()
+
+            #creates a file with the reliability of this individual
+            misc_file = open(os.path.join(write_dir, '%d.misc' % i), 'w')
+            misc_file.write(str(p['reliability']))
+            misc_file.close()
 
     #creates path.cfg on SC directory in order to orientate c++ where to find the chromosome files
     pfile = open(os.path.join(sc_dir, 'path.cfg'), 'w')
