@@ -1,5 +1,13 @@
-/MedicReadValues/Debug/*
-/MedicReadValues/Release/*
+/MedicReadValues/Debug/*.*
+/MedicReadValues/Release/*.*
 /MedicReadValues/*.suo
 /MedicReadValues/*.opensdf
 /MedicReadValues/*.sdf
+/GAMedic/Debug
+/GAMedic/ExampleAIModule/Debug
+/GAMedic/ExampleAIModule/Release
+/GAMedic/*.sdf
+/GAMedic/*.suo
+/GAMedic/Release
+/MedicReadValues/ExampleAIModule/Debug
+/MedicReadValues/ExampleAIModule/Release
