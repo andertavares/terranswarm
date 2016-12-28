@@ -31,7 +31,7 @@ public:
 	void cureInPos();
 	void updatePositionToCure();
 	bool evaluateIncentive();
-	bool allreadyFired(BWAPI::Unit enemy);
+	bool alreadyFired(BWAPI::Unit enemy);
 
 	bool isOnAttack();
 	BWAPI::Unit gameUnit;
