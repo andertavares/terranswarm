@@ -1,0 +1,5 @@
+/MedicReadValues/Debug/*
+/MedicReadValues/Release/*
+/MedicReadValues/*.suo
+/MedicReadValues/*.opensdf
+/MedicReadValues/*.sdf
