@@ -12,7 +12,7 @@ fig, ax = plt.subplots()
 
 f = open(sys.argv[1], 'r')
 
-race = f.readline()
+race = f.readline().strip()
 
 f1=float(f.readline().replace(',','.'))/1.5
 f2=float(f.readline().replace(',','.'))/1.5
@@ -39,13 +39,14 @@ e10=float(f.readline().replace(',','.'))/1.5
 valueMeans = (f1,f2,f3,f4,f5,f6,f7,f8,f9,f10)
 valueErr =  (e1,e2,e3,e4,e5,e6,e7,e8,e9,e10)
 
-if(race=="Terran\n"):
+if(race=="Terran"):
   rects1 = ax.bar(ind+(width/2), valueMeans, width, color='darkblue', yerr=valueErr)
-elif (race=="Protoss\n"):
+elif (race=="Protoss"):
   rects1 = ax.bar(ind+(width/2), valueMeans, width, color='g', yerr=valueErr)  
-elif (race=="Zerg\n"):
+elif (race=="Zerg"):
   rects1 = ax.bar(ind+(width/2), valueMeans, width, color='darkred', yerr=valueErr)
 else:
+  print "Unrecognized race '%s'. Exiting..." % race
   exit()
   
 # add some text for labels, title and axes ticks
