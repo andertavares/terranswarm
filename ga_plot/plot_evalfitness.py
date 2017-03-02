@@ -57,7 +57,7 @@ ax.set_xlabel('Pe')
 #ax.set_title('Percentage of victories by enemy race and fitness fuction')
 ax.set_xticks(ind+width)
 
-ax.set_xticklabels( ('0.1', '0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','1.0'), rotation='vertical' )
+ax.set_xticklabels( ('0.1', '0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','1.0'), rotation='horizontal' )
 #ax.legend( (rects1[0], rects2[0], rects3[0], rects4[0]), ('Score ratio', 'Time-based', 'Unit-based', 'Victory rate') )
 
 def autolabel(rects):
