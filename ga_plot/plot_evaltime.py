@@ -14,43 +14,44 @@ f = open(sys.argv[1], 'r')
 
 race = f.readline().strip()
 
-f1=float(f.readline().replace(',','.')) 
-f2=float(f.readline().replace(',','.')) 
-f3=float(f.readline().replace(',','.')) 
-f4=float(f.readline().replace(',','.')) 
-f5=float(f.readline().replace(',','.')) 
-f6=float(f.readline().replace(',','.')) 
-f7=float(f.readline().replace(',','.')) 
-f8=float(f.readline().replace(',','.')) 
-f9=float(f.readline().replace(',','.')) 
-f10=float(f.readline().replace(',','.')) 
+f1=float(f.readline().replace(',','.'))/3600 
+f2=float(f.readline().replace(',','.'))/3600 
+f3=float(f.readline().replace(',','.')) /3600 
+f4=float(f.readline().replace(',','.')) /3600 
+f5=float(f.readline().replace(',','.')) /3600 
+f6=float(f.readline().replace(',','.')) /3600 
+f7=float(f.readline().replace(',','.')) /3600 
+f8=float(f.readline().replace(',','.')) /3600 
+f9=float(f.readline().replace(',','.')) /3600 
+f10=float(f.readline().replace(',','.')) /3600 
 
-e1=float(f.readline().replace(',','.')) 
-e2=float(f.readline().replace(',','.')) 
-e3=float(f.readline().replace(',','.')) 
-e4=float(f.readline().replace(',','.')) 
-e5=float(f.readline().replace(',','.')) 
-e6=float(f.readline().replace(',','.')) 
-e7=float(f.readline().replace(',','.')) 
-e8=float(f.readline().replace(',','.')) 
-e9=float(f.readline().replace(',','.')) 
-e10=float(f.readline().replace(',','.')) 
+e1=float(f.readline().replace(',','.')) /3600 
+e2=float(f.readline().replace(',','.')) /3600 
+e3=float(f.readline().replace(',','.')) /3600 
+e4=float(f.readline().replace(',','.')) /3600 
+e5=float(f.readline().replace(',','.')) /3600 
+e6=float(f.readline().replace(',','.')) /3600 
+e7=float(f.readline().replace(',','.')) /3600 
+e8=float(f.readline().replace(',','.')) /3600 
+e9=float(f.readline().replace(',','.')) /3600 
+e10=float(f.readline().replace(',','.')) /3600 
 
 valueMeans = (f1,f2,f3,f4,f5,f6,f7,f8,f9,f10)
 valueErr =  (e1,e2,e3,e4,e5,e6,e7,e8,e9,e10)
 
 if(race=="Terran"):
-  rects1 = ax.bar(ind+(width/2), valueMeans, width, color='darkblue', yerr=valueErr)
+  rects1 = ax.bar(ind+(width/2), valueMeans, width, color='royalblue', yerr=valueErr)
 elif (race=="Protoss"):
-  rects1 = ax.bar(ind+(width/2), valueMeans, width, color='g', yerr=valueErr)  
+  rects1 = ax.bar(ind+(width/2), valueMeans, width, color='mediumseagreen', yerr=valueErr)  
 elif (race=="Zerg"):
-  rects1 = ax.bar(ind+(width/2), valueMeans, width, color='darkred', yerr=valueErr)
+  rects1 = ax.bar(ind+(width/2), valueMeans, width, color='indianred', yerr=valueErr)
 else:
   print "Unrecognized race '%s'. Exiting..." % race
   exit()
   
 # add some text for labels, title and axes ticks
-ax.set_ylabel('Time (seconds)')
+ax.set_ylabel('Time (hours)')
+ax.set_xlabel('Pe')
 
 #ax.set_title('Percentage of victories by enemy race and fitness fuction')
 ax.set_xticks(ind+width)
@@ -62,7 +63,7 @@ def autolabel(rects):
   # attach some text labels
   for rect in rects:
     height = rect.get_height()
-    ax.text(rect.get_x()+rect.get_width()/2., 1.01 * height, '%.1f' % float(height),
+    ax.text(rect.get_x()+rect.get_width()/2., 1.01 * height, '%.3f' % float(height),
     ha='center', va='bottom')
 
 autolabel(rects1)
