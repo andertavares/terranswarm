@@ -51,7 +51,7 @@ else:
   
 # add some text for labels, title and axes ticks
 ax.set_ylabel('Victories (%)')
-ax.set_xlabel('Pe')
+ax.set_xlabel('$p_e$', size=15)
 
 
 #ax.set_title('Percentage of victories by enemy race and fitness fuction')
