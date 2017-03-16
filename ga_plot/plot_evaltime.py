@@ -63,7 +63,7 @@ def autolabel(rects):
   # attach some text labels
   for rect in rects:
     height = rect.get_height()
-    ax.text(rect.get_x()+rect.get_width()/2., 1.01 * height, '%.3f' % float(height),
+    ax.text(rect.get_x()+rect.get_width()/2., 0.3 + height, '  %.1f' % float(height),
     ha='center', va='bottom')
 
 autolabel(rects1)
