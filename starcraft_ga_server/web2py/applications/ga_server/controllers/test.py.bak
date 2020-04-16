@@ -1,0 +1,18 @@
+# -*- coding: utf-8 -*-
+# try something like
+def index(): return dict(message="hello from test.py")
+
+def experiment_form():
+    update = db.experiment(request.args(0))
+    form = SQLFORM(db.experiment, update)
+    if form.accepts(request,session):
+        response.flash = 'Thanks! The form has been submitted.'
+    elif form.errors:
+       response.flash = 'Please correct the error(s).'
+    else:
+       response.flash = 'Try again - no fields can be empty.'
+    return dict(form=form)
+
+def all_records():
+    grid = SQLFORM.grid(db.experiment,user_signature=False)
+    return locals()

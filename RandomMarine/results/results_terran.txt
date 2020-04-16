@@ -1,0 +1,47 @@
+Road War,1222,loss,4900,2075,7354,Terran,0,0,0
+Circuit Breakers 1.0,1242,loss,6350,1925,8458,Terran,0,0,0
+| iCCup | Fighting Spirit 1.3,821,loss,4050,825,4794,Terran,0,0,0
+Jade 1.0,1133,loss,6500,1650,8770,Terran,0,0,0
+Python 1.1,1100,loss,5350,1500,7130,Terran,0,0,0
+Road War,1900,loss,9150,1275,10838,Terran,0,0,0
+Circuit Breakers 1.0,1209,loss,6150,1500,7922,Terran,0,0,0
+| iCCup | Fighting Spirit 1.3,1110,loss,4900,1125,6234,Terran,0,0,0
+Jade 1.0,972,loss,4600,1425,6114,Terran,0,0,0
+Python 1.1,1106,loss,5550,1475,7290,Terran,0,0,0
+Road War,1166,loss,4500,775,7674,Terran,0,0,0
+Circuit Breakers 1.0,1104,loss,4250,1275,5466,Terran,0,0,0
+| iCCup | Fighting Spirit 1.3,1114,loss,5900,1550,7898,Terran,0,0,0
+Jade 1.0,1098,win,8450,2175,11730,Terran,0,0,0
+Python 1.1,1054,loss,5400,1500,7066,Terran,0,0,0
+Road War,889,loss,1800,1175,4466,Terran,0,0,0
+Circuit Breakers 1.0,1021,loss,5250,1450,7250,Terran,0,0,0
+| iCCup | Fighting Spirit 1.3,1530,win,13300,3350,18002,Terran,0,0,0
+Jade 1.0,1048,loss,5750,1475,7442,Terran,0,0,0
+Python 1.1,1102,loss,5100,1125,6442,Terran,0,0,0
+Road War,1195,loss,5250,1075,6450,Terran,0,0,0
+Circuit Breakers 1.0,1408,loss,10550,2425,13834,Terran,0,0,0
+| iCCup | Fighting Spirit 1.3,1044,loss,5450,1475,7034,Terran,0,0,0
+Jade 1.0,1298,loss,7300,2075,10042,Terran,0,0,0
+Python 1.1,965,loss,4500,1325,5914,Terran,0,0,0
+Road War,2377,win,25000,5625,39358,Terran,0,0,0
+Circuit Breakers 1.0,1329,loss,8300,2025,10666,Terran,0,0,0
+| iCCup | Fighting Spirit 1.3,3466,win,32350,2800,36234,Terran,0,0,0
+Jade 1.0,1085,loss,5750,1475,7594,Terran,0,0,0
+Python 1.1,957,loss,5000,1400,6514,Terran,0,0,0
+Road War,1643,win,10350,1900,12902,Terran,0,0,0
+Circuit Breakers 1.0,926,loss,5000,1350,6418,Terran,0,0,0
+| iCCup | Fighting Spirit 1.3,1887,loss,15800,3625,20730,Terran,0,0,0
+Jade 1.0,1561,loss,12600,2550,16154,Terran,0,0,0
+Python 1.1,1027,loss,5750,1700,7898,Terran,0,0,0
+Road War,1610,loss,8950,1550,10882,Terran,0,0,0
+Circuit Breakers 1.0,1034,loss,4950,1375,6378,Terran,0,0,0
+| iCCup | Fighting Spirit 1.3,997,loss,5650,1500,7274,Terran,0,0,0
+Jade 1.0,3601,loss,61900,8425,100906,Terran,0,0,0
+Python 1.1,1418,loss,6400,1450,8242,Terran,0,0,0
+Road War,1342,win,7450,1425,9822,Terran,0,0,0
+Circuit Breakers 1.0,2929,loss,26700,4050,32834,Terran,0,0,0
+| iCCup | Fighting Spirit 1.3,1288,loss,7550,1175,9410,Terran,0,0,0
+Jade 1.0,1170,loss,6050,1650,8018,Terran,0,0,0
+Python 1.1,1455,loss,10300,1825,13130,Terran,0,0,0
+Road War,1710,loss,9650,1875,12030,Terran,0,0,0
+Circuit Breakers 1.0,1170,loss,7400,1875,9666,Terran,0,0,0
